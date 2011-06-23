@@ -438,13 +438,17 @@ public class FingerBoard extends JLabel {
     }
    
     public boolean hasActiveNoteInColumn(int x) {
-		for(Point pt : ps1)
-		{
-			if(pt.x == x)
+    	if(ps1 != null)
+    	{
+    		for(Point pt : ps1)
 			{
-				return true;
+				if(pt.x == x)
+				{
+					return true;
+				}
 			}
-		}
+    	}
+		
 		return false;
 	}
     

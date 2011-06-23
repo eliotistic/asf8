@@ -101,7 +101,8 @@ public class Cfinger2 extends JPanel {
                 int y_position = evt.getY();
                 //System.out.println("X:" + x_position);
                 //System.out.println("Y:" + y_position);
-                Point noteCoords = getCoordsAtLocation(x_position, y_position);
+                Point noteCoords = getNoteCoordsAtLocation(x_position, y_position);
+                System.out.println("Note coords at this location: " + noteCoords);
                 if(noteCoords.x != -1) // could have tested noteCoords.y
                 {
                 	if(fingBoard.hasActiveNoteInColumn(noteCoords.x))
@@ -110,13 +111,18 @@ public class Cfinger2 extends JPanel {
                 		if(fingBoard.hasActiveNote(noteCoords))
                 		{
                 			// TODO 
+                			System.out.println("You just clicked on a note.");
                 		}
                 		// if the clicked note is not active, then change the active note in that column to that one
                 		else 
                 		{
-                			
+                			System.out.println("You just clicked in a column with a note.");
                 		}
                 		
+                	}
+                	else 
+                	{
+                		System.out.println("You clicked in a column without a note.");
                 	}
                 }
             }
@@ -285,9 +291,9 @@ public class Cfinger2 extends JPanel {
 		doInputFingerings();
 		
 		if (nSolutions < 1){
-			// no solutions -- try again
-			//System.out.println("random: recurse");
+			// no solutions -- try again: recurse");
 			genRandomChords();
+			//System.out.println("random
 		}
 		
 		
@@ -358,14 +364,14 @@ public class Cfinger2 extends JPanel {
 	 * @param y_position The location in Y
 	 * @return The coordinates of the note, or (-1, -1) if the mouse is not inside a note. 
 	 */
-	protected Point getCoordsAtLocation(int x_position, int y_position) {
+	protected Point getNoteCoordsAtLocation(int x_position, int y_position) {
 		// fing.DOT = 12  (radius = 6) 
 		Point found = new Point(-1, -1);
 		// OMG APPLIED MATHS 
 		int radiusSquared = FingerBoard.DOT*FingerBoard.DOT/4; // diameter squared divided by 4 = radius squared
-		for(int i = 0; i< fingBoard.noteCoordinates.length; i++)
+		for(int i = 0; i< fingBoard.noteCoordinates.length; i++) // for each row
 		{
-			for(int j = 0; j<fingBoard.noteCoordinates[i].length; j++)
+			for(int j = 0; j<fingBoard.noteCoordinates[i].length; j++) // for each column
 			{
 				Point x_noteP = fingBoard.getNoteCoordinates()[i][j];
 				//System.out.println("at i = " + i);
@@ -375,7 +381,7 @@ public class Cfinger2 extends JPanel {
 				int y_note = fingBoard.getNoteCoordinates()[i][j].y;
 				if((x_position-x_note)*(x_position-x_note)+(y_position-y_note)*(y_position-y_note) <= radiusSquared)
 				{
-					found = new Point(i, j); 
+					found = new Point(j, i); 
 				}
 			}
 		}

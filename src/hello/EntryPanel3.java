@@ -11,8 +11,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -62,7 +60,7 @@ public class EntryPanel3 extends JPanel {
 		//clearBtn.setPreferredSize(new Dimension(100, 30));
 		randBtn = new JButton("Random");
 		//randBtn.setPreferredSize(new Dimension(100, 30));
-		noteField = new JTextField(4);
+		noteField = new JTextField(8);
 		//noteField2 = new JTextField(4);
 		noteField.setPreferredSize(new Dimension(200, 30));
 		//noteField.setSize(new Dimension(2000, 20));
@@ -150,7 +148,8 @@ public class EntryPanel3 extends JPanel {
 			//c3.fill = GridBagConstraints.BOTH;
 			c3.weightx = 1.0;
 			c3.weighty = 1.0;
-			c3.ipadx = 80;
+			c3.ipadx = 800;
+			c3.ipady = 30;
 			c4.gridx = 1;
 			c4.gridy = 0;
 			c4.weightx = 0.2;
@@ -278,7 +277,7 @@ public class EntryPanel3 extends JPanel {
 		
 		this.setFocusable(true);
 		
-		addFocusListener(new java.awt.event.FocusAdapter() {
+		/*addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 System.out.println("Focus gained");
             }
@@ -286,18 +285,18 @@ public class EntryPanel3 extends JPanel {
             {
                 System.out.println("Focus lost");
             }
-        });
-		addMouseListener(new MouseAdapter() {
+        });*/
+		/*addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
             	//cfinger.setBorder(new BasicBorders.MarginBorder());
-            	System.out.println("MouseClicked event in Panel3");
+            	//System.out.println("MouseClicked event in Panel3");
             	
             }
             public void mouseExited(MouseEvent evt)
             {
             	//System.out.println("Mouse exited from Panel3");
             }
-        });
+        });*/
 		this.addKeyListener(new KeyListener()
 		{
 			@Override
@@ -307,7 +306,6 @@ public class EntryPanel3 extends JPanel {
 
 			@Override
 			public void keyReleased(KeyEvent arg0) {
-				// TODO Auto-generated method stub
 				System.out.println("key released");
 			}
 

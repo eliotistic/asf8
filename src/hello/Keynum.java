@@ -4,12 +4,8 @@
  */
 package hello;
 import hello.utils.IntList;
-import hello.utils.IntSet;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.regex.*;
 
@@ -102,19 +98,19 @@ public class Keynum {
     
     
     
-    public static class K {
+    public static class K { // TODO Start of class K
         public int pitch;
         //public String baseName; // name - any octaves
         public String name;
         public String chromaName;
         public boolean isPc;
         public boolean isBad;
-        public int pc;
+        public int pc; // == note
         public int accidentals;
         public int octaves;
         
         public short duration;
-        public int om;
+        public int om; // jb: seems unused
         
         public K(){
         	om = 0;

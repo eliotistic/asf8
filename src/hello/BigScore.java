@@ -313,7 +313,12 @@ public class BigScore extends JPanel{
 			public void actionPerformed(ActionEvent e) {
 				doStart();
 				setIndexArrows();
-				
+				//System.out.println("Location of Scroll: " + sPane.getVerticalScrollBar().getValue());
+				if(0 != sPane.getVerticalScrollBar().getValue())
+				{
+					sPane.getVerticalScrollBar().setValue(0);
+				}
+				sPane.getHorizontalScrollBar().setValue(0);
 			}
 		});
 		
@@ -322,7 +327,8 @@ public class BigScore extends JPanel{
 			public void actionPerformed(ActionEvent e) {
 				arpSeq.doEnd();
 				setIndexArrows();
-
+				sPane.getVerticalScrollBar().setValue(sPane.getVerticalScrollBar().getMaximum());
+				sPane.getHorizontalScrollBar().setValue(sPane.getHorizontalScrollBar().getMaximum());
 			}
 		});
 		arrows.setBorder(BorderFactory.createLineBorder(Color.black));
