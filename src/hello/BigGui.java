@@ -163,7 +163,7 @@ public class BigGui extends JFrame {
 		//jb
 		c1.gridx=0;
 		c1.gridy=0;
-		c1.weightx = 0;
+		c1.weightx = 0.1;
 		c1.weighty = 0.5;
 		c1.fill = GridBagConstraints.BOTH;
 		this.add(cfinger, c1);

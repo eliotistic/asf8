@@ -61,7 +61,7 @@ public class Cfinger2 extends JPanel {
 		
 		c1.gridx = 0;
 		c1.gridy = 0;
-		c1.fill = GridBagConstraints.BOTH;
+		c1.fill = GridBagConstraints.VERTICAL;
 		c1.weightx = 0.5;
 		c1.weighty = 0.5;
 		add(ctl, c1);
@@ -362,7 +362,7 @@ public class Cfinger2 extends JPanel {
 	 * 
 	 * @param x_position The location in X
 	 * @param y_position The location in Y
-	 * @return The coordinates of the note, or (-1, -1) if the mouse is not inside a note. 
+	 * @return The coordinates of the note, or (-1, -1) if the mouse is not inside a note. dd
 	 */
 	protected Point getNoteCoordsAtLocation(int x_position, int y_position) {
 		// fing.DOT = 12  (radius = 6) 

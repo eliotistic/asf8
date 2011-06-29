@@ -2,121 +2,126 @@ package hello;
 
 
 import javax.swing.*;
-import javax.swing.event.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
 
 public class InstPanel extends JPanel {
-        ButtonGroup buttonGroup1;
-        JTextField rangeLabel;
-        JRadioButton vn;
-        JRadioButton va;
-        JRadioButton vc;
-        JButton fake;
-        RangeImage rangeImage;
-
-        public InstPanel() {
-                setBorder(BorderFactory.createEtchedBorder());
-                initComponents();
-
-        }
-        /*
-        public  void setVn() {
-    		//appPanel.clearAll();
-    		Instrument it = new Instrument (Instrument.Instr.VN);
-    		Fing.localInstrument = it;
-    		//big.setInstrument(it);
-    		//rangeLabel.setText("Violin: G4/55 - G8/103");
-    		rangeLabel.setText(it.rangeString());
-    	}
-
-    	public void setVa() {
-    		//appPanel.clearAll();
-    		Instrument it = new Instrument (Instrument.Instr.VA);
-    		Fing.localInstrument = it;
-    		//big.setInstrument(it);
-    		//rangeLabel.setText("Viola: C4/48 - E7/88");
-    		rangeLabel.setText(it.rangeString());
-    	}
-
-    	public void setVc() {
-    		//appPanel.clearAll();
-    		Instrument it = new Instrument (Instrument.Instr.VC);
-    		Fing.localInstrument = it;
-    		//big.setInstrument(it);
-    		//rangeLabel.setText("Cello: C3/36 - A6/81");
-    		rangeLabel.setText(it.rangeString());
-    	}
-
     
-        public void setVn() {
-                Fing.instrument = Fing.Instr.VN;
-                rangeLabel.setText("Range: G4/55 - G8/103");
-        }
+	private static final long serialVersionUID = 1L;
+	ButtonGroup buttonGroup1;
+    JTextField rangeLabel;
+    JRadioButton vn;
+    JRadioButton va;
+    JRadioButton vc;
+    JButton fake;
+    RangeImage rangeImage;
 
-        public void setVa() {
-                Fing.instrument = Fing.Instr.VA;
-                rangeLabel.setText("Range: C4/48 - E7/88");
-        }
+    public InstPanel() {
+        setBorder(BorderFactory.createEtchedBorder());
+        initComponents();
+    }
+    /*
+    public  void setVn() {
+		//appPanel.clearAll();
+		Instrument it = new Instrument (Instrument.Instr.VN);
+		Fing.localInstrument = it;
+		//big.setInstrument(it);
+		//rangeLabel.setText("Violin: G4/55 - G8/103");
+		rangeLabel.setText(it.rangeString());
+	}
 
-        public void setVc() {
-                Fing.instrument = Fing.Instr.VC;
-                rangeLabel.setText("Range: C3/36 - A6/81");
-        }
+	public void setVa() {
+		//appPanel.clearAll();
+		Instrument it = new Instrument (Instrument.Instr.VA);
+		Fing.localInstrument = it;
+		//big.setInstrument(it);
+		//rangeLabel.setText("Viola: C4/48 - E7/88");
+		rangeLabel.setText(it.rangeString());
+	}
 
-        public void setInstr(String s){
-                if (s.equals("VN"))
-                {   vn.setSelected(true); setVn(); }
-                else if (s.equals("VA"))
-                {   va.setSelected(true); setVa(); }
-                else if (s.equals("VC"))
-                {       vc.setSelected(true); setVc(); }
-                }
+	public void setVc() {
+		//appPanel.clearAll();
+		Instrument it = new Instrument (Instrument.Instr.VC);
+		Fing.localInstrument = it;
+		//big.setInstrument(it);
+		//rangeLabel.setText("Cello: C3/36 - A6/81");
+		rangeLabel.setText(it.rangeString());
+	}
 
-        */
-        private void initComponents() {
 
-                rangeImage = new RangeImage();
+    public void setVn() {
+            Fing.instrument = Fing.Instr.VN;
+            rangeLabel.setText("Range: G4/55 - G8/103");
+    }
 
-                rangeLabel = new JTextField(20);
-                rangeLabel.setEditable(false);
-                rangeLabel.setBorder(null);
-                Font font = new Font("Verdana", Font.BOLD, 12);
-                rangeLabel.setFont(font);
-                // txt.setForeground(Color.BLUE);
+    public void setVa() {
+            Fing.instrument = Fing.Instr.VA;
+            rangeLabel.setText("Range: C4/48 - E7/88");
+    }
 
-                fake = new JButton("fake");
+    public void setVc() {
+            Fing.instrument = Fing.Instr.VC;
+            rangeLabel.setText("Range: C3/36 - A6/81");
+    }
 
-             
-                add(rangeLabel);
+    public void setInstr(String s){
+            if (s.equals("VN"))
+            {   vn.setSelected(true); setVn(); }
+            else if (s.equals("VA"))
+            {   va.setSelected(true); setVa(); }
+            else if (s.equals("VC"))
+            {       vc.setSelected(true); setVc(); }
+            }
 
-                //vn.setSelected(true);
-                //setVn();
+    */
+    private void initComponents() {
 
-        }
+        rangeImage = new RangeImage();
 
-        public Dimension getMaximumSize() {
-                return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
-        }
+        rangeLabel = new JTextField(15);
+        rangeLabel.setEditable(false);
+        rangeLabel.setBorder(null);
+        Font font = new Font("Verdana", Font.BOLD, 12);
+        rangeLabel.setFont(font);
+        // txt.setForeground(Color.BLUE);
 
-        public Dimension getPreferredSize() {
-                return new Dimension(super.getPreferredSize().width, 36);
-        }
+        fake = new JButton("fake");
 
-        public static void main(String args[]) {
-                EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                                JFrame frame = new JFrame("INST!");
-                                frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+     
+		setLayout(new GridBagLayout());
+        GridBagConstraints c1 = new GridBagConstraints();
+        
+        c1.gridx = 0;
+        c1.gridy = 0;
+        
+        
+        add(rangeLabel, c1);
 
-                                InstPanel c = new InstPanel();
+        //vn.setSelected(true);
+        //setVn();
 
-                                frame.add(c);
+    }
 
-                                frame.pack();
-                                frame.setVisible(true);
-                        }
-                });
-        }
+    public Dimension getMaximumSize() {
+            return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
+    }
+
+    public Dimension getPreferredSize() {
+            return new Dimension(super.getPreferredSize().width, 36);
+    }
+
+    public static void main(String args[]) {
+            EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                            JFrame frame = new JFrame("INST!");
+                            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+                            InstPanel c = new InstPanel();
+
+                            frame.add(c);
+
+                            frame.pack();
+                            frame.setVisible(true);
+                    }
+            });
+    }
 }

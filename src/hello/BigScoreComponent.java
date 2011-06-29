@@ -94,7 +94,6 @@ public class BigScoreComponent extends JScoreComponent
 		line =  new ArrayList<MusicElement>();
 		analyze = true;
 
-
 	}
 /*
 	public BigScoreComponent(Tune t, ArrayList<MusicElement> notes) {

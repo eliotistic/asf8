@@ -1,0 +1,35 @@
+MAY 19 : THURSDAY
+New version works with keyboard arrows to help the right panel
+
+May 22 : SUNDAY
+Added the JTextField to display the note and the Clear Saves button
+
+May 23 : MONDAY
+Changed the JTextField to a JLabel (small commit during meeting)
+
+May 24 : TUESDAY
+Last commit before EGit (small commit)
+
+May 24 : TUESDAY (again)
+First EGit commit (small commit)
+
+May 31 : TUESDAY
+Implemented most of GridBagLayout. 
+
+May 31 : TUESDAY
+Finished with GridBagLayout.
+
+June 2 : THURSDAY (1h30)
+Asserted complete control over the panel Focuses, and connected
+the arrow keys in a more logic manner. 
+
+June 14 : TUESDAY
+Implemented the "Shrink" funtionnality for anchors. 
+
+June 17 : FRIDAY
+Made the background color gray into white
+
+June 21 : TUESDAY
+Perfected arrows in the Entry panel.
+
+June 28 : TUESDAY

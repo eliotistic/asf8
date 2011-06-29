@@ -105,12 +105,12 @@ public class Keynum {
         public String chromaName;
         public boolean isPc;
         public boolean isBad;
-        public int pc; // == note
-        public int accidentals;
-        public int octaves;
+        public int pc; // == note = pitch modulo 12
+        public int accidentals; // +1 if sharp, -1 if flat, 0 if none
+        public int octaves; // 
         
         public short duration;
-        public int om; // jb: seems unused
+        public int om; // jb: seems unused  time of start of the note
         
         public K(){
         	om = 0;

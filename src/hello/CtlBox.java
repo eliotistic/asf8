@@ -122,12 +122,15 @@ public class CtlBox extends JPanel {
 		//sP.add(survey);
 		;
 		add(sP, g);*/
+		instPanel.setMinimumSize(new Dimension(200, 20));
 
 		c1.gridx = 0;
 		c1.gridy = 0;
 		c1.fill = GridBagConstraints.BOTH;
 		c1.weightx = 0;
 		c1.weighty = 0.1;
+		//c1.insets = new Insets(0, 20, 0, 20);
+		//c1.ipadx = 150;
 		c1.anchor = GridBagConstraints.PAGE_END;
 		add(instPanel, c1);
 		
@@ -144,6 +147,7 @@ public class CtlBox extends JPanel {
 		c3.fill = GridBagConstraints.VERTICAL;
 		c3.weightx = 0;
 		c3.weighty = 0.3;
+		c3.anchor = GridBagConstraints.LINE_START;
 		add(topo, c3);
 		
 		c4.gridx = 0;
@@ -151,6 +155,7 @@ public class CtlBox extends JPanel {
 		c4.fill = GridBagConstraints.VERTICAL;
 		c4.weightx = 0;
 		c4.weighty = 0.3;
+		c4.anchor = GridBagConstraints.LINE_START; // TODO this resizing is weird...
 		add(msg, c4);
 		
 		c5.gridx = 0;

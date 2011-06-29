@@ -1,21 +1,20 @@
 package hello;
 
-import java.awt.BasicStroke;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
 import abc.notation.*;
 import abc.notation.Tune.Music;
 import abc.ui.swing.*;
 import abc.ui.scoretemplates.*;
 
 public class MyJScoreComponent extends JScoreComponent {
+
+	private static final long serialVersionUID = 1L;
 	Tune tune;
 	Rectangle xtraRect =  new Rectangle(0,0,1,1);
 	Rectangle xRect =  new Rectangle(0,0,1,1);
@@ -186,6 +185,7 @@ public class MyJScoreComponent extends JScoreComponent {
 		else {
 			//System.out.println("Drawing tune...");
 			Music m = tune.getMusic();
+			@SuppressWarnings("rawtypes")
 			Iterator  it = m.iterator();
 			//xRect = g2.getClipBounds();
 			
@@ -226,10 +226,10 @@ public class MyJScoreComponent extends JScoreComponent {
 						JScoreElement e = getRenditionElementFor(note);
 						
 						Rectangle2D r = e.getBoundingBox();
-						int h = (int) r.getHeight();
+						//int h = (int) r.getHeight();
 						int w = (int) r.getWidth();
 						int x = (int) r.getX();
-						int y = (int) r.getY();
+						//int y = (int) r.getY();
 						//int centerY = (int) r.getCenterY();
 						int maxY = (int) r.getMaxY();
 						int minY = (int) r.getMinY();
