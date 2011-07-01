@@ -1,5 +1,6 @@
 package hello;
 
+import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -22,7 +23,7 @@ public class MyJScoreComponent extends JScoreComponent {
 	//String[] iStrings;
 	String[][] romanNames;
 	Clef myClef;
-	float mTop = 27f; // had 15f
+	float mTop = 2f; // had 15f, put to 2f in order to enable resizing
 	float mRight = 40f; //40f
 	float mLeft = 0f; //40f
 	
@@ -53,7 +54,7 @@ public class MyJScoreComponent extends JScoreComponent {
 	
 	public MyJScoreComponent() {
 		setsize();
-		
+		this.setMaximumSize(new Dimension(80, 60));
 	}
 	public MyJScoreComponent(Tune t) {
 		super();

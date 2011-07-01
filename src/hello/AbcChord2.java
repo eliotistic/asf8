@@ -2,10 +2,8 @@ package hello;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.Iterator;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 
 import abc.notation.*;
 import abc.notation.Tune.Music;
@@ -14,6 +12,8 @@ import abc.parser.TuneParser;
 import abc.ui.swing.*;
 
 public class AbcChord2 extends JPanel {
+
+	private static final long serialVersionUID = 1L;
 	public Cfinger2 cfinger2;
 	//public static Instrument instrument;
 	public static MyJScoreComponent scoreUI;
@@ -45,12 +45,22 @@ public class AbcChord2 extends JPanel {
 	}
 	
 	public AbcChord2(Cfinger2 c) {
+		this.setMinimumSize(new Dimension(60, 80));
 		cfinger2 = c; 
 		setBackground(Color.white);
 		setBorder(BorderFactory.createEtchedBorder());
 		scoreUI = new MyJScoreComponent();
 		// ScoreTemplate st = scoreUI.getTemplate();
-		add(scoreUI);
+		setLayout(new GridBagLayout());
+		GridBagConstraints c1 = new GridBagConstraints();
+		c1.gridx = 0;
+		c1.gridy = 0;
+		//c1.insets = new Insets(10, 10, 10, 10);
+		//c1.anchor = GridBagConstraints.PAGE_START; // was useless.
+		//c1.fill = GridBagConstraints.NONE;
+		
+		add(scoreUI, c1);
+		
 		
 	}
 	/*

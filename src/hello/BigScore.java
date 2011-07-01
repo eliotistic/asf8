@@ -298,6 +298,10 @@ public class BigScore extends JPanel{
 				requestFocusInWindow();
 				arrows.setBorder(BorderFactory.createLineBorder(Color.black));
 				appFrame.cfinger.ctl.entryPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
+				System.out.println("His preffered size : "+cfinger.ctl.abcChord.scoreUI.getPreferredSize());//TODO change to other scoreUI
+				System.out.println("His size : "+cfinger.ctl.abcChord.scoreUI.getSize());
+				System.out.println("His minimum size : "+cfinger.ctl.abcChord.scoreUI.getMinimumSize());
+				System.out.println("His maximum size : "+cfinger.ctl.abcChord.scoreUI.getMaximumSize() + "THIS PRINT IS IN BIGSCORE");
 			}
 		});
 		// PREV
