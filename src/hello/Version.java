@@ -9,7 +9,7 @@ import java.awt.event.*;
 
 public class Version {
 
-	public static String version = "0.7";
+	public static String version = "0.709";
 	public static double v = Double.parseDouble(version);
 	//public static String version = "0.2";
 	
