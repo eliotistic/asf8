@@ -1,15 +1,11 @@
 package hello;
 
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import javax.swing.*;
+
 import javax.swing.JOptionPane;
-import java.awt.*;
-import java.awt.event.*;
 
 public class Version {
 
-	public static String version = "0.709";
+	public static String version = "0.710";
 	public static double v = Double.parseDouble(version);
 	//public static String version = "0.2";
 	

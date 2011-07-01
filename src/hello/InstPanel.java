@@ -77,7 +77,7 @@ public class InstPanel extends JPanel {
 
         rangeImage = new RangeImage();
 
-        rangeLabel = new JTextField(15);
+        rangeLabel = new JTextField(16); // HERE, MR. ELIOT!
         rangeLabel.setEditable(false);
         rangeLabel.setBorder(null);
         Font font = new Font("Verdana", Font.BOLD, 12);
