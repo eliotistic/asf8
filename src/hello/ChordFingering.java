@@ -577,7 +577,8 @@ public class ChordFingering {
     
     
 
-    public class XCase implements Comparable {
+    @SuppressWarnings("rawtypes")
+	public class XCase implements Comparable {
         // make case that combines all positions.
         //  -1 in pos. means no pos.
         //Instr instrument;
@@ -1022,7 +1023,8 @@ public class ChordFingering {
 
     
     
-    public class Fingering implements Comparable {
+    @SuppressWarnings("rawtypes")
+	public class Fingering implements Comparable {
         
     	// assumption here: everything is fingered together.
     	
@@ -1046,7 +1048,8 @@ public class ChordFingering {
         	
         }
         
-        private String sayXcases (XCase[] xx){
+        @SuppressWarnings("unused")
+		private String sayXcases (XCase[] xx){
         	String s = "";
         	for (XCase x : xx) {
         		s = s + " \npitch: " + x.pitch + " saite: " + x.saite + " height: " + x.height;

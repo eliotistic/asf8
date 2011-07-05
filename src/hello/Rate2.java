@@ -7,6 +7,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class Rate2 extends JPanel {
+	
+	private static final long serialVersionUID = 1L;
 	Instrument instrument;
 	Cfinger2 cfinger2;
 	JPanel top;
@@ -107,7 +109,7 @@ public class Rate2 extends JPanel {
 				+ "</font></html>";
 		try {
 			this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			String x = "";
+			//String x = "";
 			
 			boolean res = Logger.log("logger", buttinfo[code] + ","
 					+ ""// Fing.fingeringResult.logString()

@@ -314,11 +314,11 @@ public class Points {
 		
 	}
 	public static void main3 (String[] s){
-		Point[] ps = { new Point (3, 6),
+		/*Point[] ps = { new Point (3, 6),
 					   new Point (2, 10),
 					   new Point (1, 4),
 					   new Point (0, 6)
-				};
+				};*/
 		Point[] ps1 = { new Point (3, 1),
 				        new Point (2, 2),
 				        new Point (1, 1),

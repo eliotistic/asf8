@@ -2,6 +2,7 @@ package hello.utils;
 
 
 
+@SuppressWarnings("rawtypes")
 public class BvKey implements Comparable {
 	public Bv bv;
 	public int key;

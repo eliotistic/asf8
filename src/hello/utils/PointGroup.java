@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 public class PointGroup extends ArrayList<PointList>{
 	
+	private static final long serialVersionUID = 1L;
 	public int findGroupInd (Point p0, boolean byX) {
 		int item = p0.y;
 		if (byX) item = p0.x;

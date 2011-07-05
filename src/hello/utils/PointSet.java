@@ -1,15 +1,37 @@
 package hello.utils;
 
 import java.awt.Point;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
 public class PointSet extends HashSet<Point> {
+	
+	private static final long serialVersionUID = 1L;
+
 	public PointSet(){
 		
 	}
 	
+	/**
+	 * author: JB
+	 * @param previousPs a bigger PointSet 
+	 * @return whether or not this PointSet is contained in the other PointSet.
+	 */
+	public boolean IsExtensionOf(PointSet previousPs)
+	{
+		boolean unknownPoint = false;
+		for(Point pt : previousPs)
+		{
+			System.out.println("NEW POINTS:" + this);
+			System.out.println("THIS POINT: " + pt);
+			if(!this.contains(pt))
+			{
+				System.out.println("UNKNOWN POINT WAS FOUND!!!!");
+				unknownPoint = true;
+			}
+		}
+		return !unknownPoint;
+	}
 	
 	public PointSet copy () {
 		PointSet c = new PointSet();
@@ -24,7 +46,8 @@ public class PointSet extends HashSet<Point> {
 	 public  String toString(){
       	String s = "{";
     	String space = ""; 
-    	Iterator it = iterator();
+    	@SuppressWarnings("rawtypes")
+		Iterator it = iterator();
     	while (it.hasNext()) {
     		Point p = (Point) it.next();
     		s = s + space + (tostring(p));

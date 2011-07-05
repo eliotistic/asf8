@@ -5,7 +5,7 @@ import javax.swing.JOptionPane;
 
 public class Version {
 
-	public static String version = "0.710";
+	public static String version = "0.711";
 	public static double v = Double.parseDouble(version);
 	//public static String version = "0.2";
 	

@@ -1,11 +1,12 @@
 package hello;
 
-import java.awt.*;
 import javax.swing.*;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
 public class FingerboardPanel extends JPanel {
+
+	private static final long serialVersionUID = 1L;
 	JCheckBox fingerTrails;
 	
 	

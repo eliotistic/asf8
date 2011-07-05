@@ -5,7 +5,6 @@ import hello.Instrument;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -13,8 +12,9 @@ import java.util.Iterator;
 
 
 public class PointList extends ArrayList<Point>{
-		
 	
+	private static final long serialVersionUID = 1L;
+
 	public PointList copy() {
 		PointList ans = new PointList();
 		for (int i = 0; i < size(); i++) {
@@ -57,9 +57,6 @@ public class PointList extends ArrayList<Point>{
 	}
 	
 	// ** 
-	private void mergePoint (Point p) {
-		
-	}
 	
 	// points are in order
 	// chain:
@@ -67,7 +64,7 @@ public class PointList extends ArrayList<Point>{
 	// where: y<=x+1
 	
 	public PointList chainPoints(){
-		int sz = size();
+		//int sz = size();
 		PointList c = new PointList();
 		
 		//Point last = get(0);
@@ -354,7 +351,8 @@ public class PointList extends ArrayList<Point>{
 		 public  String toString(){
 	      	String s = "{";
 	    	String space = ""; 
-	    	Iterator it = iterator();
+	    	@SuppressWarnings("rawtypes")
+			Iterator it = iterator();
 	    	while (it.hasNext()) {
 	    		Point p = (Point) it.next();
 	    		s = s + space + (tostring(p));
@@ -383,8 +381,8 @@ public class PointList extends ArrayList<Point>{
 			
 		*/
 		public static void main (String[] s){
-			int[] x = {1,1, 2, 3, 5532};
-			int[] y = {1,2,2,3, 212};
+			//int[] x = {1,1, 2, 3, 5532};
+			//int[] y = {1,2,2,3, 212};
 			PointList pp = new PointList();
 			pp.add(new Point (1, 2));
 			//pp.add(new Point (11, 20));

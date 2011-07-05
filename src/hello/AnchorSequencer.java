@@ -353,6 +353,8 @@ public class AnchorSequencer {
 	}
 	
 	public void extend(){
+		// TODO change so that the returned Fingering is not the default one, but the one corresponding
+  	    // to the previous one      I understand myself.
 		if (currAnchor == null){
 			System.out.println("uh oh -- current anchor was null, setting");
 			currAnchor = new Anchor(big.arpSeq.getCurrentArps());
@@ -385,7 +387,7 @@ public class AnchorSequencer {
 					+ " span: " + best.getHandSpan() + " fingers: " + best.heightSetSize() );
 			// base fingering could change as we move on
 			*/
-			big.cfinger.setActiveTrails(currAnchor.activeTrails);
+			big.cfinger.setActiveTrailsFromPrevious(currAnchor.activeTrails);
 			// check
 			for (FingerTrail f : currAnchor.activeTrails){
 				if (!f.inSpan){
@@ -418,9 +420,8 @@ public class AnchorSequencer {
 	// this is a dummy.
 	
 	public void shrink(){
+		// TODO change so that the returned Fingering is not the default one, but the one corresponding
 		
-		//  goes back.from start
-		//System.out.println("ANCHOR shrink does nothing");
 		
 		
 		// jb start

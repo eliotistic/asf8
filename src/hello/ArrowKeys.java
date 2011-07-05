@@ -43,9 +43,9 @@ public class ArrowKeys extends JPanel{
 		stop = new JButton(stopIcon);
 		
 		
-		prev = new JButton("prev",prevIcon);
+		prev = new JButton("",prevIcon);
 		prev.setHorizontalTextPosition(AbstractButton.LEADING);
-		next = new JButton("next", nextIcon);
+		next = new JButton("", nextIcon);
 		
 		//JPanel botbut = new JPanel();
 		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));

@@ -14,6 +14,7 @@ public class FingerSeq2 implements Cloneable {
 	public Instrument instrument;
 	
 	private boolean hidden; 
+	@SuppressWarnings("unused")
 	private boolean bogusGlue;
 	int seqSize; 
 	int inputListStart;
@@ -366,6 +367,7 @@ public class FingerSeq2 implements Cloneable {
 	};
 	*/
 	
+	@SuppressWarnings("unused")
 	private int nExpansions () {
 		return progressiveArpChords.size();
 	}

@@ -9,8 +9,6 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.util.ArrayList;
 
-import abc.notation.MusicElement;
-
 import hello.BigScore;
 import hello.utils.PointList;
 
@@ -23,6 +21,7 @@ public class AnnotatedBoxes {
 	int topMargin;
 	private ArrayList<Rectangle> rectangles; // 
 	
+	@SuppressWarnings("unused")
 	private boolean requireChainUpdate; 
 	private boolean requireRectUpdate;
 	
@@ -63,7 +62,7 @@ public class AnnotatedBoxes {
 	
 	public void draw  (Graphics g){
 		Graphics2D g2 = (Graphics2D)g;
-		int b = topMargin;
+		//int b = topMargin;
 		
 		Color old = g2.getColor();
 		g2.setColor(color);

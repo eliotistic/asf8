@@ -253,6 +253,7 @@ public class PositionalSequencer2 {
 	
 	
 	
+	@SuppressWarnings("unused")
 	private void oldmakePositionChain(int position) {
 		q.clear();
 		for (ArrayList<MySeq> seqs : positionsArray) {
@@ -300,6 +301,7 @@ public class PositionalSequencer2 {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private void markChain(int start, int stop) {
 		// System.out.println("--> marking chain (" + start + " " + stop + ") len = " + (chain.size()));
 		for (MySeq c : chain) {

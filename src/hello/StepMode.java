@@ -3,11 +3,13 @@ package hello;
 import java.awt.Dimension;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
 
 
 public class StepMode extends JPanel implements ActionListener {
+
+	private static final long serialVersionUID = 1L;
+
 	BigScore big;
 	
 	ButtonGroup stepBG;

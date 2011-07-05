@@ -1,18 +1,17 @@
 package hello.utils;
 
 //import java.util.ArrayList;
-import hello.Lis;
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Iterator;
-import java.util.Collections;
 
 
+@SuppressWarnings("rawtypes")
 public class IntSet extends HashSet<Integer> implements Comparable {
 	
+	private static final long serialVersionUID = 1L;
+
 	public IntSet(){
 		
 	}
@@ -20,6 +19,7 @@ public class IntSet extends HashSet<Integer> implements Comparable {
 		for (int x : a) add(x);
 		
 	}
+	@SuppressWarnings("unchecked")
 	@Override
 	public int compareTo(Object o) {
 		

@@ -3,16 +3,19 @@ package hello;
 //import java.awt.Dimension;
 import java.awt.EventQueue;
 import javax.swing.*;
-import java.awt.*;
 //import java.awt.event.*;
 
 
 public class Gui extends JFrame {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public static JFrame frame;
 	//public static BigScoreComponent bigScore;
 	public static boolean doTransitions;
 		
-		  static void createGui (){
+		  /*static void createGui (){
 			//setLayout(new BorderLayout());	
 			String version = Version.version;
 			doTransitions = false;
@@ -36,7 +39,7 @@ public class Gui extends JFrame {
 			frame.pack();
 			frame.setVisible(true);
 			Version.check();
-		}
+		}*/
 		public void initGui(){
 			
 		}
@@ -48,8 +51,7 @@ public class Gui extends JFrame {
 		public static void main(String args[]) {
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
-					createGui();
-					//new Gui().setVisible(true);
+					//createGui();
 					
 				}
 			});

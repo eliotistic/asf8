@@ -2,7 +2,6 @@ package hello;
 //import hello.Fing.Instr;
 
 import java.awt.Point;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.regex.*;
 
@@ -41,6 +40,7 @@ public class Feedback {
 		}
 			
 	}
+	@SuppressWarnings("rawtypes")
 	public static class Trip implements Comparable {
 		int string;
 		int height;

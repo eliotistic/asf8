@@ -40,7 +40,10 @@ public class FingerTrail  {
 	private boolean spanNotSet;
 	private int FBLo;
 	private int FBHi;
+	
+	@SuppressWarnings("unused")
 	private Point fbRange;
+	
 	private double logSpan;
 	boolean inSpan;
 	
@@ -49,7 +52,7 @@ public class FingerTrail  {
 	
 	public TopologyAnchor topology;
 	
-	private FingerBoardPoints fbp;
+	//private FingerBoardPoints fbp;
 	
 	public PointList redPoints;
 	public PointList grayPoints;
@@ -454,7 +457,7 @@ public class FingerTrail  {
 	}
 	
 	public String describe () {
-		Point fbh = fbHeightRange();
+		//Point fbh = fbHeightRange();
 		String span = String.format("%.2f/%.2f",logSpan,instrument.maxSpan);
 		int bariolations = countBariolations();
 		//String s = "Bowing: " + bowing + "<br>";
@@ -504,10 +507,14 @@ public class FingerTrail  {
 
 	
 	public class FTArray extends ArrayList<FingerTrail> {
+
+		private static final long serialVersionUID = 1L;
 		
 	}
 	public class TPArray extends ArrayList<Trailpoint>{
 		
+		private static final long serialVersionUID = 1L;
+
 		public TPArray copy () {
 			TPArray c = new TPArray();
 			for (Trailpoint tp: this) {

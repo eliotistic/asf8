@@ -1,18 +1,17 @@
 package hello;
 
 import java.awt.Color;
-import java.awt.Point;
 import java.util.ArrayList;
 
 import hello.AnchorSequencer.Anchor;
 import hello.BigScore.XMode;
 import hello.ChordFingering.Fingering;
-import hello.Instrument.Instr;
 import hello.gui.AnnotatedBoxes;
 import hello.topology.Bars;
 
 public class SolSequencer {
 	private State state;
+	@SuppressWarnings("unused")
 	private Instrument instrument;
 	private BigScore big;
 	ArrayList<ChordFingering>inputChordFingerings;
@@ -98,17 +97,12 @@ public class SolSequencer {
 	
 	
 	public void solve () {
-		// TODO solve. 
-		Color c = new Color(0x26BEFF);
-		//26BEFF
-		AnnotatedBoxes boxes = new AnnotatedBoxes(big, c, 3); //big, color, margin // TODO useful?
 		findFixedChords();
 		System.err.println("Fixed chords: " + fixedChords.size());
 		//for (Fingering f : fixedChords) {
 		//	boxes.addInd(f.index);
 		//}
 		System.out.println("XMode: " + big.xmode);
-		
 		genAnchors(big.getCurrentFing());
 		
 	}

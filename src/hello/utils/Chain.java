@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 public class Chain extends ArrayList<Seq>{
 	
+	private static final long serialVersionUID = 1L;
+
 	@Override
 	public String toString(){
 		String space = "";

@@ -1,7 +1,5 @@
 package hello;
 
-import java.util.ArrayList;
-
 import hello.utils.Bv;
 import hello.utils.BvList;
 import hello.utils.IntList;
@@ -66,6 +64,8 @@ public class Bowing {
 		xx.or(y);
 		return xx.countGaps();
 	}
+	
+	@SuppressWarnings("unused")
 	private int getSkip (int x, int y){
 		// add 1 for every open string we cross without playing.
 		// ignore chords for now
@@ -103,7 +103,6 @@ public class Bowing {
 		return b;
 	}
 	private String bvtoString (Bv b) {
-		String s = "";
 		IntList ii = b.toList();
 		if (ii.size() == 1) {
 			return ii.get(0).toString();

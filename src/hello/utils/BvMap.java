@@ -13,8 +13,11 @@ import java.util.Collections;
 public class BvMap extends ArrayList<BvKey>  {
 	//int bvSize;
 	//ArrayList<BvKey> bvKeys;
-	
-	
+
+	private static final long serialVersionUID = 1L;
+
+
+	@SuppressWarnings("unchecked")
 	public void sortMap(){
 		Collections.sort(this);
 	}

@@ -3,7 +3,6 @@ package hello;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.WindowConstants;
 
 // import java.util.regex.*;
 
@@ -26,6 +25,8 @@ import javax.swing.WindowConstants;
  * @author eliot
  */
 public class surveyForm extends JPanel {
+	
+	private static final long serialVersionUID = 1L;
 	Res r;
 	JFrame top;
 	CtlBox ctl;

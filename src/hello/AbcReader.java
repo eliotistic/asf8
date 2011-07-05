@@ -345,6 +345,7 @@ public class AbcReader {
 		//int xv = -1;
 		
 		Music m = tune.getMusic();
+		@SuppressWarnings("rawtypes")
 		Iterator it = m.iterator();	
 		while (it.hasNext()) {
 			MusicElement elt = (MusicElement) it.next();

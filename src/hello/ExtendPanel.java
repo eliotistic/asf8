@@ -3,22 +3,19 @@ package hello;
 
 import javax.swing.*;
 
-import java.io.*;
-import java.util.ArrayList;
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.SwingUtilities;
-import javax.swing.filechooser.*;
 
 public class ExtendPanel extends JPanel{
 	
+	private static final long serialVersionUID = 1L;
 	public JPanel ExTop;
 	public JPanel ExBot;
 	
 	public JButton shrink;
 	public JButton extend;
 	public JButton clear;
-	private JComboBox extendMode;
+	//private JComboBox extendMode;
 	
 	public JButton positions;
 	public JCheckBox positionRestrict;

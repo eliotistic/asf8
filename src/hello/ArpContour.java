@@ -2,7 +2,6 @@ package hello;
 
 import hello.utils.IntList;
 
-import java.util.ArrayList;
 
 
 /*
@@ -66,6 +65,7 @@ public class ArpContour {
 		System.out.println(Lis.tostring(LRpitchSequence));
 	}
 	
+	@SuppressWarnings("unused")
 	private void describeBad(boolean bad){
 		if (bad){
 			System.out.println("===================BAD: " );
@@ -122,7 +122,7 @@ public class ArpContour {
 		
 		int len = bowingSequence.length;
 		int count = 0;
-		int foo =  1+inputContour.length-len;
+		//int foo =  1+inputContour.length-len;
 		//System.out.println("end: " + foo);
 		for (int i = 0; i<inputContour.length; i++){
 			boolean found = true;

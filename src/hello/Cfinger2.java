@@ -1,6 +1,6 @@
 package hello;
 
-//TODO put the fingerBoard in center. Maybe it is related to BigGui also.
+
 
 import hello.BigScore.XMode;
 
@@ -43,7 +43,7 @@ public class Cfinger2 extends JPanel {
 	// ChordFingering CurrentCF2;
 	//private boolean inArp;
 	ArrayList<FingerTrail> activeTrails;
-	int viewActiveTrail = 0;
+	int indexViewActiveTrail = 0;
 	
 	public Cfinger2() {
 		// super (new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -110,12 +110,13 @@ public class Cfinger2 extends JPanel {
                 		// if the note clicked is active, then delete it from the active notes
                 		if(fingBoard.hasActiveNote(noteCoords))
                 		{
-                			// TODO 
+                			// TODO implement
                 			System.out.println("You just clicked on a note.");
                 		}
                 		// if the clicked note is not active, then change the active note in that column to that one
                 		else 
                 		{
+                			// TODO Implement.
                 			System.out.println("You just clicked in a column with a note.");
                 		}
                 		
@@ -169,7 +170,7 @@ public class Cfinger2 extends JPanel {
 		});
 		
 		// PREV
-		ctl.entryPanel.prevBtn.addActionListener(new ActionListener() { // TODO here is the listener
+		ctl.entryPanel.prevBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				prevFingering();
 				requestFocusInWindow();
@@ -179,7 +180,7 @@ public class Cfinger2 extends JPanel {
 		});
 		
 		// NEXT
-		ctl.entryPanel.nextBtn.addActionListener(new ActionListener() { // TODO here is the listener
+		ctl.entryPanel.nextBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				nextFingering();
 				requestFocusInWindow();
@@ -352,7 +353,7 @@ public class Cfinger2 extends JPanel {
 			}
 		}
 		//System.out.println("Found : height ="+found);
-		return found; // TODO still problem: ho9w do you use the returned point to print the note?
+		return found;
 	}
 	
 	/**
@@ -442,6 +443,79 @@ public class Cfinger2 extends JPanel {
 		}
 	}
 	*/
+	
+	
+	public void setActiveTrails(ArrayList<FingerTrail> a) {
+		activeTrails = a;
+		
+		indexViewActiveTrail = 0; // index of the active trail to look at
+		// note that the difference between a Fingering and a FingerTrail is that the Trail is made from many notes (anchor)
+		viewTrail();
+		//ctl.entry.setArrows(0, activeTrails.size()-1);
+	}
+	
+	public void setActiveTrailsFromPrevious(ArrayList<FingerTrail> newActiveTrails) {
+		boolean extendingExisted = false;
+		FingerTrail prevFing = activeTrails.get(indexViewActiveTrail);
+		indexViewActiveTrail = 0;
+		for(int i = 0; i<newActiveTrails.size(); i++)
+		{
+			if(newActiveTrails.get(i).getStoppedPoints().IsExtensionOf(prevFing.getStoppedPoints()))
+			{
+				indexViewActiveTrail = i;
+				System.out.println("index is: " + i);
+				extendingExisted = true;
+			}
+		}
+		if(!extendingExisted)
+		{
+			System.out.println("There was no way to keep previous FingerTrail.");
+			ctl.currentTextDisplay.setText("There was no way to keep previous FingerTrail.");
+		}
+		
+		activeTrails = newActiveTrails;
+		
+		
+		// note that the difference between a Fingering and a FingerTrail is that the Trail is made from many notes (anchor)
+		viewTrail();
+		//ctl.entry.setArrows(0, activeTrails.size()-1);
+	}
+	
+	private void viewTrail() {
+		if (activeTrails == null) {
+			//System.out.println("No active trails in CFINGER");
+			return;
+		} else {
+			FingerTrail ft = activeTrails.get(indexViewActiveTrail);
+			int max = activeTrails.size() - 1;
+			ctl.entryPanel.setArrows(indexViewActiveTrail, activeTrails.size() - 1);
+			
+			//System.out.println("Showng trail #" + indexViewActiveTrail + "/" + max);
+			
+			String s = "Showing: " + (indexViewActiveTrail+1) + "/" + activeTrails.size();
+			ctl.msg.say("<html>" + s + "<br>" + (ft.describe()) + "</html>");
+			
+			//System.out.println(ft);
+			
+			//fing.setBvMap(ft.heightMap);
+			fingBoard.setFingerTrail(ft);
+		}
+	}
+	
+	private void anchorNext(){
+		indexViewActiveTrail++;
+		viewTrail();
+		
+			
+	}
+	private void anchorPrev(){
+		indexViewActiveTrail--;
+		//ctl.entry.setArrows(indexViewActiveTrail, activeTrails.size()-1);
+		viewTrail();
+		
+			
+	}
+	
 	public void prevFingering () {
 		int stops = 0;
 		if (big.xmode == XMode.Anch){
@@ -471,49 +545,6 @@ public class Cfinger2 extends JPanel {
 			ctl.rate.maybeEnable(stops);
 			ctl.entryPanel.setArrows(r);
 		}
-	}
-	
-	public void setActiveTrails(ArrayList<FingerTrail> a) {
-		activeTrails = a;
-		viewActiveTrail = 0;
-		viewTrail();
-		//ctl.entry.setArrows(0, activeTrails.size()-1);
-	}
-	
-	private void viewTrail() {
-		
-		if (activeTrails == null) {
-			//System.out.println("No active trails in CFINGER");
-			return;
-		} else {
-			FingerTrail ft = activeTrails.get(viewActiveTrail);
-			int max = activeTrails.size() - 1;
-			ctl.entryPanel.setArrows(viewActiveTrail, activeTrails.size() - 1);
-			System.out.println("Showng trail #" + viewActiveTrail + "/" + max);
-			String s = "Showing: " + (viewActiveTrail+1) + "/" + activeTrails.size();
-		
-			ctl.msg.say("<html>" + s + "<br>" + (ft.describe()) + "</html>");
-			
-			
-			System.out.println(ft);
-			//fing.setBvMap(ft.heightMap);
-			fingBoard.setFingerTrail(ft);
-		}
-	}
-	
-	
-	private void anchorNext(){
-		viewActiveTrail++;
-		viewTrail();
-		
-			
-	}
-	private void anchorPrev(){
-		viewActiveTrail--;
-		//ctl.entry.setArrows(viewActiveTrail, activeTrails.size()-1);
-		viewTrail();
-		
-			
 	}
 	
 	public void nextFingering() {

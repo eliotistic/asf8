@@ -4,7 +4,6 @@ import hello.utils.IntList;
 import hello.utils.StringFingeringConstants;
 
 import java.awt.Point;
-import java.util.HashSet;
 
 import abc.notation.Clef;
 
@@ -25,6 +24,7 @@ public class Instrument {
 	
 	//private int FBhandspan; // we apply to log distance on fingerboard in our own
 							 // arbitrary measure
+	@SuppressWarnings("unused")
 	private boolean topologyFilter;
 	public int nStrings = 4;
 	

@@ -4,7 +4,6 @@ package hello.utils;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
 
@@ -251,7 +250,7 @@ public class IntList extends ArrayList<Integer> {
 	
 	public static void main(String[] s) {
 		int[] a = { 1, 2, 3, 5, 6, 7, 10, 11, };
-		int[] b = { 0, 1, 3, 2 };
+		//int[] b = { 0, 1, 3, 2 };
 		IntList alist = new IntList(a);
 
 		// System.out.println(alist);

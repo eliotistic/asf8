@@ -33,3 +33,8 @@ June 21 : TUESDAY
 Perfected arrows in the Entry panel.
 
 June 28 : TUESDAY
+
+
+July 5 : TUESDAY
+Added the properties file with two properties, extend now extends based on the
+ previous trail.

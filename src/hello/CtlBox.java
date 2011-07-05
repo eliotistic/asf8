@@ -22,7 +22,6 @@ public class CtlBox extends JPanel {
 	JButton showGlue;
 	JLabel currentTextDisplay; // jb
 	
-	
 	RangeImage rangeImage;
 	Rate2 rate;
 	JFrame sf;
@@ -103,7 +102,6 @@ public class CtlBox extends JPanel {
 		add(showGlue, g);
 		
 		add(Box.createRigidArea(new Dimension(0, 8)));
-		// TODO Put it a little more to the left
 		add(currentTextDisplay, g);
 		
 		// add(next, g);
@@ -155,13 +153,13 @@ public class CtlBox extends JPanel {
 		c4.fill = GridBagConstraints.VERTICAL;
 		c4.weightx = 0;
 		c4.weighty = 0.3;
-		c4.anchor = GridBagConstraints.LINE_START; // TODO this resizing is weird...
+		c4.anchor = GridBagConstraints.LINE_START;
 		add(msg, c4);
 		
 		c5.gridx = 0;
 		c5.gridy = 4;
 		c5.fill = GridBagConstraints.BOTH;
-		c5.weightx = 0.5; // TODO
+		c5.weightx = 0.5;
 		c5.weighty = 0.25;
 		add(entryPanel, c5);
 		
@@ -207,7 +205,7 @@ public class CtlBox extends JPanel {
 		});
 
 		////add(Box.createRigidArea(new Dimension(0, 300)));
-		//add(Box.createVerticalGlue()); // TODO
+		//add(Box.createVerticalGlue());
 		//// msg.say("Enter 2,3 or 4 notes:");
 	
 	}

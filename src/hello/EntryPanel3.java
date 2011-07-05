@@ -68,10 +68,8 @@ public class EntryPanel3 extends JPanel {
 		fingerBtn = new JButton("finger");
 		//fingerBtn.setPreferredSize(new Dimension(60, 20));
 		//fingerBtn.setPreferredSize(new Dimension(25, 20));
-		//hello = new JLabel(helloText);
-		nextBtn = new JButton("next", nextIcon);
-		// next.setIcon(nextIcon);
-		prevBtn = new JButton("prev", prevIcon );
+		nextBtn = new JButton("", nextIcon);
+		prevBtn = new JButton("", prevIcon );
 		prevBtn.setHorizontalTextPosition(AbstractButton.LEADING);
 		//prevBtn.setPreferredSize(new Dimension(90, 30));
 		//nextBtn.setPreferredSize(new Dimension(90, 30));
@@ -118,7 +116,6 @@ public class EntryPanel3 extends JPanel {
 		GridBagConstraints c7 = new GridBagConstraints();
 		GridBagConstraints c8 = new GridBagConstraints();
 		GridBagConstraints c9 = new GridBagConstraints();
-		GridBagConstraints c10 = new GridBagConstraints();
 		
 		boolean newGridBag = true;
 		if(newGridBag)
@@ -311,7 +308,6 @@ public class EntryPanel3 extends JPanel {
 
 			@Override
 			public void keyTyped(KeyEvent arg0) {
-				// TODO Auto-generated method stub
 				char typed = arg0.getKeyChar();
 				System.out.println("The read character in keyTyped is: " + typed);
 			}
@@ -333,7 +329,7 @@ public class EntryPanel3 extends JPanel {
 	}
 	
 	public void setArrows(ChordFingering r){
-		prevBtn.setEnabled(r.hasPrevFingering()); // TODO debug if empty?
+		prevBtn.setEnabled(r.hasPrevFingering());
 		nextBtn.setEnabled(r.hasNextFingering());
 	}
 	

@@ -1,14 +1,11 @@
 package hello;
 
-import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import hello.ChordFingering.Fingering;
 import hello.ChordFingering.StringCases;
 import hello.ChordFingering.XCase;
 import hello.ChordFingering.StringMatrix;
-import hello.utils.PointList;
 
 
 

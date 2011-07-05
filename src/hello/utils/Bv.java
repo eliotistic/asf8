@@ -5,6 +5,8 @@ import java.util.BitSet;
 //import com.sun.org.apache.xalan.internal.xsltc.dom.BitArray;
 
 public class Bv extends BitSet {
+	
+	private static final long serialVersionUID = 1L;
 	int printSize = 0;
 	
 	public Bv(int s){

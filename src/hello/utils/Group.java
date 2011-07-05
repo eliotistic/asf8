@@ -5,9 +5,14 @@ import java.util.Comparator;
 
 public class Group<E> extends ArrayList<ArrayList<E>> implements Comparable<E>{
 	
-	
+	private static final long serialVersionUID = 1L;
+
+
+
+
 	public int findGroupInd (E e) {
 		for (int i = 0; i < size(); i++ ){
+			@SuppressWarnings("unchecked")
 			int c = ((Comparable<E>) e).compareTo(get(i).get(0));
 				
 			if (c==0) {
@@ -22,6 +27,7 @@ public class Group<E> extends ArrayList<ArrayList<E>> implements Comparable<E>{
 	
 	public int findGroupInd (E e, Comparator<E> comp) {
 		for (int i = 0; i < size(); i++ ){
+			@SuppressWarnings("unchecked")
 			int c = ((Comparable<E>) e).compareTo(get(i).get(0));
 				
 			if (c==0) {

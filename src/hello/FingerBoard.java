@@ -36,15 +36,15 @@ public class FingerBoard extends JLabel {
 	int problemType;
     Instrument instrument;
 	
-	//BufferedImage image; // TODO same as below
-    //Rectangle rect; // TODO ok to remove?
-    //Ellipse2D.Double circle; // TODO ok to remove?
+	//BufferedImage image; // TODO are those three fields really deletable?
+    //Rectangle rect;
+    //Ellipse2D.Double circle;
     Dimension size = new Dimension();
     ArrayList<Point> ps = new ArrayList<Point>(); // apparently not used anymore
     Point[] ps1; // regular points, and open strings
     Point[] ps2; // green points, lifted fingers
-    Point[] psCom;
-    Point[] grayNotes;
+    Point[] psCom; // no idea.
+    Point[] grayNotes; // no idea either.
     public Point[][] noteCoordinates; // trademark of JB Corp.
     
     public Point[][] getNoteCoordinates() {
@@ -436,12 +436,16 @@ public class FingerBoard extends JLabel {
     	ps2 = ft.grayPoints.toarray();
     	repaint();
     }
-   
+    
+    /*
+     * Made by JB. No proof that it works, though.
+     */
     public boolean hasActiveNoteInColumn(int x) {
     	if(ps1 != null)
     	{
     		for(Point pt : ps1)
 			{
+    			System.out.println("Point: " + pt);
 				if(pt.x == x)
 				{
 					return true;

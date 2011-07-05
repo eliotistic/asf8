@@ -24,7 +24,7 @@ public class Logger {
                     + logdata;
             // String cgi = "http://www.cs.mcgill.ca/~asigle1/eliot/tester.html";
             URL url = new URL(cgi);
-            URLConnection c = url.openConnection();
+            //URLConnection c = url.openConnection();
 
 
 
@@ -63,7 +63,7 @@ public class Logger {
         try {
             String cgi = "http://www.cs.mcgill.ca/~asigle1/eliot/fingerversion.cgi";
             URL url = new URL(cgi);
-            URLConnection c = url.openConnection();
+            //URLConnection c = url.openConnection();
             BufferedReader in = new BufferedReader(
 				new InputStreamReader(
 				url.openStream()));

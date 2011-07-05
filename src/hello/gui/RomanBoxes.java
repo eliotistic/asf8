@@ -6,8 +6,6 @@ import hello.utils.IntList;
 import java.awt.Color;
 import java.awt.Graphics;
 
-import abc.parser.def.GracingBeginDefinition;
-
 public class RomanBoxes extends AnnotatedBoxes{
 	IntList romans;
 	public RomanBoxes(BigScore big, Color color, int margin) {

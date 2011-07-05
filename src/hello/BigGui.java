@@ -13,6 +13,11 @@ import javax.swing.*;
 //import java.awt.event.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Properties;
 
 /*
  * Main class. appFrame is the main Frame for the project. 
@@ -20,8 +25,17 @@ import java.awt.event.KeyListener;
 public class BigGui extends JFrame {
 	
 	private static final long serialVersionUID = 1L;
+	private static final String USER_HOME = "user.home";
+	private static final String PROPERTY_FILE_NAME = ".stringfingering";
+	private static final String PROP1_PATH = "userLikesTurtles";
+	private static final String ANCHORS_PATH = "anchorsOn";
+	private static final String SETTINGS_SF_TOOL = "Settings for the StringFingering tool";
+	
+	public boolean prop_like_turtles;
+	public boolean prop_anchors_on;
+	
 	static String version = Version.version;
-	public Cfinger2 cfinger; // TODO I (jb) removed the static; any remarquable difference?
+	public Cfinger2 cfinger; // I(jb) removed the static; any remarkable difference?
 	public static BigScore bigScore;
 	public static boolean doTransitions = false;
 	
@@ -43,10 +57,11 @@ public class BigGui extends JFrame {
 		//GridBagConstraints c3 = new GridBagConstraints();
 		// end jb
 		
+		loadProperties();
+		
 		cfinger = new Cfinger2();
 		bigScore = new BigScore(this, cfinger);
 		
-		//Create the effect of focus on borders TODO
 		bigScore.arrows.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 bigScore.requestFocusInWindow();
@@ -171,7 +186,7 @@ public class BigGui extends JFrame {
 		c2.gridx = 1;
 		c2.gridy = 0;
 		c2.weightx = 0.7;
-		c2.weighty = 0.5; // TODO made cfinger stretch vertically??
+		c2.weighty = 0.5; // made cfinger stretch vertically??
 		c2.fill = GridBagConstraints.BOTH;
 		this.add(bigScore, c2);
 		
@@ -184,10 +199,86 @@ public class BigGui extends JFrame {
 		
 		this.pack();
 		this.setVisible(true);
-		//this.bigScore.requestFocusInWindow(); // victory!! 
 		//Version.check();
 	}
-		 
+	
+	private void loadProperties()
+	{
+		String homeDir = System.getProperty(USER_HOME);
+        File propertiesFile = new File(homeDir + File.separator + PROPERTY_FILE_NAME);
+        Properties sfProperties = new Properties();
+        if(propertiesFile.exists()) // TODO : If the file is there, but properties are null
+        {
+        	String boolTurtles = "false";
+        	String boolAnchors = "false";
+        	try
+	        {
+	        	sfProperties.load(new FileReader(propertiesFile));
+	        	
+	        	boolTurtles = (String) sfProperties.get(PROP1_PATH);
+	        	boolAnchors = (String) sfProperties.get(ANCHORS_PATH);
+	        	sfProperties.store(new FileWriter(propertiesFile), SETTINGS_SF_TOOL);
+	        }
+	        catch(IOException e)
+	        {
+	        	System.out.println("The boolean userLikesTurtles could not be stored as true, but File was detected");
+	            JOptionPane.showMessageDialog(this, "The boolean userLikesTurtles could not be stored, and " +
+	            		"the File should already exist",
+	            		"Error", 0);
+	            e.printStackTrace();
+	        }
+	        prop_like_turtles = Boolean.parseBoolean(boolTurtles);
+	        System.out.println("Here, boolAnchors (String) is: " + boolAnchors);
+	        prop_anchors_on = Boolean.parseBoolean(boolAnchors);
+        }
+        else 
+        {
+        	try
+	        {
+	        	sfProperties.setProperty(PROP1_PATH, "false");
+	        	sfProperties.setProperty(ANCHORS_PATH, "false");
+	        	sfProperties.store(new FileWriter(propertiesFile), SETTINGS_SF_TOOL);
+	        }
+	        catch(IOException e)
+	        {
+	            System.out.println("The boolean userLikesTurtles could not be stored");
+	            JOptionPane.showMessageDialog(this, "The boolean userLikesTurtles could not be stored, and " +
+	            		"the File should be created",
+	            		"Error", 0);
+	            e.printStackTrace();
+	        }
+	        prop_like_turtles = false;
+	        prop_anchors_on = false;
+        }
+	}
+	
+	public void setPropAnchors(boolean anchorsOn)
+	{
+		String homeDir = System.getProperty(USER_HOME);
+        File propertiesFile = new File(homeDir + File.separator + PROPERTY_FILE_NAME);
+        Properties swevizProperties = new Properties();
+        if(propertiesFile.exists())
+        {
+        	try
+	        {
+	        	swevizProperties.load(new FileReader(propertiesFile));
+	        	swevizProperties.setProperty(ANCHORS_PATH, anchorsOn ? "true" : "false");
+	        	swevizProperties.store(new FileWriter(propertiesFile), SETTINGS_SF_TOOL);
+	        }
+	        catch(IOException e)
+	        {
+	            System.out.println("The boolean ANCHORS could not be stored");
+	            JOptionPane.showMessageDialog(this, "The boolean ANCHORS could not be stored, and " +
+	            		"the File was detected and loaded",
+	            		"error", 0);
+	            e.printStackTrace();
+	        }
+        }
+        else 
+        {
+        	System.err.println("The properties file was not found");
+        } 
+	}
 		
 	public void  showAboutDialog()
 	{

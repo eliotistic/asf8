@@ -1,12 +1,6 @@
 package hello;
 
-import java.awt.Point;
-import java.util.ArrayList;
-import java.util.Collections;
-
-
 import hello.FingerTrail.TPArray;
-import hello.FingerTrail.Trailpoint;
 import hello.topology.Bars;
 
 import hello.utils.*;
@@ -117,9 +111,11 @@ public class TopologyAnchor {
 	}
 	
 	private void doFourFingerTopology () {
+		@SuppressWarnings("unused")
 		IntList ii = fingerHeightYPositions();
 		//System.out.println("Four finger diffs:" + ii);
 	}
+	
 	
 	private IntList fingerHeightYPositions () {
 		IntList keys =  trail.heightMap.getKeys();
@@ -146,11 +142,6 @@ public class TopologyAnchor {
 		System.out.println("Topology:\n" + ft.heightMap);
 		
 	}
-	
-	
-	
-	
-	
-	
+
 	
 }

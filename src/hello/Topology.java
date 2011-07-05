@@ -47,6 +47,7 @@ public class Topology {
 		stoppedStringOrder = Points.PointXs(stoppedPointOrder);
 		
 		//System.out.println("Number of stops:" + stops.length);
+		@SuppressWarnings("unused")
 		boolean easy = stops.length < 3;
 		if (stops.length == 0) {
 			//System.out.println("All open");
@@ -82,6 +83,7 @@ public class Topology {
 			
 			//topos = Topos.UNKNOWN;		
 		}	
+	
 	Topology(Point[] ps){
 		topos = Topos.UNKNOWN;
 		
@@ -89,6 +91,7 @@ public class Topology {
 		stoppedPointOrder = Points.pointSortYOrder(stops); 
 		stoppedStringOrder = Points.PointXs(stoppedPointOrder);
 		System.out.println("Number of stops:" + stops.length);
+		@SuppressWarnings("unused")
 		boolean easy = stops.length < 3;
 		if (stops.length == 0) {
 			//System.out.println("All open");
@@ -240,6 +243,7 @@ public class Topology {
 	
 	*/
 	
+	@SuppressWarnings("unused")
 	private String intArrString(int[] x ) {
 		String s = "";
 		for (int a: x) {

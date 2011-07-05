@@ -1,9 +1,6 @@
 package hello;
 
-import java.io.*;
-import java.net.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.awt.image.*;
 import javax.imageio.*;
 import javax.swing.*;
@@ -12,6 +9,8 @@ import javax.swing.*;
 
 
 public class RangeImage extends JPanel{
+	
+	private static final long serialVersionUID = 1L;
 	int w;
 	int h;
 	

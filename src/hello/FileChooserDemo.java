@@ -36,7 +36,6 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.SwingUtilities;
-import javax.swing.filechooser.*;
 
 /*
  * FileChooserDemo.java uses these files:
@@ -45,7 +44,9 @@ import javax.swing.filechooser.*;
  */
 public class FileChooserDemo extends JPanel
                              implements ActionListener {
-    static private final String newline = "\n";
+
+	private static final long serialVersionUID = 1L;
+	static private final String newline = "\n";
     JButton openButton, saveButton;
     JTextArea log;
     JFileChooser fc;

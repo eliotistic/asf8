@@ -1,6 +1,5 @@
 package hello;
 
-import  java.awt.* ;
 import  java.awt.event.* ;
 import  javax.swing.* ;
 
@@ -10,7 +9,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	JFrame appFrame;
+	BigGui appFrame;
 	CtlBox ctl;
 	Cfinger2 appPanel;
 	
@@ -82,7 +81,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 			return "NORMAL";
 		}
 	}
-	FMenuBar(JFrame topFrame, Cfinger2 c, BigScore b) {
+	FMenuBar(BigGui topFrame, Cfinger2 c, BigScore b) {
 		//menuBar = new JMenuBar();
 		appFrame = topFrame;
 		appPanel = c;
@@ -246,7 +245,10 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		anchorNone.addActionListener(this);
 		anchorOn.addActionListener(this);
 		
-		anchorNone.setSelected(true);
+		System.out.println("Anchors on: " + appFrame.prop_anchors_on);
+		anchorNone.setSelected(!appFrame.prop_anchors_on);
+		anchorOn.setSelected(appFrame.prop_anchors_on);
+		
 		add(anchor);
 		
 		// solve
@@ -392,10 +394,12 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		
 		if (e.getSource() == anchorNone) {
 			big.anchSeq.setStateOff();
+			appFrame.setPropAnchors(false);
 			System.out.println("Anchor: None");
 		}
 		if (e.getSource() == anchorOn) {
 			big.anchSeq.setStateOn();
+			appFrame.setPropAnchors(true);
 			System.out.println("Anchor: On");
 		}
 	}	

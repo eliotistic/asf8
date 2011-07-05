@@ -2,9 +2,10 @@ package hello;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 
 public class SurveyPanel extends JPanel {
+	
+	private static final long serialVersionUID = 1L;
 	JRadioButton largo;
 	JRadioButton moderato;
 	JRadioButton allegro;
@@ -66,7 +67,7 @@ public class SurveyPanel extends JPanel {
 		add(Box.createHorizontalGlue());
 		// add(xbutPanel, blo);
 		//add(span, blo);
-		float left = Component.LEFT_ALIGNMENT ;
+		//float left = Component.LEFT_ALIGNMENT ;
 		
 	}
 

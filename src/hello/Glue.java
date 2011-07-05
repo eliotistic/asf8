@@ -5,8 +5,6 @@ import hello.ChordFingering.Fingering;
 import java.awt.Point;
 import java.util.ArrayList;
 
-import abc.notation.Chord;
-
 public class Glue {
 	BigScore big;
 	GluePanel controls;

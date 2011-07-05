@@ -3,8 +3,6 @@ package hello;
 import java.awt.Point;
 import java.util.ArrayList;
 
-import abc.notation.Chord;
-
 //import hello.Fing.ChordFingering;
 
 // given 2 fingerings, 

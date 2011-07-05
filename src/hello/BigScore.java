@@ -76,6 +76,7 @@ public class BigScore extends JPanel{
 	public AnchorSequencer anchSeq;
 	public SolSequencer solSeq;
 	
+	@SuppressWarnings("unused")
 	private ArpeggioSequencer.State arpSeqState; 
 	public AnchorSequencer.State anchorSeqState;
 	public SolSequencer.State solSeqState;
@@ -298,10 +299,6 @@ public class BigScore extends JPanel{
 				requestFocusInWindow();
 				arrows.setBorder(BorderFactory.createLineBorder(Color.black));
 				appFrame.cfinger.ctl.entryPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
-				System.out.println("His preffered size : "+cfinger.ctl.abcChord.scoreUI.getPreferredSize());//TODO change to other scoreUI
-				System.out.println("His size : "+cfinger.ctl.abcChord.scoreUI.getSize());
-				System.out.println("His minimum size : "+cfinger.ctl.abcChord.scoreUI.getMinimumSize());
-				System.out.println("His maximum size : "+cfinger.ctl.abcChord.scoreUI.getMaximumSize() + "THIS PRINT IS IN BIGSCORE");
 			}
 		});
 		// PREV
@@ -589,6 +586,7 @@ public class BigScore extends JPanel{
 		}
 	}
 	
+	
 	public void extend(){
 		if (xmode == XMode.Anch){
 			anchSeq.extend();
@@ -597,14 +595,15 @@ public class BigScore extends JPanel{
 		}
 	}
 	
-	
 	public void shrink(){
 		if (xmode == XMode.Anch){
-			anchSeq.shrink(); // TODO implement.
+			anchSeq.shrink();
 		} else {
-			arpSeq.shrink(); // TODO implement.
+			arpSeq.shrink();
 		}
 	}
+	
+	
 	public void initFingering() {
 		masterIndex = 0;
 		kNoteList = abcReader.kNotes;
