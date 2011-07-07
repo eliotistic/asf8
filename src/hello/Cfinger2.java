@@ -22,6 +22,7 @@ public class Cfinger2 extends JPanel {
 	private Instrument instrument;
 	FingerBoard fingBoard;
 	CtlBox ctl;
+	BigGui appFrame;
 	// FingerboardPanel fbp;
 	BigScore big;
 	int randomChords = 1;
@@ -45,13 +46,14 @@ public class Cfinger2 extends JPanel {
 	ArrayList<FingerTrail> activeTrails;
 	int indexViewActiveTrail = 0;
 	
-	public Cfinger2() {
+	public Cfinger2(BigGui frame) {
 		// super (new BoxLayout(this, BoxLayout.Y_AXIS));
 		
 		// Make a default instrument, but this has to be set.
 		//instrument = new Instrument("VN");
 		randc = new RandomChord(this);
 		ctl = new CtlBox(this);
+		appFrame = frame;
 		
 		//setLayout(new BorderLayout());
 		//add("West", ctl);
@@ -61,10 +63,14 @@ public class Cfinger2 extends JPanel {
 		
 		c1.gridx = 0;
 		c1.gridy = 0;
-		c1.fill = GridBagConstraints.VERTICAL;
+		c1.fill = GridBagConstraints.BOTH;
 		c1.weightx = 0.5;
 		c1.weighty = 0.5;
-		add(ctl, c1);
+		if(!BigGui.USING_JSPLIT)
+		{
+			add(ctl, c1);
+		}
+		
 		
 		
 		
@@ -129,15 +135,25 @@ public class Cfinger2 extends JPanel {
             }
         });
 		
+		if(BigGui.USING_JSPLIT)
+		{
+			JSplitPane secondSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+			secondSplit.setTopComponent(ctl);
+			secondSplit.setBottomComponent(fingBoard);
+			add(secondSplit, c1);
+		}
+		else 
+		{
+			c2.gridx = 1;
+			c2.gridy = 0;
+			c2.fill = GridBagConstraints.VERTICAL;
+			c2.weightx = 0.5;
+			c2.weighty = 0.5;
+			c2.anchor = GridBagConstraints.CENTER;
+			add(fingBoard, c2);
+		}
 		
 		
-		c2.gridx = 1;
-		c2.gridy = 0;
-		c2.fill = GridBagConstraints.VERTICAL;
-		c2.weightx = 0.5;
-		c2.weighty = 0.5;
-		c2.anchor = GridBagConstraints.CENTER;
-		add(fingBoard, c2);
 
 		
 		

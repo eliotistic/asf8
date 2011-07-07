@@ -14,7 +14,7 @@ public class AnalysisTop extends JPanel {
 		setLayout(new BorderLayout());
 		// setLayout(this, new BoxLayout.X_AXIS);
 		// Add content to the window.
-		f = new Cfinger2();
+		//f = new Cfinger2();
 		a = new AnalysisPanel(f);
 		add("West", f);
 		add("East", a);

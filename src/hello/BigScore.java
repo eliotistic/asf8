@@ -222,6 +222,7 @@ public class BigScore extends JPanel{
 		appFrame = app;
 		//errorPane = new JOptionPane();
 		setBorder(BorderFactory.createEtchedBorder());
+		setLayout(new GridBagLayout());
 		GridBagConstraints c1 = new GridBagConstraints();
 		GridBagConstraints c2 = new GridBagConstraints();
 		GridBagConstraints c3 = new GridBagConstraints();
@@ -432,6 +433,8 @@ public class BigScore extends JPanel{
 		initFingering();
 		scoreUI.setBackground(Color.white);
 	    //controlMode = "CHORD";
+		
+		
 	}
 	
 	
@@ -535,7 +538,10 @@ public class BigScore extends JPanel{
 			if (fingering) {
 				initFingering();
 			}
-			
+			if(appFrame.prop_anchors_on)
+			{
+				anchSeq.setStateOn();
+			}
 			
 
 			// scoreUI.repaint();

@@ -31,6 +31,8 @@ public class BigGui extends JFrame {
 	private static final String ANCHORS_PATH = "anchorsOn";
 	private static final String SETTINGS_SF_TOOL = "Settings for the StringFingering tool";
 	
+	public static final boolean USING_JSPLIT = true;
+	
 	public boolean prop_like_turtles;
 	public boolean prop_anchors_on;
 	
@@ -59,7 +61,7 @@ public class BigGui extends JFrame {
 		
 		loadProperties();
 		
-		cfinger = new Cfinger2();
+		cfinger = new Cfinger2(this);
 		bigScore = new BigScore(this, cfinger);
 		
 		bigScore.arrows.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -176,19 +178,36 @@ public class BigGui extends JFrame {
 		
 		
 		//jb
-		c1.gridx=0;
-		c1.gridy=0;
-		c1.weightx = 0.1;
-		c1.weighty = 0.5;
-		c1.fill = GridBagConstraints.BOTH;
-		this.add(cfinger, c1);
+		if(USING_JSPLIT)
+		{
+			JSplitPane principalSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+			principalSplit.setTopComponent(cfinger);
+			principalSplit.setBottomComponent(bigScore);
+			
+			c1.gridx=0;
+			c1.gridy=0;
+			c1.weightx = 0.1;
+			c1.weighty = 0.5;
+			c1.fill = GridBagConstraints.BOTH;
+			this.add(principalSplit, c1);
+		}
+		else
+		{
+			c1.gridx=0;
+			c1.gridy=0;
+			c1.weightx = 0.1;
+			c1.weighty = 0.5;
+			c1.fill = GridBagConstraints.BOTH;
+			this.add(cfinger, c1);
+			
+			c2.gridx = 1;
+			c2.gridy = 0;
+			c2.weightx = 0.7;
+			c2.weighty = 0.5; // made cfinger stretch vertically??
+			c2.fill = GridBagConstraints.BOTH;
+			this.add(bigScore, c2);
+		}
 		
-		c2.gridx = 1;
-		c2.gridy = 0;
-		c2.weightx = 0.7;
-		c2.weighty = 0.5; // made cfinger stretch vertically??
-		c2.fill = GridBagConstraints.BOTH;
-		this.add(bigScore, c2);
 		
 		
 		
