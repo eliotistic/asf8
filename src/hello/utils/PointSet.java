@@ -22,11 +22,11 @@ public class PointSet extends HashSet<Point> {
 		boolean unknownPoint = false;
 		for(Point pt : previousPs)
 		{
-			System.out.println("NEW POINTS:" + this);
-			System.out.println("THIS POINT: " + pt);
+			//System.out.println("NEW POINTS:" + this);
+			//System.out.println("THIS POINT: " + pt);
 			if(!this.contains(pt))
 			{
-				System.out.println("UNKNOWN POINT WAS FOUND!!!!");
+				//System.out.println("UNKNOWN POINT WAS FOUND!!!!");
 				unknownPoint = true;
 			}
 		}

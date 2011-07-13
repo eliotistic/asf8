@@ -348,7 +348,7 @@ public class AnchorSequencer {
 	}
 	public void resetFingerboard(){
 		//big.fingerBoard.grayNotes = null;
-		big.fingerBoard.clear();
+		big.cfinger.fingPane.getCurrentBoard().clear();
 		currAnchor = null;
 	}
 	

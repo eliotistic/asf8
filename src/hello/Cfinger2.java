@@ -9,8 +9,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 
 /*
@@ -19,32 +17,28 @@ import java.util.ArrayList;
 public class Cfinger2 extends JPanel {
 	
 	private static final long serialVersionUID = -1155655565308041186L;
-	private Instrument instrument;
-	FingerBoard fingBoard;
-	CtlBox ctl;
-	BigGui appFrame;
-	// FingerboardPanel fbp;
-	BigScore big;
-	int randomChords = 1;
-	RandomChord randc;
-	boolean random4stop = false;
-
-	int problemType; // 1 if just one, 2 if transitions, else err
 	
+	private Instrument instrument;
+	//FingerBoard originalFingBoard;
+	
+	public CtlBox ctl;
+	public BigGui appFrame;
+	public BigScore big;
+	public int randomChords = 1;
+	public RandomChord randc;
+	public boolean random4stop = false;
+	public FingerBoardsPanel fingPane; // jb
+	public int problemType; // 1 if just one, 2 if transitions, else err
+	public int nSolutions = 0;
+	public int currSolution = 0;
+	public int badToplogies = 0;
+	public double counter = 0;
+	public ChordFingering CurrentCF1;
+	public ArrayList<FingerTrail> activeTrails;
+	public int indexViewActiveTrail = 0;
+	// ChordFingering CurrentCF2;
 	//Fing.Result fingResult1;
 	//Fing.Result fingResult2;
-	
-	int nSolutions = 0;
-	int currSolution = 0;
-	int badToplogies = 0;
-	
-	double counter = 0;
-	
-	ChordFingering CurrentCF1;
-	// ChordFingering CurrentCF2;
-	//private boolean inArp;
-	ArrayList<FingerTrail> activeTrails;
-	int indexViewActiveTrail = 0;
 	
 	public Cfinger2(BigGui frame) {
 		// super (new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -59,29 +53,18 @@ public class Cfinger2 extends JPanel {
 		//add("West", ctl);
 		setLayout(new GridBagLayout());
 		GridBagConstraints c1 = new GridBagConstraints();
-		GridBagConstraints c2 = new GridBagConstraints();
 		
-		c1.gridx = 0;
-		c1.gridy = 0;
-		c1.fill = GridBagConstraints.BOTH;
-		c1.weightx = 0.5;
-		c1.weighty = 0.5;
-		if(!BigGui.USING_JSPLIT)
-		{
-			add(ctl, c1);
-		}
+
 		
-		
-		
-		
-		fingBoard = new FingerBoard();
-		fingBoard.addMouseMotionListener(new MouseMotionAdapter() {
+		//originalFingBoard = new FingerBoard();
+		/*originalFingBoard.addMouseMotionListener(new MouseMotionAdapter() {
             public void mouseMoved(MouseEvent evt) {
                 int x_position = evt.getX();
                 int y_position = evt.getY();
                 //System.out.println("X:" + x_position);
                 //System.out.println("Y:" + y_position);
-                int noteHeight = getHeightAtLocation(x_position, y_position); // if coords do not enter a note, then noteHeight = -1
+                //int noteHeight = getHeightAtLocation(x_position, y_position); // if coords do not enter a note, then noteHeight = -1
+                int noteHeight = 0; // TODO default set here.
                 if(noteHeight != -1)
                 {
                 	int abcNoteHeight = noteHeight + 55;
@@ -93,16 +76,16 @@ public class Cfinger2 extends JPanel {
             
         });
 		
-		fingBoard.addMouseListener(new java.awt.event.MouseAdapter() {
+		originalFingBoard.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                /*System.out.println("Ps1: ");
+                System.out.println("Ps1: ");
                 printEachPoint(fingBoard.ps1);
                 System.out.println("Ps2: ");
                 printEachPoint(fingBoard.ps2);
             	System.out.println("Pscom: ");
                 printEachPoint(fingBoard.psCom);
             	System.out.println("gray: ");
-                printEachPoint(fingBoard.grayNotes);*/
+                printEachPoint(fingBoard.grayNotes);
             	int x_position = evt.getX();
                 int y_position = evt.getY();
                 //System.out.println("X:" + x_position);
@@ -111,10 +94,10 @@ public class Cfinger2 extends JPanel {
                 System.out.println("Note coords at this location: " + noteCoords);
                 if(noteCoords.x != -1) // could have tested noteCoords.y
                 {
-                	if(fingBoard.hasActiveNoteInColumn(noteCoords.x))
+                	if(originalFingBoard.hasActiveNoteInColumn(noteCoords.x))
                 	{
                 		// if the note clicked is active, then delete it from the active notes
-                		if(fingBoard.hasActiveNote(noteCoords))
+                		if(originalFingBoard.hasActiveNote(noteCoords))
                 		{
                 			// TODO implement
                 			System.out.println("You just clicked on a note.");
@@ -133,16 +116,23 @@ public class Cfinger2 extends JPanel {
                 	}
                 }
             }
-        });
+        });*/
 		
-		if(BigGui.USING_JSPLIT)
-		{
-			JSplitPane secondSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-			secondSplit.setTopComponent(ctl);
-			secondSplit.setBottomComponent(fingBoard);
-			add(secondSplit, c1);
-		}
-		else 
+		
+		
+		fingPane = new FingerBoardsPanel();
+		JScrollPane fingScrollPane = new JScrollPane(fingPane);
+		JSplitPane secondSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		secondSplit.setTopComponent(ctl);
+		secondSplit.setBottomComponent(fingScrollPane);
+		c1.gridx = 0;
+		c1.gridy = 0;
+		c1.fill = GridBagConstraints.BOTH;
+		c1.weightx = 0.5;
+		c1.weighty = 0.5;
+		add(secondSplit, c1);
+		
+		/*else 
 		{
 			c2.gridx = 1;
 			c2.gridy = 0;
@@ -151,7 +141,7 @@ public class Cfinger2 extends JPanel {
 			c2.weighty = 0.5;
 			c2.anchor = GridBagConstraints.CENTER;
 			add(fingBoard, c2);
-		}
+		}*/
 		
 		
 
@@ -281,7 +271,14 @@ public class Cfinger2 extends JPanel {
 	}
 	public void setInstrument (Instrument it){
 		instrument = it;
-		fingBoard.instrument = it;
+		
+		fingPane.setInstrument(it);// TODO
+		
+		/*else 
+		{
+			fingBoard.instrument = it;
+		}*/
+		
 		ctl.instPanel.rangeLabel.setText(it.rangeString());
 	}
 	
@@ -346,7 +343,7 @@ public class Cfinger2 extends JPanel {
 	 * @param y_position The location in Y
 	 * @return The height of the note, or -1 if the mouse is not inside a note. 
 	 */
-	protected int getHeightAtLocation(int x_position, int y_position) {
+	/*protected int getHeightAtLocation(int x_position, int y_position) {
 		// fing.DOT = 12  (radius = 6) 
 		int found = -1;
 		// OMG APPLIED MATHS 
@@ -370,7 +367,7 @@ public class Cfinger2 extends JPanel {
 		}
 		//System.out.println("Found : height ="+found);
 		return found;
-	}
+	}*/ // TODO How do we now use this method?
 	
 	/**
 	 * @author JeanBenoit
@@ -381,7 +378,7 @@ public class Cfinger2 extends JPanel {
 	 * @param y_position The location in Y
 	 * @return The coordinates of the note, or (-1, -1) if the mouse is not inside a note. dd
 	 */
-	protected Point getNoteCoordsAtLocation(int x_position, int y_position) {
+	/*protected Point getNoteCoordsAtLocation(int x_position, int y_position) {
 		// fing.DOT = 12  (radius = 6) 
 		Point found = new Point(-1, -1);
 		// OMG APPLIED MATHS 
@@ -402,8 +399,8 @@ public class Cfinger2 extends JPanel {
 				}
 			}
 		}
-		return found; 
-	}
+		return found; TODO same as above
+	}*/
 
 	/*
 	 * 
@@ -445,7 +442,7 @@ public class Cfinger2 extends JPanel {
 		ctl.msg.clear(); // sets msg to default message
 		ctl.topo.clear();
 		//ctl.positions.clear();
-		fingBoard.clear();
+		fingPane.getCurrentBoard().clear(); // TODO maybe clear all the boards
 		// ctl.abc.drawChord("");
 		ctl.abcChord.clear();
 	}
@@ -476,8 +473,10 @@ public class Cfinger2 extends JPanel {
 		indexViewActiveTrail = 0;
 		for(int i = 0; i<newActiveTrails.size(); i++)
 		{
-			if(newActiveTrails.get(i).getStoppedPoints().IsExtensionOf(prevFing.getStoppedPoints()))
+			if(newActiveTrails.get(i).getStoppedPoints().IsExtensionOf(prevFing.getStoppedPoints())) // TODO AND we keep open string
 			{
+				System.out.println("previous saiten: " + prevFing.saiten);
+				System.out.println("next saiten: " + newActiveTrails.get(i).saiten);
 				indexViewActiveTrail = i;
 				System.out.println("index is: " + i);
 				extendingExisted = true;
@@ -493,8 +492,8 @@ public class Cfinger2 extends JPanel {
 		
 		
 		// note that the difference between a Fingering and a FingerTrail is that the Trail is made from many notes (anchor)
-		viewTrail();
-		//ctl.entry.setArrows(0, activeTrails.size()-1);
+		viewNextTrail();
+		
 	}
 	
 	private void viewTrail() {
@@ -502,7 +501,7 @@ public class Cfinger2 extends JPanel {
 			//System.out.println("No active trails in CFINGER");
 			return;
 		} else {
-			FingerTrail ft = activeTrails.get(indexViewActiveTrail);
+			FingerTrail ft = activeTrails.get(indexViewActiveTrail); // TODO out of bounds exception 1
 			int max = activeTrails.size() - 1;
 			ctl.entryPanel.setArrows(indexViewActiveTrail, activeTrails.size() - 1);
 			
@@ -514,7 +513,43 @@ public class Cfinger2 extends JPanel {
 			//System.out.println(ft);
 			
 			//fing.setBvMap(ft.heightMap);
-			fingBoard.setFingerTrail(ft);
+			
+			
+			fingPane.getCurrentBoard().setFingerTrail(ft);
+			
+			/*else
+			{
+				fingBoard.setFingerTrail(ft);
+			}*/
+			
+		}
+	}
+	
+	private void viewNextTrail() {
+		if (activeTrails == null) {
+			//System.out.println("No active trails in CFINGER");
+			return;
+		} else {
+			FingerTrail ft = activeTrails.get(indexViewActiveTrail); // TODO out of bounds exception 2
+			int max = activeTrails.size() - 1;
+			ctl.entryPanel.setArrows(indexViewActiveTrail, activeTrails.size() - 1);
+			
+			//System.out.println("Showng trail #" + indexViewActiveTrail + "/" + max);
+			
+			String s = "Showing: " + (indexViewActiveTrail+1) + "/" + activeTrails.size();
+			ctl.msg.say("<html>" + s + "<br>" + (ft.describe()) + "</html>");
+			
+			//System.out.println(ft);
+			
+			//fing.setBvMap(ft.heightMap);
+			
+			fingPane.addFingerTrail(ft);
+			
+			/*else
+			{
+				fingBoard.setFingerTrail(ft);
+			}*/
+			
 		}
 	}
 	
@@ -546,7 +581,7 @@ public class Cfinger2 extends JPanel {
 				Point[] coords = f0.getCoords();
 				// int[] note = DrawCoords.getNoteStringCoords(Fing.Instr.VN, 0,
 				// 2);
-				fingBoard.setFingers(coords);
+				fingPane.getCurrentBoard().setFingers(coords);
 				// ctl.abc.drawChord(f0.getABCString());
 				ctl.abcChord.drawFingering(f0);
 				sayTopology(f0);
@@ -576,7 +611,7 @@ public class Cfinger2 extends JPanel {
 				Point[] coords = f0.getCoords();
 				// int[] note = DrawCoords.getNoteStringCoords(Fing.Instr.VN, 0,
 				// 2);
-				fingBoard.setFingers(coords);
+				fingPane.getCurrentBoard().setFingers(coords);
 				// ctl.abc.drawChord(f0.getABCString());
 				ctl.abcChord.drawFingering(f0);
 				sayTopology(f0);
@@ -771,7 +806,7 @@ public class Cfinger2 extends JPanel {
 			
 			
 			// int[] note = DrawCoords.getNoteStringCoords(Fing.Instr.VN, 0, 2);
-			fingBoard.setFingers(coords);
+			fingPane.getCurrentBoard().setFingers(coords);
 			//stops = f0.countStops();
 			//ctl.topo.say("Topolgy:" + f0.getTopology().toString());
 			sayTopology(f0);

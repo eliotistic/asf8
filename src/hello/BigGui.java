@@ -29,22 +29,20 @@ public class BigGui extends JFrame {
 	private static final String PROPERTY_FILE_NAME = ".stringfingering";
 	private static final String PROP1_PATH = "userLikesTurtles";
 	private static final String ANCHORS_PATH = "anchorsOn";
+	private static final String PATH_PATH = "filePath";
 	private static final String SETTINGS_SF_TOOL = "Settings for the StringFingering tool";
 	
-	public static final boolean USING_JSPLIT = true;
+	private boolean arrowsOfRightPanelToKeyboard = true; // if false, then the keyboard maps to the arrows of left panel.
 	
-	public boolean prop_like_turtles;
-	public boolean prop_anchors_on;
-	
-	static String version = Version.version;
-	public Cfinger2 cfinger; // I(jb) removed the static; any remarkable difference?
 	public static BigScore bigScore;
 	public static boolean doTransitions = false;
-	
 	public static FMenuBar menu;
+	public static String version = Version.version;
 	
-	//jb
-	private boolean arrowsOfRightPanelToKeyboard = true; // if false, then the keyboard maps to the arrows of left panel.
+	public boolean prop_like_turtles;
+	public boolean prop_anchors_on;//jb
+	public String bool_file_path;
+	public Cfinger2 cfinger; // I(jb) removed the static; any remarkable difference?
 	
 	BigGui (){
 		/*this = new JFrame("String fingering v" 
@@ -178,20 +176,19 @@ public class BigGui extends JFrame {
 		
 		
 		//jb
-		if(USING_JSPLIT)
-		{
-			JSplitPane principalSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-			principalSplit.setTopComponent(cfinger);
-			principalSplit.setBottomComponent(bigScore);
-			
-			c1.gridx=0;
-			c1.gridy=0;
-			c1.weightx = 0.1;
-			c1.weighty = 0.5;
-			c1.fill = GridBagConstraints.BOTH;
-			this.add(principalSplit, c1);
-		}
-		else
+		
+		JSplitPane principalSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		principalSplit.setTopComponent(cfinger);
+		principalSplit.setBottomComponent(bigScore);
+		
+		c1.gridx=0;
+		c1.gridy=0;
+		c1.weightx = 0.1;
+		c1.weighty = 0.5;
+		c1.fill = GridBagConstraints.BOTH;
+		this.add(principalSplit, c1);
+		
+		/*else
 		{
 			c1.gridx=0;
 			c1.gridy=0;
@@ -206,7 +203,7 @@ public class BigGui extends JFrame {
 			c2.weighty = 0.5; // made cfinger stretch vertically??
 			c2.fill = GridBagConstraints.BOTH;
 			this.add(bigScore, c2);
-		}
+		}*/
 		
 		
 		
@@ -230,10 +227,11 @@ public class BigGui extends JFrame {
         {
         	String boolTurtles = "false";
         	String boolAnchors = "false";
+        	String strFilePath = "default";
         	try
 	        {
 	        	sfProperties.load(new FileReader(propertiesFile));
-	        	
+	        	strFilePath = (String) sfProperties.getProperty(PATH_PATH);
 	        	boolTurtles = (String) sfProperties.get(PROP1_PATH);
 	        	boolAnchors = (String) sfProperties.get(ANCHORS_PATH);
 	        	sfProperties.store(new FileWriter(propertiesFile), SETTINGS_SF_TOOL);
@@ -247,7 +245,7 @@ public class BigGui extends JFrame {
 	            e.printStackTrace();
 	        }
 	        prop_like_turtles = Boolean.parseBoolean(boolTurtles);
-	        System.out.println("Here, boolAnchors (String) is: " + boolAnchors);
+	        //System.out.println("Here, boolAnchors (String) is: " + boolAnchors);
 	        prop_anchors_on = Boolean.parseBoolean(boolAnchors);
         }
         else 

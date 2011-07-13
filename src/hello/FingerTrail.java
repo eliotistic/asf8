@@ -18,7 +18,7 @@ public class FingerTrail  {
 	TPArray trailPoints; // 
 	int orders;
 	//private IntSet saiten;
-	private Saiten saiten; // set of strings we play on
+	public Saiten saiten; // set of strings we play on
 	private PointSet stopPoints; // sets of (saiten, interval)
 	
 	public IntSet[] saitenArray; // array with sets of intervals for each string.
@@ -501,6 +501,17 @@ public class FingerTrail  {
 				
 			}
 			return c;
+		}
+		
+		@Override
+		public String toString()
+		{
+			String s = "";
+			for(boolean b : arr)
+			{
+				s += b ? "+" : ".";
+			}
+			return s;
 		}
 	}
 	

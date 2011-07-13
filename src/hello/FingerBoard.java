@@ -33,6 +33,12 @@ public class FingerBoard extends JLabel {
 	                          // fingertrails wants to know.
 	
 	boolean fingerTrailsOn; 
+	private boolean isCurrentFingerBoard = false;
+	public boolean isCurrentFingerBoard() {
+		return isCurrentFingerBoard;
+	}
+
+
 	int problemType;
     Instrument instrument;
 	
@@ -76,6 +82,11 @@ public class FingerBoard extends JLabel {
     }*/
 
    
+    public FingerBoard() {
+    	trails = new ArrayList<ColoredNote>();
+    	fingerTrailsOn = false;
+    }
+    
     @Override
     public String getToolTipText(MouseEvent evt)
     {
@@ -102,10 +113,8 @@ public class FingerBoard extends JLabel {
     {
     	return new Dimension(70, 500);
     }
-    public FingerBoard() {
-    	trails = new ArrayList<ColoredNote>();
-    	fingerTrailsOn = false;
-    }
+    
+    
     public void setFingerTrails (boolean state){
     	trails.clear();
     	repaint();
@@ -210,6 +219,7 @@ public class FingerBoard extends JLabel {
     //=========================================================== paintComponent
     
     private void drawFingerboard(Graphics g, int[] xPositions) {
+    	//System.out.println("Drawing...");
     	int maxInterval = instrument.stringRange;
     	noteCoordinates = new Point[StringFingeringConstants.STRING_RANGE][instrument.nStrings];
     	//System.out.println("Draw FB for " + instrument.instr + " " + maxInterval );

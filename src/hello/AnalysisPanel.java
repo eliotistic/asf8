@@ -49,7 +49,7 @@ public class AnalysisPanel extends JPanel {
 				 + r.abcString + nl
 				 
 		);
-		c.fingBoard.setFingers(r.notes);
+		c.fingPane.getCurrentBoard().setFingers(r.notes);
 		//c.ctl.abc.drawFingering(f);
 		System.out.println(r.noteString);
 	}

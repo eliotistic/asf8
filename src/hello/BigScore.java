@@ -32,7 +32,7 @@ public class BigScore extends JPanel{
 	AbcReader abcReader;
 	Cfinger2 cfinger;
 	
-	public FingerBoard fingerBoard;
+	//public FingerBoard fingerBoard;
 	
 	public Glue gluer;
 	
@@ -252,7 +252,7 @@ public class BigScore extends JPanel{
 		
 		abcReader = new AbcReader(this);
 		scoreUI = new BigScoreComponent();
-		fingerBoard = c.fingBoard;
+		
 		
 		//arpSeq = new ArpeggioSequencer(this);
 		
@@ -369,13 +369,13 @@ public class BigScore extends JPanel{
 		});
 		extendPanel.posArrows.next.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				cfinger.fingBoard.clearTrails();
+				cfinger.fingPane.getCurrentBoard().clearTrails();
 				pseq2.nextPosition();
 			}
 		});
 		extendPanel.posArrows.prev.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				cfinger.fingBoard.clearTrails();
+				cfinger.fingPane.getCurrentBoard().clearTrails();
 				pseq2.prevPosition();
 			}
 		});
@@ -399,7 +399,7 @@ public class BigScore extends JPanel{
 		extendPanel.positionRestrict.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//System.out.println("Hit position restrict");
-				cfinger.fingBoard.clearTrails();
+				cfinger.fingPane.getCurrentBoard().clearTrails();
 				//showCurrFing();
 				arpSeq.doCurr();
 			}
@@ -408,7 +408,7 @@ public class BigScore extends JPanel{
 			public void actionPerformed(ActionEvent e) {
 				boolean state = extendPanel.fingerTrails.isSelected();
 				// System.out.println("Fingertrails enabled = " + state);
-				cfinger.fingBoard.setFingerTrails(state);
+				cfinger.fingPane.getCurrentBoard().setFingerTrails(state);
 				//showCurrFing();
 			}
 		});
