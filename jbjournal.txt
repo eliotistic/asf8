@@ -38,3 +38,6 @@ June 28 : TUESDAY
 July 5 : TUESDAY
 Added the properties file with two properties, extend now extends based on the
  previous trail.
+
+July 13 : WEDNESDAY
+Implemented the Extend option on multiple panels.
