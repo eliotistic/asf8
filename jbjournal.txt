@@ -41,3 +41,7 @@ Added the properties file with two properties, extend now extends based on the
 
 July 13 : WEDNESDAY
 Implemented the Extend option on multiple panels.
+
+July 14 : TUESDAY
+7/14: Implemented fast the Freezing, the Save of an extension and its
+loading. Fixed some extending issues.
