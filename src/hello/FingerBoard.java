@@ -37,6 +37,10 @@ public class FingerBoard extends JLabel {
 	public boolean isCurrentFingerBoard() {
 		return isCurrentFingerBoard;
 	}
+	public void setIsCurrentFingerBoard(boolean bool)
+	{
+		isCurrentFingerBoard = bool;
+	}
 
 
 	int problemType;
@@ -284,6 +288,16 @@ public class FingerBoard extends JLabel {
 				//System.out.println("NoteCoordinates at " + i + ", " + j + " = " + noteCoordinates[i][j]);
 			}
 		}
+		
+		//TODO
+		if(isCurrentFingerBoard)
+		{
+			g2.setColor(Color.yellow);
+			g2.fillOval(panelWidth/2 - DOT / 2, panelHeight/2 - DOT / 2, DOT, DOT);
+			g2.setColor(Color.BLACK);
+			g2.drawOval(panelWidth/2 - DOT / 2, panelHeight/2 - DOT / 2, DOT, DOT);
+		}
+		
     }
     
     @Override

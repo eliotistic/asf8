@@ -15,10 +15,16 @@ public class FingerBoardsPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	private Instrument instr;
-	public ArrayList<FingerBoard> boards = new ArrayList<FingerBoard>();
+	private ArrayList<FingerBoard> boards = new ArrayList<FingerBoard>();
+	private ArrayList<Integer> freezesList = new ArrayList<Integer>();
 	public int numBoards = 0;
 	
 	public int currentIndex = 0; // Index where we will modify the next FingerBoard
+	
+	private boolean isAnExtension = false;
+	private int indexStartExtension = -1;
+	private int masterIndex = -1;
+	private Extension extension;
 	
 	public FingerBoardsPanel()
 	{
@@ -55,6 +61,7 @@ public class FingerBoardsPanel extends JPanel {
 		
 		numBoards = 3;
 		giveInstrument();
+		boards.get(0).setIsCurrentFingerBoard(true);
 	}
 	
 	/**
@@ -66,15 +73,60 @@ public class FingerBoardsPanel extends JPanel {
 		return boards.get(currentIndex);
 	}
 	
-	public FingerBoard getNextBoard()
+	public void save()
 	{
-		return boards.get(currentIndex+1);
+		if(extension != null)
+		{
+			String extensionString = "ind " + extension.getIndex() + " len " + extension.getLength();
+			BigGui.saveExtension(extensionString);
+		}
 	}
 	
-	public void addFingerTrail(FingerTrail ft)
+	/**
+	 * Try to freeze; the freeze will be done only if there is currently an extension being made
+	 * @return
+	 */
+	public boolean freeze()
 	{
+		if(isAnExtension)
+		{
+			extension = makeAnExtension(indexStartExtension, currentIndex);
+			System.out.println("EXTENSION: " + extension);
+		}
+		return isAnExtension;
+	}
+	
+	public Extension makeAnExtension(int start, int end)
+	{
+		Extension ext;
+		System.out.println("Making an extension from " + start + " to " + end);
+		int length = end-start;
+		int masterInd = masterIndex;
+		ext = new Extension(masterInd, length);
+		return ext;
+	}
+	
+	public void invalidateExtension()
+	{
+		isAnExtension = false;
+		indexStartExtension = -1;
+		masterIndex = -1;
+		System.out.println("Extension invalidated");
+	}
+	
+	public void addFingerTrail(FingerTrail ft, int masterInd)
+	{
+		masterIndex = masterInd;
+		System.out.println("The master index is: " + masterIndex);
+		if(indexStartExtension == -1) // if we are starting a new extension, we change the index of start
+		{
+			indexStartExtension = currentIndex;
+		}
 		addABoard();
 		boards.get(++currentIndex).setFingerTrail(ft);
+		boards.get(currentIndex).setIsCurrentFingerBoard(true);
+		boards.get(currentIndex > 0 ? currentIndex-1 : currentIndex).setIsCurrentFingerBoard(false);
+		isAnExtension = true;
 	}
 	
 	private void addABoard()

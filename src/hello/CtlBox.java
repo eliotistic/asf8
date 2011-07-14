@@ -20,6 +20,9 @@ public class CtlBox extends JPanel {
 	EntryPanel3 entryPanel;
 	GluePanel gluePanel;
 	JButton showGlue;
+	JButton freeze;
+	JButton save;
+	JButton load;
 	JLabel currentTextDisplay; // jb
 	
 	RangeImage rangeImage;
@@ -55,6 +58,9 @@ public class CtlBox extends JPanel {
 		GridBagConstraints c6 = new GridBagConstraints();
 		GridBagConstraints c7 = new GridBagConstraints();
 		GridBagConstraints c8 = new GridBagConstraints();
+		GridBagConstraints c9 = new GridBagConstraints();
+		GridBagConstraints c10 = new GridBagConstraints();
+		GridBagConstraints c11 = new GridBagConstraints();
 		
 		
 		//this.setM
@@ -64,6 +70,9 @@ public class CtlBox extends JPanel {
 		gluePanel = new GluePanel();
 		showGlue = new JButton("Show glue");
 		currentTextDisplay = new JLabel();//jb
+		freeze = new JButton("Freeze");
+		save = new JButton("Save");
+		load = new JButton("Load");
 		
 		
 		
@@ -72,54 +81,8 @@ public class CtlBox extends JPanel {
 		rate = new Rate2(c);
 		msg = new Hello("Enter up to 4 notes:"); // Hello();
 		topo = new Hello("Topology:");
-		//positions = new Hello("Positions");
 		survey = new JButton("Very brief survey");
-		// rangeImage = new RangeImage();
 		
-		
-		//// add(rangeImage, g);
-		//// add(Box.createVerticalGlue());
-		
-		/*add(Box.createRigidArea(new Dimension(0, 15)));
-		
-		add(instPanel, g);
-		add(Box.createRigidArea(new Dimension(0, 5)));
-		
-		add(abcChord,g);
-		
-		add(Box.createRigidArea(new Dimension(0, 12)));
-		add(topo, g);
-		//add(positions,g);
-		add(Box.createRigidArea(new Dimension(0, 5)));
-		add(msg, g);
-		add(Box.createRigidArea(new Dimension(0, 5)));
-		add(entryPanel, g);
-		
-		
-		add(Box.createRigidArea(new Dimension(0, 10)));
-		add(gluePanel, g);
-		add(Box.createRigidArea(new Dimension(0, 5)));
-		add(showGlue, g);
-		
-		add(Box.createRigidArea(new Dimension(0, 8)));
-		add(currentTextDisplay, g);
-		
-		// add(next, g);
-		
-		//add(Box.createRigidArea(new Dimension(0, 50)));
-		//add(rate, g);
-		// add(Box.createVerticalGlue());
-		
-		
-		add(Box.createRigidArea(new Dimension(0, 10)));*/
-		
-		/*
-		tookSurvey = false;
-		
-		sP = new JPanel();
-		//sP.add(survey);
-		;
-		add(sP, g);*/
 		instPanel.setMinimumSize(new Dimension(200, 20));
 
 		c1.gridx = 0;
@@ -182,7 +145,28 @@ public class CtlBox extends JPanel {
 		c8.fill = GridBagConstraints.VERTICAL;
 		c8.weightx = 0;
 		c8.weighty = 0.1;
-		add(currentTextDisplay, c8);
+		add(freeze, c8);
+		
+		c9.gridx = 0;
+		c9.gridy = 8;
+		c9.fill = GridBagConstraints.VERTICAL;
+		c9.weightx = 0;
+		c9.weighty = 0.1;
+		add(save, c9);
+		
+		c10.gridx = 0;
+		c10.gridy = 9;
+		c10.fill = GridBagConstraints.VERTICAL;
+		c10.weightx = 0;
+		c10.weighty = 0.1;
+		add(load, c10);
+		
+		c11.gridx = 0;
+		c11.gridy = 10;
+		c11.fill = GridBagConstraints.VERTICAL;
+		c11.weightx = 0;
+		c11.weighty = 0.1;
+		add(currentTextDisplay, c11);
 		
 		
 		sf = new JFrame("Survey says ...");

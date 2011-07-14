@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 /*
  * Left Panel: contains both the  fingering selection and the instrument representation.
@@ -226,6 +227,40 @@ public class Cfinger2 extends JPanel {
 		 	public void actionPerformed(ActionEvent e) {
 		 		big.arpSeq.showGlue();		
 		 	}
+		 });
+		 
+		 ctl.freeze.addActionListener(new ActionListener() {
+			 public void actionPerformed(ActionEvent e)
+		 	 {
+				 boolean freezeSuccess = fingPane.freeze();
+		 	 }
+		 });
+		 
+		 ctl.save.addActionListener(new ActionListener() {
+			 public void actionPerformed(ActionEvent e)
+		 	 {
+				 fingPane.save();
+		 	 }
+		 });
+		 
+		 ctl.load.addActionListener(new ActionListener() {
+			 public void actionPerformed(ActionEvent e)
+		 	 {
+				 if(appFrame.prop_extension != null)
+				 {
+					 System.out.println("string is: "+appFrame.prop_extension);
+					 Scanner s = new Scanner(appFrame.prop_extension);
+					 s.next();
+					 int ind = s.nextInt();
+					 s.next();
+					 int len = s.nextInt();
+					 s.close();
+					 for(int i =0; i<ind; i++) big.nextArrowActionPerformed();
+					 for(int j =0; j<len; j++) big.extend();
+				 }
+				 
+				 
+		 	 }
 		 });
 		 
 		 
@@ -516,11 +551,8 @@ public class Cfinger2 extends JPanel {
 			
 			
 			fingPane.getCurrentBoard().setFingerTrail(ft);
+			fingPane.invalidateExtension();
 			
-			/*else
-			{
-				fingBoard.setFingerTrail(ft);
-			}*/
 			
 		}
 	}
@@ -543,7 +575,7 @@ public class Cfinger2 extends JPanel {
 			
 			//fing.setBvMap(ft.heightMap);
 			
-			fingPane.addFingerTrail(ft);
+			fingPane.addFingerTrail(ft, big.masterIndex);
 			
 			/*else
 			{
@@ -807,6 +839,7 @@ public class Cfinger2 extends JPanel {
 			
 			// int[] note = DrawCoords.getNoteStringCoords(Fing.Instr.VN, 0, 2);
 			fingPane.getCurrentBoard().setFingers(coords);
+			fingPane.invalidateExtension();
 			//stops = f0.countStops();
 			//ctl.topo.say("Topolgy:" + f0.getTopology().toString());
 			sayTopology(f0);

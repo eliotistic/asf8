@@ -5,6 +5,7 @@ package hello;
 
 //import java.awt.Dimension;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -30,6 +31,7 @@ public class BigGui extends JFrame {
 	private static final String PROP1_PATH = "userLikesTurtles";
 	private static final String ANCHORS_PATH = "anchorsOn";
 	private static final String PATH_PATH = "filePath";
+	private static final String EXTENSION_PATH = "extensionString";
 	private static final String SETTINGS_SF_TOOL = "Settings for the StringFingering tool";
 	
 	private boolean arrowsOfRightPanelToKeyboard = true; // if false, then the keyboard maps to the arrows of left panel.
@@ -42,6 +44,7 @@ public class BigGui extends JFrame {
 	public boolean prop_like_turtles;
 	public boolean prop_anchors_on;//jb
 	public String bool_file_path;
+	public String prop_extension;
 	public Cfinger2 cfinger; // I(jb) removed the static; any remarkable difference?
 	
 	BigGui (){
@@ -215,6 +218,7 @@ public class BigGui extends JFrame {
 		
 		this.pack();
 		this.setVisible(true);
+		this.setSize(new Dimension(1200, 800)); // TODO adjust until the finale
 		//Version.check();
 	}
 	
@@ -228,12 +232,14 @@ public class BigGui extends JFrame {
         	String boolTurtles = "false";
         	String boolAnchors = "false";
         	String strFilePath = "default";
+        	String strExtension = "default 666 d 666";
         	try
 	        {
 	        	sfProperties.load(new FileReader(propertiesFile));
 	        	strFilePath = (String) sfProperties.getProperty(PATH_PATH);
 	        	boolTurtles = (String) sfProperties.get(PROP1_PATH);
 	        	boolAnchors = (String) sfProperties.get(ANCHORS_PATH);
+	        	strExtension = (String) sfProperties.get(EXTENSION_PATH);
 	        	sfProperties.store(new FileWriter(propertiesFile), SETTINGS_SF_TOOL);
 	        }
 	        catch(IOException e)
@@ -247,6 +253,7 @@ public class BigGui extends JFrame {
 	        prop_like_turtles = Boolean.parseBoolean(boolTurtles);
 	        //System.out.println("Here, boolAnchors (String) is: " + boolAnchors);
 	        prop_anchors_on = Boolean.parseBoolean(boolAnchors);
+	        prop_extension = strExtension;
         }
         else 
         {
@@ -296,6 +303,34 @@ public class BigGui extends JFrame {
         	System.err.println("The properties file was not found");
         } 
 	}
+	
+	public void recordPath() {
+		String homeDir = System.getProperty(USER_HOME);
+        File propertiesFile = new File(homeDir + File.separator + PROPERTY_FILE_NAME);
+        Properties swevizProperties = new Properties();
+        if(propertiesFile.exists())
+        {
+        	try
+	        {
+	        	swevizProperties.load(new FileReader(propertiesFile));
+	        	swevizProperties.setProperty(PATH_PATH, bool_file_path);
+	        	swevizProperties.store(new FileWriter(propertiesFile), SETTINGS_SF_TOOL);
+	        }
+	        catch(IOException e)
+	        {
+	            System.out.println("The boolean FILE PATH could not be stored");
+	            JOptionPane.showMessageDialog(this, "The boolean FILE PATH could not be stored, and " +
+	            		"the File was detected and loaded",
+	            		"error", 0);
+	            e.printStackTrace();
+	        }
+        }
+        else 
+        {
+        	System.err.println("The properties file was not found");
+        }
+		
+	}
 		
 	public void  showAboutDialog()
 	{
@@ -314,6 +349,34 @@ public class BigGui extends JFrame {
 		return arrowsOfRightPanelToKeyboard;
 	}
 	
+	public static void saveExtension(String extensionString) {
+		String homeDir = System.getProperty(USER_HOME);
+        File propertiesFile = new File(homeDir + File.separator + PROPERTY_FILE_NAME);
+        Properties swevizProperties = new Properties();
+        if(propertiesFile.exists())
+        {
+        	try
+	        {
+	        	swevizProperties.load(new FileReader(propertiesFile));
+	        	swevizProperties.setProperty(EXTENSION_PATH, extensionString);
+	        	swevizProperties.store(new FileWriter(propertiesFile), SETTINGS_SF_TOOL);
+	        }
+	        catch(IOException e)
+	        {
+	            System.out.println("The setting Extension could not be stored");
+	            /*JOptionPane.showMessageDialog(this, "The boolean ANCHORS could not be stored, and " +
+	            		"the File was detected and loaded",
+	            		"error", 0);*/
+	            e.printStackTrace();
+	        }
+        }
+        else 
+        {
+        	System.err.println("The properties file was not found");
+        } 
+		
+	}
+	
 	public static void main(String args[]) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -322,6 +385,10 @@ public class BigGui extends JFrame {
 		});
 
 	}
+
+	
+
+	
 }
 
 
