@@ -2,6 +2,7 @@ package hello;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
@@ -16,20 +17,22 @@ public class FingerBoardsPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private Instrument instr;
 	private ArrayList<FingerBoard> boards = new ArrayList<FingerBoard>();
-	private ArrayList<Integer> freezesList = new ArrayList<Integer>();
+	//private ArrayList<Integer> freezesList = new ArrayList<Integer>();
+	//private FingerBoard board1;
+	//private FingerBoard board2;
+	//private FingerBoard board3;
 	public int numBoards = 0;
 	
 	public int currentIndex = 0; // Index where we will modify the next FingerBoard
 	
-	private boolean isAnExtension = false;
-	private int indexStartExtension = -1;
-	private int masterIndex = -1;
-	private Extension extension;
+	
+	//private int indexStartExtension = -1;
+	//private int masterIndex = -1;
+	private Extension frozenExtension;
+	//private int currentExtensionLength = 1;
 	
 	public FingerBoardsPanel()
 	{
-		
-		
 		setLayout(new GridBagLayout());
 		GridBagConstraints c1 = new GridBagConstraints();
 		GridBagConstraints c2 = new GridBagConstraints();
@@ -73,60 +76,93 @@ public class FingerBoardsPanel extends JPanel {
 		return boards.get(currentIndex);
 	}
 	
-	public void save()
-	{
-		if(extension != null)
-		{
-			String extensionString = "ind " + extension.getIndex() + " len " + extension.getLength();
-			BigGui.saveExtension(extensionString);
-		}
-	}
+	
 	
 	/**
 	 * Try to freeze; the freeze will be done only if there is currently an extension being made
 	 * @return
 	 */
-	public boolean freeze()
+	public void freeze()
 	{
-		if(isAnExtension)
+		if(getCurrentBoard().representsAnExtension())
 		{
-			extension = makeAnExtension(indexStartExtension, currentIndex);
-			System.out.println("EXTENSION: " + extension);
+			frozenExtension = makeCurrentExtension();
+			System.out.println("EXTENSION: " + frozenExtension);
+			
 		}
-		return isAnExtension;
+		else
+		{
+			
+		}
 	}
 	
-	public Extension makeAnExtension(int start, int end)
+	public void save()
+	{
+		if(frozenExtension != null)
+		{
+			/*String extensionString = "ind " + extension.getIndex() + " len " + extension.getLength();
+			BigGui.saveExtension(extensionString);*/
+			//TODO
+		}
+	}
+	public Extension makeCurrentExtension()
 	{
 		Extension ext;
-		System.out.println("Making an extension from " + start + " to " + end);
-		int length = end-start;
-		int masterInd = masterIndex;
-		ext = new Extension(masterInd, length);
+		
+		int length = getCurrentBoard().getExtensionSize();
+		int masterInd = getCurrentBoard().getMasterIndex();
+		ArrayList<Integer> intList = new ArrayList<Integer>();
+		for(int i = currentIndex - length + 1; i<= currentIndex; i++)
+		{
+			intList.add(boards.get(i).getTrailIndex());
+		}
+		ext = new Extension(masterInd, length, intList);
 		return ext;
 	}
 	
-	public void invalidateExtension()
+	public void clearAll()
 	{
-		isAnExtension = false;
-		indexStartExtension = -1;
-		masterIndex = -1;
-		System.out.println("Extension invalidated");
+		for(FingerBoard fb : boards)
+		{
+			fb.clear();
+			fb.setIsCurrentFingerBoard(false);
+		}
+		while(boards.size() > 3)
+		{
+			boards.remove(3);
+		}
+		while (this.getComponentCount() > 3)
+		{
+			this.remove(3);
+		}
+		currentIndex = 0;
+		numBoards = 3;
+		boards.get(0).setIsCurrentFingerBoard(true);
+		// TODO trace back the first board
 	}
 	
-	public void addFingerTrail(FingerTrail ft, int masterInd)
+	/*public void addFingers(Point[] pts)
 	{
-		masterIndex = masterInd;
-		System.out.println("The master index is: " + masterIndex);
-		if(indexStartExtension == -1) // if we are starting a new extension, we change the index of start
-		{
-			indexStartExtension = currentIndex;
-		}
 		addABoard();
+		boards.get(currentIndex).setIsCurrentFingerBoard(false);
+		boards.get(++currentIndex).setFingers(pts);
+		
+		//getCurrentBoard().incrementExtensionSize();
+		getCurrentBoard().setIsCurrentFingerBoard(true);
+		
+		
+	}*/
+	
+	public void addFingerTrail(FingerTrail ft)
+	{
+		addABoard();
+		boards.get(currentIndex).setIsCurrentFingerBoard(false);
 		boards.get(++currentIndex).setFingerTrail(ft);
-		boards.get(currentIndex).setIsCurrentFingerBoard(true);
-		boards.get(currentIndex > 0 ? currentIndex-1 : currentIndex).setIsCurrentFingerBoard(false);
-		isAnExtension = true;
+		
+		//getCurrentBoard().incrementExtensionSize();
+		getCurrentBoard().setIsCurrentFingerBoard(true);
+		
+		giveListeners(); // TODO bad code to put it here
 	}
 	
 	private void addABoard()
@@ -135,12 +171,43 @@ public class FingerBoardsPanel extends JPanel {
 		FingerBoard newBoard = new FingerBoard();
 		boards.add(newBoard);
 		giveInstrument();
-		System.out.println("Adding a board");
+		//System.out.println("Adding a board");
 		
 		c1.gridx = numBoards++;
 		c1.gridy = 0;
 		c1.fill = GridBagConstraints.BOTH;
 		this.add(newBoard, c1);
+		
+	}
+	
+	public void applyShrink()
+	{
+		deleteBoardsFrom(currentIndex - getCurrentLength()); // note that getCurrentLength returns the new shortened length
+		
+	}
+	
+	public void deleteBoardsFrom(int index)
+	{
+		while(boards.size() > index)
+		{
+			boards.remove(index);
+		}
+		while (this.getComponentCount() > index)
+		{
+			this.remove(index);
+		}
+		numBoards = index;
+		addABoard();
+		addABoard();
+		addABoard();
+		boards.get(index-1).setIsCurrentFingerBoard(true);
+		currentIndex = index-1;
+		this.repaint();
+	}
+	
+	public int getCurrentLength()
+	{
+		return getCurrentBoard().getExtensionSize();
 	}
 
 	public void setInstrument(Instrument it) {
@@ -156,22 +223,25 @@ public class FingerBoardsPanel extends JPanel {
 		}
 	}
 	
-	
-	//code for precedent fingerboardPanel:
-	/*public class FingerboardPanel extends JPanel {
-
-		private static final long serialVersionUID = 1L;
-		JCheckBox fingerTrails;
-		
-		
-		public FingerboardPanel() {
-			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-			setBorder(BorderFactory.createEtchedBorder());
-			fingerTrails = new JCheckBox("Fingering trails");
-			add(fingerTrails);
-			add(Box.createVerticalGlue());
-			fingerTrails.setSelected(false);
+	public void giveListeners()
+	{
+		for(int i = 0; i<boards.size(); i++)
+		{
+			final int a = i;
+			boards.get(i).addMouseListener(new java.awt.event.MouseAdapter() {
+	            public void mouseClicked(java.awt.event.MouseEvent evt) {
+	            	if(evt.getClickCount() == 2)
+	            	{
+	            		System.out.println("two clicks detected");
+	            		deleteBoardsFrom(a);
+	            	}
+	            	if(evt.getButton() == 3)
+	            	{
+	            		System.out.println("=3");
+	            	}
+	            }
+	        });
 		}
-	}*/
+	}
 	
 }

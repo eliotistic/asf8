@@ -119,7 +119,7 @@ public class ChordSolver {
     			hi = Math.max(hi, ht);
     		};
     	}
-    	// must be within correct span exclkusive of open strings
+    	// must be within correct span exclusive of open strings
     	if (lo==Integer.MAX_VALUE && hi ==-1){ // single open string
     		return x;
     	} else if (instrument.inSpan(lo, hi)){

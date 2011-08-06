@@ -361,19 +361,25 @@ public class AbcReader {
 				kNotes.add(ks);
 				om = om + ks.minDur();
 				
-			} else if (elt instanceof Note) {
-				if (((Note) elt).isRest()) {
+			} 
+			else if (elt instanceof Note) 
+			{
+				if (((Note) elt).isRest()) 
+				{
 					// noteList.add(elt);
 					
 					om = om + noteDur((Note) elt);
-				} else{
+				} 
+				else
+				{
 					noteList.add(elt);
 					KNote ks = new KNote((Note) elt);
 					kNotes.add(ks);
 					om = om + ks.minDur();
 				}
 				
-			} else {
+			} 
+			else {
 				//System.out.println("MakeNoteList OTHER: " + elt );
 			}
 			

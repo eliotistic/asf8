@@ -41,7 +41,7 @@ public class TopologyAnchor {
 		trail = ft;
 		this.bars = bars;
 		nHeights = ft.heightMap.size();
-		timePointArr = ft.trailPoints;
+		timePointArr = ft.getTrailPoints();
 		
 		doBarTopology();
 		if (!bad && nHeights == 4) {

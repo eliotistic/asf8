@@ -45,3 +45,7 @@ Implemented the Extend option on multiple panels.
 July 14 : TUESDAY
 7/14: Implemented fast the Freezing, the Save of an extension and its
 loading. Fixed some extending issues.
+
+August 6 : SATURDAY
+Implemented reading from the new XML file, although its default is not there; 
+Possible to change number of strings, minimum and maximum height

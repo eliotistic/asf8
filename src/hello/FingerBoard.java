@@ -27,68 +27,91 @@ public class FingerBoard extends JLabel {
 	 * 
 	 */
 	private static final long serialVersionUID = -4218158232921438281L;
-	
+	private boolean isCurrentFingerBoard = false;
 	
 	public boolean forward = true; // we hit the "next" button rather than prev
 	                          // fingertrails wants to know.
-	
 	boolean fingerTrailsOn; 
-	private boolean isCurrentFingerBoard = false;
-	public boolean isCurrentFingerBoard() {
-		return isCurrentFingerBoard;
-	}
-	public void setIsCurrentFingerBoard(boolean bool)
-	{
-		isCurrentFingerBoard = bool;
-	}
-
-
 	int problemType;
     Instrument instrument;
-	
-	//BufferedImage image; // TODO are those three fields really deletable?
-    //Rectangle rect;
-    //Ellipse2D.Double circle;
     Dimension size = new Dimension();
     ArrayList<Point> ps = new ArrayList<Point>(); // apparently not used anymore
     Point[] ps1; // regular points, and open strings
     Point[] ps2; // green points, lifted fingers
     Point[] psCom; // no idea.
     Point[] grayNotes; // no idea either.
-    public Point[][] noteCoordinates; // trademark of JB Corp.
     
-    public Point[][] getNoteCoordinates() {
-		return noteCoordinates;
-	}
-
-
-	ArrayList<ColoredNote> trails;
+    // trademark of JB Corp.
+    public Point[][] noteCoordinates; 
+    private int masterIndex;
+    private boolean representsAnExtension = false;
+    private int extensionSize = 1;
+    private int givenTrailIndex;
     
+	
+	private ArrayList<ColoredNote> trails;
     public static final int DOT = 12; // size, diameter of the notes (circles)
     private static final int X_BORDER = 10;
     private static final int Y_BORDER = 10;
 
     // Color boardcolor = Color.decode("F3DEAC");
     Color boardColor = new Color (0xF3DEAC);
-    
     Color black = Color.BLACK;
     Color red = Color.RED;
-    
-    
     Color green = new Color(0x099913);
-    
     Color blue = Color.BLUE;
     Color bgreen = new Color(0x11C7D1);
     Color gray = new Color(0x262626);
-    	
-    /*private Color gray () {
-    	return new Color(0x262626);
-    }*/
+    
+    public void setRepresentsAnExtension(boolean rep)
+    {
+    	representsAnExtension = rep;
+    }
+    
+    public boolean representsAnExtension() {
+		return representsAnExtension;
+	}
+    
+    public int getExtensionSize()
+    {
+    	return extensionSize;
+    }
+    
+    public void setExtensionSize(int s)
+    {
+    	extensionSize = s;
+    }
+    
+    public int getMasterIndex() {
+		return masterIndex;
+	}
+    
+    public Point[][] getNoteCoordinates() {
+		return noteCoordinates;
+	}
+    public boolean isCurrentFingerBoard() {
+		return isCurrentFingerBoard;
+	}
+	public void setIsCurrentFingerBoard(boolean bool)
+	{
+		isCurrentFingerBoard = bool;
+		repaint();
+	}
 
+	public void giveTrailIndex(int index)
+	{
+		givenTrailIndex = index;
+	}
+	
+	public int getTrailIndex()
+	{
+		return givenTrailIndex;
+	}
    
     public FingerBoard() {
     	trails = new ArrayList<ColoredNote>();
     	fingerTrailsOn = false;
+    	
     }
     
     @Override
@@ -409,6 +432,7 @@ public class FingerBoard extends JLabel {
     	//updateTrail();
     	ps1 = stops;
     	ps2 = null;
+    	isCurrentFingerBoard = true;
     	repaint();
 
     }
@@ -433,20 +457,11 @@ public class FingerBoard extends JLabel {
     // using this in analysis panel
     // deprecated
     public void setFingers(ArrayList<Point> stops) {
-     Point[] arr = new Point[stops.size()];
-     for (int i=0; i<stops.size(); i++) {
-    	 arr[i] = stops.get(i);
-     }
-     
-     /*
-        this.ps.clear();
-        for (Point p : stops) {
-            ps.add(p);
+        Point[] arr = new Point[stops.size()];
+        for (int i=0; i<stops.size(); i++) {
+        	arr[i] = stops.get(i);
         }
-        repaint();
-        */
-     setFingers(arr);
-
+        setFingers(arr);
     }
     
     public void setBvMap(BvMap heightMap){
@@ -458,6 +473,7 @@ public class FingerBoard extends JLabel {
     public void setFingerTrail (FingerTrail ft){
     	ps1 = ft.redPoints.toarray();
     	ps2 = ft.grayPoints.toarray();
+    	isCurrentFingerBoard = true;
     	repaint();
     }
     
@@ -518,18 +534,14 @@ public class FingerBoard extends JLabel {
         psCom = null;
         grayNotes = null;
         trails.clear();
+        representsAnExtension = false;
+        isCurrentFingerBoard = false;
+        extensionSize = 1;
+        givenTrailIndex = -1;
         repaint();
 
     }
-    /*
-    public void showFingering(Fing.Result r) {
-    }
-    */
-
-
-
-	
-
+    
 
 
 	

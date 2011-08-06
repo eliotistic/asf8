@@ -70,6 +70,10 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 	JRadioButtonMenuItem solveNone;
 	JRadioButtonMenuItem solveOn;
 	
+	JMenu boards;
+	JMenuItem clearBtn;
+	
+	
 	public String arpMenuGetState() {
 		
 		if (arpLongest.isSelected()) { 
@@ -245,7 +249,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		anchorNone.addActionListener(this);
 		anchorOn.addActionListener(this);
 		
-		System.out.println("Anchors on: " + appFrame.prop_anchors_on);
+		//System.out.println("Anchors on: " + appFrame.prop_anchors_on);
 		anchorNone.setSelected(!appFrame.prop_anchors_on);
 		anchorOn.setSelected(appFrame.prop_anchors_on);
 		
@@ -267,11 +271,18 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		add(solve);
 		// HELP
 		
+		boards = new JMenu("Boards");
+		clearBtn = new JMenuItem("Clear Panels");
+		boards.add(clearBtn);
+		
+		add(boards);
+		
 		helpMenu = new JMenu("Help");
 		help = new JMenuItem("About");
 		add(helpMenu);
 		helpMenu.add(help);
 		help.addActionListener(this);
+		clearBtn.addActionListener(this);
 		helpMenu.setMnemonic(KeyEvent.VK_H);
 		// start with violin
 		vnCB.setSelected(true);
@@ -298,6 +309,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 			// reads & draws a score
 			//AbcReader abc = new AbcReader(big);
 			//big.abcReader.readAndDraw();
+			
 			big.readandDrawABC(true); // boolean says whether to do fingering
 			//System.out.println(abc.abcString);
 			//ctl.abc.setH(5f);
@@ -401,6 +413,12 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 			big.anchSeq.setStateOn();
 			appFrame.setPropAnchors(true);
 			System.out.println("Anchor: On");
+		}
+		
+		if(e.getSource() == clearBtn)
+		{
+			appPanel.fingPane.clearAll();
+			System.out.println("event here in FMenubR");
 		}
 	}	
 

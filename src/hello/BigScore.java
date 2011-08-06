@@ -9,6 +9,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -58,10 +60,6 @@ public class BigScore extends JPanel{
 	private boolean usingGridBag = true;//jb
 	
 	
-	public int getFingSize () {
-		return fingResultList.size();
-	}
-	
 	//private FingerSeq2 currentFingerSeq2;
 	// XXX
 	// public ArrayList<FingerSeq2> fingerseq2List;
@@ -80,7 +78,22 @@ public class BigScore extends JPanel{
 	private ArpeggioSequencer.State arpSeqState; 
 	public AnchorSequencer.State anchorSeqState;
 	public SolSequencer.State solSeqState;
-	// need to preserve menu values when we read new. 
+	
+	//private ArrayList<PositionalSequencer2.Seq> currentSeq2Positions;
+	//public PositionalSequencer2.Seq currentPositionalSeq2; 
+	private boolean positionFollowsCursor = false;
+	// old positional sequencer
+	public String positionalMode;
+	//public PositionalSequencer pseq;
+	//public PositionalSequencer.Seq currPositionalSeq;
+	//private ArrayList<PositionalSequencer.Seq> currentPositions;
+	//private int currentPositionalPos; 
+	//private int currentPositionalSize;
+	JScrollPane sPane;
+	
+	public int getFingSize () {
+		return fingResultList.size();
+	}
 	
 	public void setArpSeqState(ArpeggioSequencer.State state) {
 		arpSeqState = state;
@@ -97,19 +110,7 @@ public class BigScore extends JPanel{
 		doCurr();
 		
 	}
-	//private ArrayList<PositionalSequencer2.Seq> currentSeq2Positions;
-	//public PositionalSequencer2.Seq currentPositionalSeq2; 
-	private boolean positionFollowsCursor = false;
-	// old positional sequencer
-	public String positionalMode;
-	//public PositionalSequencer pseq;
 	
-	// 
-	//public PositionalSequencer.Seq currPositionalSeq;
-	//private ArrayList<PositionalSequencer.Seq> currentPositions;
-	//private int currentPositionalPos; 
-	//private int currentPositionalSize;
-	JScrollPane sPane;
 	
 	public enum XMode{ // execution mode 
 		Arp, Anch
@@ -126,7 +127,7 @@ public class BigScore extends JPanel{
 		arrows.next.setEnabled(masterIndex + 1 < sz);	
 	}
 	
-	public boolean hasnextFing(){
+	public boolean hasNextFing(){
 		int sz = getFingSize();
 		return masterIndex - 1 < sz;
 		
@@ -244,7 +245,7 @@ public class BigScore extends JPanel{
 		
 	
 			
-		instrument = new Instrument(this, "VN");
+		instrument = new Instrument(this, "VN"); // TODO add new Constraints for the Instrument here, like maxspan
 		cfinger.setInstrument(instrument);
 		
 		gluer = new Glue(this);
@@ -294,9 +295,17 @@ public class BigScore extends JPanel{
 		add(Box.createRigidArea(new Dimension(0, 5)));
 		
 		// NEXT 	
-		arrows.next.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				nextArrowActionPerformed();
+		// note that for this one, a MouseAdapter is used, since we want to isolate right click from left click
+		arrows.next.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				if(e.getButton() == 1)//if left click
+				{
+					nextArrowActionPerformed();
+				}
+				else if (e.getButton() == 3)// if right click
+				{
+					jumpNextArrowActionPerformed();
+				}
 				requestFocusInWindow();
 				arrows.setBorder(BorderFactory.createLineBorder(Color.black));
 				appFrame.cfinger.ctl.entryPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
@@ -441,13 +450,17 @@ public class BigScore extends JPanel{
 	
 	public void prevArrowActionPerformed() {
 		doPrev();
-		//System.out.println("Or here?");
 		setIndexArrows();
 	}
 
 	public void nextArrowActionPerformed() {
 		doNext();
-		//System.out.println("Or here???");
+		setIndexArrows();
+	}
+	
+	public void jumpNextArrowActionPerformed()
+	{
+		doJumpNext();
 		setIndexArrows();
 	}
 
@@ -520,11 +533,13 @@ public class BigScore extends JPanel{
 	public void readandDrawABC (boolean fingering){
 		abcReader.read();
 		if (!abcReader.readError) {
+			//cfinger.clearAll(); // TODO added by jb
+			cfinger.fingPane.clearAll();
 			tune = abcReader.tune;
 			
 			//scoreUI.noteList = abcReader.noteList;
 			//scoreUI.setTune(tune);
-			scoreUI.setTune(abcReader);
+			scoreUI.setABCTune(abcReader);
 			
 			String inst = tune.getInformation();
 			if (inst == null) {
@@ -575,6 +590,13 @@ public class BigScore extends JPanel{
 			anchSeq.doNext();
 		} else {
 			arpSeq.doNext();
+		}
+	}
+	public void doJumpNext(){
+		if (xmode == XMode.Anch){
+			anchSeq.doJumpNext();
+		} else {
+			//arpSeq.doNext();TODO
 		}
 	}
 	public void doPrev(){

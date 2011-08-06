@@ -4,6 +4,8 @@
  */
 package hello;
 
+import hello.utils.StringFingeringConstants;
+
 import java.awt.Point;
 import java.util.ArrayList;
 
@@ -18,11 +20,11 @@ public class AllNotes {
         //int[] range = Fing.getRange(v);
         //int[] range = v.getRange();
         Point range = v.getRange();
-        for (int i = pc; i < 128; i = i + 12) {
-            
+        for (int i = pc; i < StringFingeringConstants.MIDI_HIGH_NOTE-1; i = i + 12) 
+        {
         	if //(i >= range[0] && i <= range[1]) 
         		(i >= range.x && i <= range.y) 
-        		{
+        	{
                 ans.add(i);
             }	
         }

@@ -110,18 +110,15 @@ public class InstPanel extends JPanel {
     }
 
     public static void main(String args[]) {
-            EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                            JFrame frame = new JFrame("INST!");
-                            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-                            InstPanel c = new InstPanel();
-
-                            frame.add(c);
-
-                            frame.pack();
-                            frame.setVisible(true);
-                    }
-            });
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+            	InstPanel c = new InstPanel();
+                JFrame frame = new JFrame("INST!");
+                frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+                frame.add(c);
+                frame.pack();
+                frame.setVisible(true);
+            }
+        });
     }
 }

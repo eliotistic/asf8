@@ -121,7 +121,7 @@ public class CtlBox extends JPanel {
 		
 		c5.gridx = 0;
 		c5.gridy = 4;
-		c5.fill = GridBagConstraints.BOTH;
+		c5.fill = GridBagConstraints.VERTICAL;
 		c5.weightx = 0.5;
 		c5.weighty = 0.25;
 		add(entryPanel, c5);

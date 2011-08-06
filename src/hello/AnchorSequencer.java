@@ -9,7 +9,7 @@ public class AnchorSequencer {
 	State state;
 	BigScore big;
 	public Instrument instrument;
-	ArrayList<ChordFingering>inputChordFingerings;
+	ArrayList<ChordFingering> inputChordFingerings;
 	ArrayList<FingerSeq2> fs2List;
 	int inputSize;
 	
@@ -112,7 +112,7 @@ public class AnchorSequencer {
 				// addFingering returns copy, since we need to
 				// test & possibly reject it.
 				
-				FingerTrail t = trailOut.addFingering(fing);
+				FingerTrail t = trailOut.makeCopyWithNewFingering(fing);
 				if (t != null){
 					activeTrails.add(t);
 				}else {
@@ -233,7 +233,7 @@ public class AnchorSequencer {
 			// try extebnding each trail with all input fingerings
 			for (Fingering f : cfnext.getFingerings()) {
 				for (FingerTrail t : activeTrails) {
-					FingerTrail x = t.addFingering(f);
+					FingerTrail x = t.makeCopyWithNewFingering(f);
 					if (x == null) {
 						// System.out.println("extend by CF: NULL");
 					} else{
@@ -316,27 +316,44 @@ public class AnchorSequencer {
 		big.cfinger.setActiveTrails(currAnchor.activeTrails);
 	}
 	
-	public void doCurr(){
-		resetFingerboard();
+	private void updateNextAnchor()
+	{
+		currAnchor = new Anchor(big.arpSeq.getCurrentArps());
+		System.out.println("updateAnchor -- activeTrails = " + currAnchor.countActiveTrails());
+		big.cfinger.setNextActiveTrails(currAnchor.activeTrails);
+	}
+	
+	public void doCurr(){ // TODO verify if still necessary
+		//resetFingerboard();
 		System.out.println("HELLO -- Anchor CURR running Arp.");
 		big.arpSeq.doCurr();
 		updateAnchor();
-		setSEButtons(true, true);
+		setSEButtons(false, true); // TODO verify if valid
 	}
 	public void doPrev(){
-		resetFingerboard();
+		//resetFingerboard();
 		System.out.println("HELLO -- Anchor PREV running Arp.");
 		big.arpSeq.doPrev();
 		updateAnchor();
 		setSEButtons(true, true);
 	}
 	public void doNext(){
-		resetFingerboard();
+		//resetFingerboard();
 		System.out.println("HELLO -- Anchor NEXT running Arp.");
 		big.arpSeq.doNext();
 		updateAnchor();
 		setSEButtons(true, true);
 	}
+	
+	public void doJumpNext()
+	{
+		for(int i = 0; i< big.appFrame.cfinger.fingPane.getCurrentLength()  ; i++)
+		{
+			big.arpSeq.doNext();
+		}
+		updateNextAnchor();
+	}
+	
 	
 	public void doStart() {
 		resetFingerboard();
@@ -361,10 +378,11 @@ public class AnchorSequencer {
 		}
 		
 		boolean extended = currAnchor.extendForward();
+		System.out.println("BOOLEAN EXTENDED:" + extended);
 		if (extended) {
-		
+			setSEButtons(true, true);
 			//System.out.println(currAnchor);
-			System.out.println("Active trails: " + currAnchor.countActiveTrails());
+			//System.out.println("Active trails: " + currAnchor.countActiveTrails());
 			
 			//FingerTrail best = currAnchor.activeTrailLeastSpan();
 			
@@ -387,7 +405,8 @@ public class AnchorSequencer {
 					+ " span: " + best.getHandSpan() + " fingers: " + best.heightSetSize() );
 			// base fingering could change as we move on
 			*/
-			big.cfinger.setActiveTrailsFromPrevious(currAnchor.activeTrails);
+			((Cfinger2) big.cfinger).giveTheTrailIndex();
+			big.cfinger.setNextExtendedTrails(currAnchor.activeTrails);
 			// check
 			for (FingerTrail f : currAnchor.activeTrails){
 				if (!f.inSpan){
@@ -400,7 +419,7 @@ public class AnchorSequencer {
 			big.scoreUI.setBoxedNotes(f0.start(), f0.stop());
 		} else {
 			
-			setSEButtons(true, false);
+			setSEButtons(big.extendPanel.shrink.isEnabled(), false);
 			System.out.println("FINALIZED");
 			System.out.println(currAnchor.activeTrails.get(0));
 			System.out.println("No forward extensions");
@@ -433,11 +452,15 @@ public class AnchorSequencer {
 		int sizeOfCurrentExtension = currAnchor.stop - currAnchor.start;
 		//System.out.println("size of ext is: " + sizeOfCurrentExtension);
 		
-		doCurr();
+		doCurr(); // has its place in the board to inactivate the current board
 		for(int i = 0; i< sizeOfCurrentExtension-1 ; i++)
 		{
 			extend();
 		}
+		big.cfinger.fingPane.applyShrink();
+		big.cfinger.indexViewActiveTrail = big.cfinger.fingPane.getCurrentBoard().getTrailIndex();
+		big.cfinger.viewTrail();
+		
 		//TODO put message if shrink does nothing. 
 		
 		// jb end

@@ -1,9 +1,18 @@
 
 
+//doCurrent, next and prev in cfinger (ONLY LEFT BOARD)
+//viewTrail in cfinger and addFingerTrail in FBP. Note that addFingerTrail is included in viewNextTrail
+// those are all the moments where we give notes to a fingerboard.
 
+//in FingerTrail: addFingering
+
+//In AnchorSequencer, at the constructor of Anchor with Seq2, the activeTrails are generated. They should be selected 
+// with the user preferences.
 package hello;
 
 //import java.awt.Dimension;
+import hello.utils.XMLPropertiesReader;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -48,19 +57,22 @@ public class BigGui extends JFrame {
 	public Cfinger2 cfinger; // I(jb) removed the static; any remarkable difference?
 	
 	BigGui (){
-		/*this = new JFrame("String fingering v" 
-				+ version);*/
+		
 		this.setTitle("String fingering v" + version);
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		//this.setLayout(new BorderLayout());
 		//jb
 		this.setLayout(new GridBagLayout());
 		GridBagConstraints c1 = new GridBagConstraints();
-		GridBagConstraints c2 = new GridBagConstraints();
-		//GridBagConstraints c3 = new GridBagConstraints();
-		// end jb
 		
-		loadProperties();
+		//loading of properties/constraints
+		loadProperties(); // to delete
+		XMLPropertiesReader.main(null);
+		//Constraints.MAX_HEIGHT = 25;
+		//Constraints.MIN_HEIGHT = 1;
+		//Constraints.NUM_CHORDS = 4;
+		
+		System.out.println("The found max height is: "+ Constraints.MAX_HEIGHT);
+		
 		
 		cfinger = new Cfinger2(this);
 		bigScore = new BigScore(this, cfinger);
@@ -166,20 +178,8 @@ public class BigGui extends JFrame {
 		
 		JMenuBar menu = new FMenuBar(this, cfinger, bigScore);
 		
-		/*singlePanel.add("West",cfinger);
-		
-		//frame.add("East",bigScore);
-		singlePanel.add("Center",bigScore);
-		
-		this.setJMenuBar(menu);
-		this.add(singlePanel);
-		this.pack();
-		this.setVisible(true);
-		singlePanel.requestFocusInWindow();*/
-		
 		
 		//jb
-		
 		JSplitPane principalSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		principalSplit.setTopComponent(cfinger);
 		principalSplit.setBottomComponent(bigScore);
@@ -254,6 +254,7 @@ public class BigGui extends JFrame {
 	        //System.out.println("Here, boolAnchors (String) is: " + boolAnchors);
 	        prop_anchors_on = Boolean.parseBoolean(boolAnchors);
 	        prop_extension = strExtension;
+	        bool_file_path = strFilePath;
         }
         else 
         {
@@ -261,6 +262,8 @@ public class BigGui extends JFrame {
 	        {
 	        	sfProperties.setProperty(PROP1_PATH, "false");
 	        	sfProperties.setProperty(ANCHORS_PATH, "false");
+	        	sfProperties.setProperty(PATH_PATH, "default");
+	        	sfProperties.setProperty(EXTENSION_PATH, "default");
 	        	sfProperties.store(new FileWriter(propertiesFile), SETTINGS_SF_TOOL);
 	        }
 	        catch(IOException e)

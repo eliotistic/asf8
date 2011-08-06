@@ -28,15 +28,19 @@ public class Cfinger2 extends JPanel {
 	public int randomChords = 1;
 	public RandomChord randc;
 	public boolean random4stop = false;
-	public FingerBoardsPanel fingPane; // jb
+	
 	public int problemType; // 1 if just one, 2 if transitions, else err
 	public int nSolutions = 0;
 	public int currSolution = 0;
 	public int badToplogies = 0;
 	public double counter = 0;
 	public ChordFingering CurrentCF1;
+	
 	public ArrayList<FingerTrail> activeTrails;
 	public int indexViewActiveTrail = 0;
+	
+	public FingerBoardsPanel fingPane; // jb
+	
 	// ChordFingering CurrentCF2;
 	//Fing.Result fingResult1;
 	//Fing.Result fingResult2;
@@ -123,6 +127,7 @@ public class Cfinger2 extends JPanel {
 		
 		fingPane = new FingerBoardsPanel();
 		JScrollPane fingScrollPane = new JScrollPane(fingPane);
+		fingScrollPane.getHorizontalScrollBar().setUnitIncrement(15);
 		JSplitPane secondSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		secondSplit.setTopComponent(ctl);
 		secondSplit.setBottomComponent(fingScrollPane);
@@ -232,7 +237,8 @@ public class Cfinger2 extends JPanel {
 		 ctl.freeze.addActionListener(new ActionListener() {
 			 public void actionPerformed(ActionEvent e)
 		 	 {
-				 boolean freezeSuccess = fingPane.freeze();
+				 fingPane.freeze();
+				 big.doJumpNext();
 		 	 }
 		 });
 		 
@@ -246,18 +252,22 @@ public class Cfinger2 extends JPanel {
 		 ctl.load.addActionListener(new ActionListener() {
 			 public void actionPerformed(ActionEvent e)
 		 	 {
-				 if(appFrame.prop_extension != null)
+				 /*if(appFrame.prop_extension != null)
 				 {
 					 System.out.println("string is: "+appFrame.prop_extension);
 					 Scanner s = new Scanner(appFrame.prop_extension);
-					 s.next();
-					 int ind = s.nextInt();
-					 s.next();
-					 int len = s.nextInt();
+					 int ind = 0;
+					 int len = 0;
+					 if(s.next() != "default")
+					 {
+						 ind = s.nextInt();
+						 s.next();
+						 len = s.nextInt();
+					 }
 					 s.close();
 					 for(int i =0; i<ind; i++) big.nextArrowActionPerformed();
 					 for(int j =0; j<len; j++) big.extend();
-				 }
+				 }*/
 				 
 				 
 		 	 }
@@ -286,8 +296,6 @@ public class Cfinger2 extends JPanel {
 			System.out.println("Point: " + p);
 		}
 	}
-	
-
 
 	public void setScore (BigScore b) {
 		big = b;
@@ -477,7 +485,7 @@ public class Cfinger2 extends JPanel {
 		ctl.msg.clear(); // sets msg to default message
 		ctl.topo.clear();
 		//ctl.positions.clear();
-		fingPane.getCurrentBoard().clear(); // TODO maybe clear all the boards
+		//fingPane.clearAll();
 		// ctl.abc.drawChord("");
 		ctl.abcChord.clear();
 	}
@@ -498,22 +506,57 @@ public class Cfinger2 extends JPanel {
 		
 		indexViewActiveTrail = 0; // index of the active trail to look at
 		// note that the difference between a Fingering and a FingerTrail is that the Trail is made from many notes (anchor)
-		viewTrail();
+		if(fingPane.getCurrentBoard().representsAnExtension())
+		{
+			System.out.println("Represents an ext");
+			viewNextTrail();
+		}
+		else
+		{
+			System.out.println("Does not represent");
+			viewTrail();
+		}
+		
 		//ctl.entry.setArrows(0, activeTrails.size()-1);
 	}
 	
-	public void setActiveTrailsFromPrevious(ArrayList<FingerTrail> newActiveTrails) {
+	public void setNextActiveTrails(ArrayList<FingerTrail> newActiveTrails) {
+		
+		//FingerTrail prevFing = activeTrails.get(indexViewActiveTrail);
+		indexViewActiveTrail = 0;
+		
+		activeTrails = newActiveTrails;
+		
+		
+		// note that the difference between a Fingering and a FingerTrail is that the Trail is made from many notes (anchor)
+		viewNextTrail();
+	}
+	
+	public void setNextExtendedTrails(ArrayList<FingerTrail> newActiveTrails) {
+		System.out.println("EXTENDING");
 		boolean extendingExisted = false;
 		FingerTrail prevFing = activeTrails.get(indexViewActiveTrail);
 		indexViewActiveTrail = 0;
-		for(int i = 0; i<newActiveTrails.size(); i++)
+		for(int i = newActiveTrails.size()-1; i>=0; i--)
 		{
-			if(newActiveTrails.get(i).getStoppedPoints().IsExtensionOf(prevFing.getStoppedPoints())) // TODO AND we keep open string
+			if(newActiveTrails.get(i).getTrailPoints().IsExtensionOf(prevFing.getTrailPoints()) )
 			{
-				System.out.println("previous saiten: " + prevFing.saiten);
-				System.out.println("next saiten: " + newActiveTrails.get(i).saiten);
+				/*System.out.println("Trail points prev: ");
+				for(FingerTrail.Trailpoint tp: prevFing.trailPoints)
+				{
+					System.out.println(tp);
+				}
+				System.out.println("Trail points next: ");
+				for(FingerTrail.Trailpoint tp: newActiveTrails.get(i).trailPoints)
+				{
+					System.out.println(tp);
+				}*/
+				
+				
+				//System.out.println("previous saiten: " + prevFing.saiten);
+				//System.out.println("next saiten: " + newActiveTrails.get(i).saiten);
 				indexViewActiveTrail = i;
-				System.out.println("index is: " + i);
+				//System.out.println("index is: " + i);
 				extendingExisted = true;
 			}
 		}
@@ -525,21 +568,23 @@ public class Cfinger2 extends JPanel {
 		
 		activeTrails = newActiveTrails;
 		
-		
+		int previousExtensionSize = fingPane.getCurrentLength();
 		// note that the difference between a Fingering and a FingerTrail is that the Trail is made from many notes (anchor)
 		viewNextTrail();
-		
+		// NOW THE CURRENT BOARD IS THE NEW ONE
+		fingPane.getCurrentBoard().setRepresentsAnExtension(true);
+		fingPane.getCurrentBoard().setExtensionSize( previousExtensionSize + 1 );
 	}
 	
-	private void viewTrail() {
+	public void viewTrail() {
 		if (activeTrails == null) {
 			//System.out.println("No active trails in CFINGER");
 			return;
 		} else {
-			FingerTrail ft = activeTrails.get(indexViewActiveTrail); // TODO out of bounds exception 1
-			int max = activeTrails.size() - 1;
+			FingerTrail ft = activeTrails.get(indexViewActiveTrail); // TODO out of bounds exception 1 1
+			//System.out.println("WE GOT HERE IN VIEWTRAIL");
 			ctl.entryPanel.setArrows(indexViewActiveTrail, activeTrails.size() - 1);
-			
+			//int max = activeTrails.size() - 1;
 			//System.out.println("Showng trail #" + indexViewActiveTrail + "/" + max);
 			
 			String s = "Showing: " + (indexViewActiveTrail+1) + "/" + activeTrails.size();
@@ -551,7 +596,7 @@ public class Cfinger2 extends JPanel {
 			
 			
 			fingPane.getCurrentBoard().setFingerTrail(ft);
-			fingPane.invalidateExtension();
+			
 			
 			
 		}
@@ -563,25 +608,17 @@ public class Cfinger2 extends JPanel {
 			return;
 		} else {
 			FingerTrail ft = activeTrails.get(indexViewActiveTrail); // TODO out of bounds exception 2
-			int max = activeTrails.size() - 1;
-			ctl.entryPanel.setArrows(indexViewActiveTrail, activeTrails.size() - 1);
 			
+			ctl.entryPanel.setArrows(indexViewActiveTrail, activeTrails.size() - 1);
+			//int max = activeTrails.size() - 1;
 			//System.out.println("Showng trail #" + indexViewActiveTrail + "/" + max);
 			
 			String s = "Showing: " + (indexViewActiveTrail+1) + "/" + activeTrails.size();
 			ctl.msg.say("<html>" + s + "<br>" + (ft.describe()) + "</html>");
 			
-			//System.out.println(ft);
-			
 			//fing.setBvMap(ft.heightMap);
 			
-			fingPane.addFingerTrail(ft, big.masterIndex);
-			
-			/*else
-			{
-				fingBoard.setFingerTrail(ft);
-			}*/
-			
+			fingPane.addFingerTrail(ft);
 		}
 	}
 	
@@ -756,13 +793,6 @@ public class Cfinger2 extends JPanel {
 		//System.out.println("===> FINISHED doFingering1 with msg: " + msg);
 		
 	}
-	public void doFingering1(ChordFingering r, String msg) {
-		
-		//System.out.println("doFingering1 with msg: " + msg);
-		doFingering1(r);
-		//System.out.println("===> FINISHED doFingering1 with msg: " + msg);
-		
-	}
 	
 	
 	// ok if no input
@@ -824,23 +854,25 @@ public class Cfinger2 extends JPanel {
 			ctl.entryPanel.prevBtn.setEnabled(false);
 
 			ChordFingering.Fingering f0 = CurrentCF1.getFingerings().get(0);
-			// String abcS = f0.getABCString();
-			// ctl.abc.drawChord(f0.getABCString());
-			//f0.sayContour();
+			
 				
 			ctl.abcChord.drawFingering(f0);
-			// System.out.println(abcS);
-			Point[] coords = f0.getCoords();
 			
-			for (Point p : coords) {
+			//Point[] coords = f0.getCoords();
+			
+			/*for (Point p : coords) {
 				System.out.println(p.x + " " + p.y);
-			}
+			}*/
 			
 			
-			// int[] note = DrawCoords.getNoteStringCoords(Fing.Instr.VN, 0, 2);
-			fingPane.getCurrentBoard().setFingers(coords);
-			fingPane.invalidateExtension();
-			//stops = f0.countStops();
+			
+			//fingPane.getCurrentBoard().setFingers(coords);
+			//fingPane.addFingers(coords);TODO
+			
+			
+			
+			
+			
 			//ctl.topo.say("Topolgy:" + f0.getTopology().toString());
 			sayTopology(f0);
 			//sayPositions(f0);
@@ -850,8 +882,15 @@ public class Cfinger2 extends JPanel {
 				ctl.entryPanel.nextBtn.setEnabled(true);
 			} else {
 				ctl.entryPanel.nextBtn.setEnabled(false);
-			}*/
-			ctl.entryPanel.nextBtn.setEnabled(nSol > 1);
+			}
+			ctl.entryPanel.nextBtn.setEnabled(nSol > 1);*/
 		}
+	}
+
+	/**
+	 * author: jb
+	 */
+	public void giveTheTrailIndex() {
+		fingPane.getCurrentBoard().giveTrailIndex(indexViewActiveTrail);
 	}
 }

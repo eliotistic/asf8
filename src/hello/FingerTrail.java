@@ -15,7 +15,7 @@ public class FingerTrail  {
 	ArrayList<ChordFingering.Fingering> trails;
 	// System.out.println(abcS);
 	//Point[] coords;
-	TPArray trailPoints; // 
+	private TPArray trailPoints; // 
 	int orders;
 	//private IntSet saiten;
 	public Saiten saiten; // set of strings we play on
@@ -91,6 +91,11 @@ public class FingerTrail  {
 		//saiten = new IntSet();
 		
 		
+	}
+	
+	public TPArray getTrailPoints()
+	{
+		return trailPoints;
 	}
 	
 	private void addSaitenHeight(Point p) {
@@ -256,64 +261,81 @@ public class FingerTrail  {
 		return sz;
 	}
 	
-	
-	public FingerTrail addFingering(Fingering f) {
+	/*
+	 * 
+	 * return FingerTrail a copy of the FingerTrail with the new Fingering, OR null if the resulting
+	 * trail is invalid.
+	 */
+	public FingerTrail makeCopyWithNewFingering(Fingering f) {
 	
 		//int bowKey = Bowing.keyOfSequence(ss);
 		
 		//System.out.println("FingerTrail addFIngering: saiten =" + ss);
 		// note we do NOT want to add in fingers we already have
 		// but then order has to be intset.
-		FingerTrail t = copy();
-		Point[] p = f.stringHeightPoints();
-		Point[] pp = f.stringPitchPoints();
+		FingerTrail trail = copy();
+		Point[] hPts = f.stringHeightPoints(); // x=1 y=1
+		Point[] pPts = f.stringPitchPoints(); // x=1 y=62
+		
+		// TODO cut here if there are open strings and the constraints refuse them.
+		
+		//System.out.println("height points: " + hPts);
+		//System.out.println("pitch points: " + pPts);
+		/*for(Point pt: hPts)
+		{
+			System.out.println("h pt: " + pt);
+		}for(Point pt: pPts)
+		{
+			System.out.println("p pt: " + pt);
+		}*/
 		
 		// add to pitch/string MAP
-		for (Point sp : pp) {
-			t.pitchMap.addKey(sp.y, sp.x);
+		for (Point sp : pPts) {
+			trail.pitchMap.addKey(sp.y, sp.x);
 		}
 		
 		IntList ss = new IntList(f.stringSequence);
-		t.bowing.addKey(ss);
+		//System.out.println("size of added intlist: " + ss.size());//
+		trail.bowing.addKey(ss);
 		
-		t.lastPoints.clear();
+		trail.lastPoints.clear();
 		// array of (saite, interval)
 
-		t.stopInd = f.index;
+		trail.stopInd = f.index;
 		// System.out.println("Add fingering at" + stopInd);
-		t.orders++;
+		trail.orders++;
 
-		for (Point p1 : p) {
+		for (Point p1 : hPts) {
 			int fbHeight = p1.y;
 			int fbSaite = p1.x;
 			
-			t.lastPoints.add(p1); // for quick reference
+			trail.lastPoints.add(p1); // for quick reference
 
-			t.heightMap.addSaiteInterval(p1);
+			trail.heightMap.addSaiteInterval(p1);
 		
-			t.addSaitenHeight(p1);
-			t.saiten.add(fbSaite);
+			trail.addSaitenHeight(p1);
+			trail.saiten.add(fbSaite);
 
 			// groups of points by same height
-			t.heightSets.addByY(p1);
+			trail.heightSets.addByY(p1);
 
 			
 			if (fbHeight != 0) {
-				t.spanNotSet = false;
-				t.heightSet.add(fbHeight);
-				t.FBHi = Math.max(FBHi, fbHeight);
-				t.FBLo = Math.min(FBLo, fbHeight);
+				trail.spanNotSet = false;
+				trail.heightSet.add(fbHeight);
+				trail.FBHi = Math.max(FBHi, fbHeight);
+				trail.FBLo = Math.min(FBLo, fbHeight);
 				
 			}
 			// notice we do this with OLD order.
-			Trailpoint oldTP = t.tpofPoint(p1);
+			Trailpoint oldTP = trail.tpofPoint(p1);
 			
 			if (oldTP == null) {
 				Trailpoint tp = new Trailpoint(orders, p1);
 				if (p1.y != 0) { // open string
-					t.stopPoints.add(tp.getPoint());
+					trail.stopPoints.add(tp.getPoint());
 				}
-				t.trailPoints.add(tp);
+				trail.trailPoints.add(tp);
 			} else {
 				// already have this point -- just have to add when it shows up.
 				//System.out.println("---------> ADDING NEW ORDER, " + orders);
@@ -325,32 +347,32 @@ public class FingerTrail  {
 		};
 		
 		// set range as point
-		t.fbRange = t.fbHeightRange();
-		t.logSpan = t.rangeLogSpan();
+		trail.fbRange = trail.fbHeightRange();
+		trail.logSpan = trail.rangeLogSpan();
 		
 		
 		if (spanNotSet) { // only thing here is open string
-			t.inSpan = true;
+			trail.inSpan = true;
 		} else {
 			//t.inSpan = instrument.inSpan(t.FBLo, t.FBHi);
-			t.inSpan = t.logSpan <= instrument.maxSpan;
+			trail.inSpan = trail.logSpan <= instrument.maxSpan;
 			
 			
 		}
 		
 		
-		if (!t.inSpan) {
+		if (!trail.inSpan) {
 			//System.out.println("WARNING!!! NOT IN SPAN --" + t.FBLo + ", " + t.FBHi );
 			//System.out.println(t);
 			return null;
-		} else if (!t.reallyInSpan()){
+		} else if (!trail.reallyInSpan()){
 			//System.out.println("WARNING!!! NOT REALLY IN SPAN --" + t.FBLo + ", " + t.FBHi );
 			return null;
 		} else {
 		// apply to OLD order
-			t.liftOccludingFingers(orders, p);
-			t.makeFingerBoardPoints();
-			return t;
+			trail.liftOccludingFingers(orders, hPts);
+			trail.makeFingerBoardPoints();
+			return trail;
 		}
 
 	}
@@ -415,13 +437,16 @@ public class FingerTrail  {
 	
 	public boolean bad (){
 		// bad ion case too many fingers are required or handspan excessive.
+		
 		return heightSet.size() > 4 || !inSpan;
+		
 	}
 	
 	public double logHandSpan (){
 		if (spanNotSet) {
 			return 0;
 		} else {
+			//System.out.println("Hi: "+FBHi + " Low: " + FBLo);
 			return  instrument.getSpan(FBHi, FBLo);
 		}
 	}
@@ -432,7 +457,13 @@ public class FingerTrail  {
 		return instrument.getSpan(range);
 	}
 	public boolean reallyInSpan () {
-		return logHandSpan() <= instrument.maxSpan;
+		boolean firstCondition = logHandSpan() <= instrument.maxSpan;
+		boolean secondCondition = heightSet.max()<=Constraints.MAX_HEIGHT && 
+				heightSet.min()>=Constraints.MIN_HEIGHT; // jb
+		boolean thirdCondition = saiten.usedOnlyUnder(Constraints.NUM_CHORDS);
+		
+		
+		return firstCondition && secondCondition; // TODO add third condition
 	}
 	
 	@Override public String toString(){
@@ -483,6 +514,18 @@ public class FingerTrail  {
 			len = instrument.nStrings;
 			arr = new boolean [len];
 		}
+		
+		public boolean usedOnlyUnder(int numChords) {
+			for(int i = numChords; i<len; i++)
+			{
+				if(arr[i])
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		
 		public void add (int saite) {
 			// no checking
 			arr[saite] = true;
@@ -526,6 +569,40 @@ public class FingerTrail  {
 		
 		private static final long serialVersionUID = 1L;
 
+		/**
+		 * author: JB
+		 * @param previousPs a bigger PointSet 
+		 * @return whether or not this PointSet is contained in the other PointSet.
+		 */
+		public boolean IsExtensionOf(TPArray previous)
+		{
+			boolean unknownPoint = false;
+			for(Trailpoint pt : previous)
+			{
+				//System.out.println("NEW POINTS:" + this);
+				//System.out.println("THIS POINT: " + pt);
+				if(!this.containsCoordinates(pt))
+				{
+					//System.out.println("UNKNOWN POINT WAS FOUND!!!!");
+					unknownPoint = true;
+				}
+			}
+			return !unknownPoint;
+		}
+		
+		private boolean containsCoordinates(Trailpoint tp)
+		{
+			boolean contains = false;
+			for(Trailpoint point : this)
+			{
+				if(point.saite == tp.saite && point.interval == tp.interval) // TODO add order similarity to this?
+				{
+					contains = true;
+				}
+			}
+			return contains;
+		}
+		
 		public TPArray copy () {
 			TPArray c = new TPArray();
 			for (Trailpoint tp: this) {

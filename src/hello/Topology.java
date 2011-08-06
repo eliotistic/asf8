@@ -81,8 +81,8 @@ public class Topology {
 			}
 		};
 			
-			//topos = Topos.UNKNOWN;		
-		}	
+		//topos = Topos.UNKNOWN;		
+	}	
 	
 	Topology(Point[] ps){
 		topos = Topos.UNKNOWN;
@@ -116,36 +116,41 @@ public class Topology {
 		}
 		*/
 		else {
+			triangleBarCheck(stops);
+			triangleLoCheck(stops);
 			diamondCheck(stops);
-			if (unknown()) {
-				triangleLoCheck(stops);
+			/*if (unknown()) {
+				
 				if (unknown()) {
-					triangleBarCheck(stops);
+					
 				}
-			}
-		} 
-		}	
+			}*/ // removed by jb
+		}
+	}	
 	
 	
 	public void print(){
 		System.out.println("Toplogy: " + topos);
 	}
-	 public boolean playable() {
+	public boolean playable() {
 		//return topos != Topos.TRIANGLELO;
-		 if (instrument.filterBadTopologies() && bad()) {
-			 return false;
-		 }
-		 else return true;
-	 }
-	 public boolean unknown() {
+		/*if (instrument.filterBadTopologies() && bad()) {
+			return false;
+		}
+		else return true;*/
+		return !(instrument.filterBadTopologies() && bad());
+	}
+	
+	public boolean unknown() {
 		 return topos == Topos.UNKNOWN;
-	 }
-	 public boolean bad() {
-			return (topos == Topos.BAD_TRIANGLELO 
-					|| topos == Topos.BAD_TRIANGLEBAR
-					|| topos == Topos.BAD_DIAMOND);
-			 
-		 }
+	}
+	
+	public boolean bad() {
+			return (   (topos == Topos.BAD_TRIANGLELO && Constraints.TRIANGELO) 
+					|| (topos == Topos.BAD_TRIANGLEBAR && Constraints.TRIBAR)
+					|| (topos == Topos.BAD_DIAMOND && Constraints.DIAMOND) );
+			
+	}
 	
 	
 	/*

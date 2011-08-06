@@ -10,7 +10,7 @@ import hello.utils.IntList;
  *
  */
 public class Bowing {
-	IntList sequence;
+	private IntList sequence; // jb: seems not implemented
 	int skips; // how many strings we skip over, which in general we want to avoid.
 	int lastSaite;
 	Bv lastSaitenBv;
@@ -27,6 +27,11 @@ public class Bowing {
 	 /**
 	  * 
 	  */
+	
+	public IntList getSequence()
+	{
+		return sequence;
+	}
 	
 	public Bv bvOfSequence (IntList saiten) {
 		Bv b = new Bv (4);
@@ -85,7 +90,7 @@ public class Bowing {
 	public void addKey(IntList saiten){
 		//int k = keyOfSequence(saiten);
 		Bv bv = bvOfSequence(saiten);
-		
+		//sequence.addAll(saiten);
 		if (lastSaitenBv != null) {
 			skips = skips + bvSkips(lastSaitenBv, bv);
 		}
@@ -118,7 +123,9 @@ public class Bowing {
 		}
 		return s + "]";
 	}
-	@Override public String toString(){
+	
+	@Override
+	public String toString(){
 		String s = bvArrtoString();
 		return "Skips: " + skips + ": " + (strsplit(s, 18));
 	}

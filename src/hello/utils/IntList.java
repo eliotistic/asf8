@@ -258,6 +258,20 @@ public class IntList extends ArrayList<Integer> {
 		// System.out.println(alist.matchAllSorted(b, 1));
 		System.out.println(alist.stepChains());
 	}
+
+	public boolean allUnder(int numChords) { // TODO remove if unused
+		for(int i : this)
+		{
+			System.out.println("numChords: " + numChords);
+			System.out.println("int here: " + i);
+			if(numChords <= i)
+			{
+				return false;
+			}
+		}
+		System.out.println("HERE");
+		return true;
+	}
 	
 		 
 		 

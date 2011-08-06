@@ -349,7 +349,7 @@ public class ArpeggioSequencer {
 		}
 		
 		
-		public void shrink () { // TODO implement
+		public void shrink () {
 			currCF = currentArps.shrink();
 			
 			// turn off button if no more
@@ -357,7 +357,7 @@ public class ArpeggioSequencer {
 			
 			//big.cfinger.ctl.entry.noteField.setText(r.noteStringforChordInput());
 			big.writeChordText(currCF);
-			big.cfinger.doFingering1(currCF); // added shrink button by jb TODO
+			big.cfinger.doFingering1(currCF);
 			// REMOVE REFERENCE TO JSCORE
 			//big.scoreUI.setBoxedNotes(currentArps.currentJScoreElts());
 			big.scoreUI.setBoxedNotes(currentArps.io());
@@ -373,7 +373,7 @@ public class ArpeggioSequencer {
 			
 			//big.cfinger.ctl.entry.noteField.setText(r.noteStringforChordInput());
 			big.writeChordText(currCF);
-			big.cfinger.doFingering1(currCF, "extend button");
+			big.cfinger.doFingering1(currCF);
 			// REMOVE REFERENCE TO JSCORE
 			//big.scoreUI.setBoxedNotes(currentArps.currentJScoreElts());
 			big.scoreUI.setBoxedNotes(currentArps.io());
@@ -472,7 +472,7 @@ public class ArpeggioSequencer {
 				//big.incrCurrentFing();
 				nextUnHidden();
 				big.doPositionFollowing();
-				doCurr();
+				doCurr();//TODO
 			} 
 			if (state == State.Jump) {
 				showNextJump();

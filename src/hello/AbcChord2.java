@@ -37,7 +37,7 @@ public class AbcChord2 extends JPanel {
 			int x = (int) r.getX();
 			int y = (int) r.getY();
 			//Graphics2D g = scoreUI.getGraphics2D();
-			System.out.println("h:" + h + " w:" + w + " x:" + x + " y:" + y );
+			//System.out.println("h:" + h + " w:" + w + " x:" + x + " y:" + y );
 			//g.fillRect(x,y,w,h);
 			//g.fillRect(2, 2, 10, 10);
 			//scoreUI.repaint();

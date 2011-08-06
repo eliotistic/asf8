@@ -13,7 +13,7 @@ import abc.notation.Clef;
 public class Instrument {
 	BigScore big;
 	Instr instr;
-	int[] openStrings; 
+	private int[] openStrings;
 	public int[][][] caseArr;
 	double[] spanVect;
 	double[] r12Vect;
@@ -50,10 +50,10 @@ public class Instrument {
 		//FBhandspan = initHandSpan();
 
 	}
-	Instrument (BigScore b, String s) { // s is name of instr
+	Instrument (BigScore b, String instrumentName) { // s is name of instr
 		makeSpanVect();
 		big = b;
-		instr = getInstr(s);
+		instr = getInstr(instrumentName);
 		//setCaseArr();
 		openStrings = makeOpenStrings(instr);
 		//FBhandspan = initHandSpan();
@@ -349,7 +349,7 @@ public class Instrument {
     	// 0 = high string.
     	switch (instr) {
         case VN:
-            int[] a = {55, 62, 69, 76};
+            int[] a = Constraints.VIOLIN_STRINGS; // TODO
             return a;
         case VA:
             int[] b = {48, 55, 62, 69};

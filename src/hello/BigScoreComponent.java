@@ -169,7 +169,7 @@ public class BigScoreComponent extends JScoreComponent
 	
 	
 	
-	public void setTune (AbcReader abc){
+	public void setABCTune (AbcReader abc){
 		super.setTune(abc.tune);
 		tune = abc.tune;
 		noteList = abc.noteList;
