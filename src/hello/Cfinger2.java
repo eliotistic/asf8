@@ -125,7 +125,7 @@ public class Cfinger2 extends JPanel {
 		
 		
 		
-		fingPane = new FingerBoardsPanel();
+		fingPane = new FingerBoardsPanel(big);
 		JScrollPane fingScrollPane = new JScrollPane(fingPane);
 		fingScrollPane.getHorizontalScrollBar().setUnitIncrement(15);
 		JSplitPane secondSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -521,8 +521,8 @@ public class Cfinger2 extends JPanel {
 	}
 	
 	public void setNextActiveTrails(ArrayList<FingerTrail> newActiveTrails) {
-		
-		//FingerTrail prevFing = activeTrails.get(indexViewActiveTrail);
+		giveTheTrailIndex();
+		fingPane.getCurrentAboveBoard().setFraction(indexViewActiveTrail+1, activeTrails.size());
 		indexViewActiveTrail = 0;
 		
 		activeTrails = newActiveTrails;
@@ -535,7 +535,9 @@ public class Cfinger2 extends JPanel {
 	public void setNextExtendedTrails(ArrayList<FingerTrail> newActiveTrails) {
 		System.out.println("EXTENDING");
 		boolean extendingExisted = false;
+		
 		FingerTrail prevFing = activeTrails.get(indexViewActiveTrail);
+		fingPane.getCurrentAboveBoard().setFraction(indexViewActiveTrail+1, activeTrails.size());
 		indexViewActiveTrail = 0;
 		for(int i = newActiveTrails.size()-1; i>=0; i--)
 		{
@@ -608,7 +610,6 @@ public class Cfinger2 extends JPanel {
 			return;
 		} else {
 			FingerTrail ft = activeTrails.get(indexViewActiveTrail); // TODO out of bounds exception 2
-			
 			ctl.entryPanel.setArrows(indexViewActiveTrail, activeTrails.size() - 1);
 			//int max = activeTrails.size() - 1;
 			//System.out.println("Showng trail #" + indexViewActiveTrail + "/" + max);
@@ -892,5 +893,6 @@ public class Cfinger2 extends JPanel {
 	 */
 	public void giveTheTrailIndex() {
 		fingPane.getCurrentBoard().giveTrailIndex(indexViewActiveTrail);
+		fingPane.getCurrentBoard().setMasterIndex(activeTrails.get(0).start());
 	}
 }

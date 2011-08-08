@@ -218,7 +218,7 @@ public class BigGui extends JFrame {
 		
 		this.pack();
 		this.setVisible(true);
-		this.setSize(new Dimension(1200, 800)); // TODO adjust until the finale
+		this.setSize(new Dimension(1700, 900)); // TODO adjust until the finale
 		//Version.check();
 	}
 	

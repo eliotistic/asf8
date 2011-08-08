@@ -46,7 +46,7 @@ public class FingerBoard extends JLabel {
     private int masterIndex;
     private boolean representsAnExtension = false;
     private int extensionSize = 1;
-    private int givenTrailIndex;
+    private int givenTrailIndex; // given only when we leave this board for the next one.
     
 	
 	private ArrayList<ColoredNote> trails;
@@ -85,6 +85,11 @@ public class FingerBoard extends JLabel {
     public int getMasterIndex() {
 		return masterIndex;
 	}
+    
+    public void setMasterIndex(int ind)
+    {
+    	masterIndex = ind;
+    }
     
     public Point[][] getNoteCoordinates() {
 		return noteCoordinates;

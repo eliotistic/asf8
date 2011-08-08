@@ -1,17 +1,16 @@
 package hello;
 
 
-import javax.swing.JOptionPane;
 
 public class Version {
 
-	public static String version = "0.0806";
+	public static String version = "0.0808";
 	public static double v = Double.parseDouble(version);
 	//public static String version = "0.2";
 	
 	public static void check() {
-		String newVersion = Logger.latestVersion();
-		double v1 = Double.parseDouble(newVersion);
+		//String newVersion = Logger.latestVersion();
+		//double v1 = Double.parseDouble(newVersion);
 		/*if (v < v1){
 			JOptionPane.showMessageDialog(null,
 				"A newer version of String Fingering is available at\n "

@@ -15,7 +15,6 @@ import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -57,7 +56,7 @@ public class BigScore extends JPanel{
 	//public ArrayList<Fing.Result> fingResultList;
 	public ArrayList<ChordFingering> fingResultList;
 	
-	private boolean usingGridBag = true;//jb
+	
 	
 	
 	//private FingerSeq2 currentFingerSeq2;
@@ -227,15 +226,8 @@ public class BigScore extends JPanel{
 		GridBagConstraints c1 = new GridBagConstraints();
 		GridBagConstraints c2 = new GridBagConstraints();
 		GridBagConstraints c3 = new GridBagConstraints();
-		if(usingGridBag)
-		{
-			setLayout(new GridBagLayout());
-		}
-		else
-		{
-			BoxLayout g = new BoxLayout(this, BoxLayout.Y_AXIS);
-			this.setLayout(g);
-		}
+		
+		setLayout(new GridBagLayout());
 		
 		
 		
@@ -264,27 +256,20 @@ public class BigScore extends JPanel{
 		//arrows.setBackground(Color.white);
 		arrows.setBorder(BorderFactory.createEtchedBorder());
 		
-		if(usingGridBag)
-		{
-			c1.gridx = 0;
-			c1.gridy = 0;
-			c1.fill = GridBagConstraints.BOTH;
-			c1.weighty = 0.65;
-			c1.weightx = 0.5;
-			add(sPane, c1);
-			
-			c2.gridx = 0;
-			c2.gridy = 1;
-			c2.fill = GridBagConstraints.VERTICAL;
-			c2.weighty = 0;
-			c2.weightx = 0;
-			add(arrows, c2);
-		}
-		else 
-		{
-			add(sPane);
-			add(arrows);
-		}
+		
+		c1.gridx = 0;
+		c1.gridy = 0;
+		c1.fill = GridBagConstraints.BOTH;
+		c1.weighty = 0.65;
+		c1.weightx = 0.5;
+		add(sPane, c1);
+		
+		c2.gridx = 0;
+		c2.gridy = 1;
+		c2.fill = GridBagConstraints.VERTICAL;
+		c2.weighty = 0;
+		c2.weightx = 0;
+		add(arrows, c2);
 		
 		
 		
@@ -426,18 +411,13 @@ public class BigScore extends JPanel{
 	    //add(stepMode);
 		
 		
-		if(usingGridBag)
-		{
-			c3.gridx=0;
-			c3.gridy=2;
-			c3.fill = GridBagConstraints.BOTH;
-			
-			add(extendPanel, c3);
-		}
-		else
-		{
-			add(extendPanel);
-		}
+	
+		c3.gridx=0;
+		c3.gridy=2;
+		c3.fill = GridBagConstraints.BOTH;
+		
+		add(extendPanel, c3);
+		
 		
 		initFingering();
 		scoreUI.setBackground(Color.white);
@@ -462,6 +442,23 @@ public class BigScore extends JPanel{
 	{
 		doJumpNext();
 		setIndexArrows();
+	}
+	
+	public void jumpToMasterIndex(int masterInd)
+	{
+		masterIndex = masterInd;
+		anchSeq.doCurr();
+	}
+	
+	public void jumpToIndexAndExtend(int masterInd, int extensionSize)
+	{
+		masterIndex = masterInd;
+		doCurr();
+		/*for(int i = 0; i<extensionSize-1; i++)
+		{
+			extend();
+		}*/
+		/*scoreUI.setBoxedNotes(masterIndex, stop)*/
 	}
 
 	public void toggleBadTopologies (){
@@ -523,7 +520,7 @@ public class BigScore extends JPanel{
 		} else {
 			solSeq = new SolSequencer(this, fingResultList, instrument);
 			solSeq.inheritState(oldSolSeq);
-		
+			
 			//anchSeq.rebuild();
 			
 		}
@@ -557,7 +554,7 @@ public class BigScore extends JPanel{
 			{
 				anchSeq.setStateOn();
 			}
-			
+			cfinger.fingPane.giveAccess(this);
 
 			// scoreUI.repaint();
 		}
