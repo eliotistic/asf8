@@ -49,3 +49,8 @@ loading. Fixed some extending issues.
 August 6 : SATURDAY
 Implemented reading from the new XML file, although its default is not there; 
 Possible to change number of strings, minimum and maximum height
+
+August 8 : MONDAY
+Implemented the basics of the fractions above the Boards, and double-clicking to remove boards now clears efficiently. 
+
+
