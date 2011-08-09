@@ -252,6 +252,7 @@ public class BigScore extends JPanel{
 		sPane = new JScrollPane(scoreUI);
 		sPane.getViewport().setBackground(Color.white);
 		sPane.getVerticalScrollBar().setUnitIncrement(15); // 15 seems legit
+		scoreUI.giveScrollPaneAccess(sPane);
 		arrows = new ArrowKeys(true);
 		//arrows.setBackground(Color.white);
 		arrows.setBorder(BorderFactory.createEtchedBorder());

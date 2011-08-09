@@ -15,6 +15,8 @@ import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+
+import javax.swing.JScrollPane;
 //import java.util.Iterator;
 //import java.util.Vector;
 
@@ -33,7 +35,7 @@ public class BigScoreComponent extends JScoreComponent
 			{
 	
 	private static final long serialVersionUID = 1L;
-	private boolean analyze; 
+	private boolean analyze;
 	Tune tune;
 	ArrayList<MusicElement> noteList;
 	ArrayList<Integer> indexVector; // iv(N) is the index of the musicElet one of our things
@@ -55,7 +57,7 @@ public class BigScoreComponent extends JScoreComponent
 	Color posColor = new Color(0x005200); // greenish color.
 	public ArrayList<AnnotatedBoxes> annotatedBoxesList;
 	
-
+	private JScrollPane accessToPane; // jb
 	
 	// boxed notes are either chords or chordable sequences.
 	
@@ -123,6 +125,12 @@ public class BigScoreComponent extends JScoreComponent
 	public void myDrawRect(Rectangle r, Graphics g) {
 		// g.setPenColor(new Color(255, 0, 255));	
 		g.drawRect(r.x, r.y, r.width, r.height);
+		//accessToPane.getViewport().scrollRectToVisible(r); // TODO trying.
+		if(!accessToPane.getViewport().getViewRect().contains(r))
+		{
+			accessToPane.getVerticalScrollBar().setValue(r.y > 100 ? r.y - 100 : r.y /2);
+			//TODO modify this code, perfect it; also, can't scroll down and leave the square.
+		}
 	}
 	/*
 	public void myDrawRect(Rectangle2D r, Graphics g) {
@@ -357,6 +365,8 @@ public class BigScoreComponent extends JScoreComponent
 	}
 	public void setBoxedNotes(ArrayList<MusicElement> es) {
 		//boxedNote = null;
+		
+		
 		boxedNotes.clear();
 		boxedNotesList.clear();
 		
@@ -600,6 +610,10 @@ public class BigScoreComponent extends JScoreComponent
 		}
 		
 		// repaint();
+	}
+	
+	public void giveScrollPaneAccess(JScrollPane sPane) {
+		accessToPane = sPane;	
 	}
 
 }
