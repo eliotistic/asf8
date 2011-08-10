@@ -70,8 +70,8 @@ public class BigScoreComponent extends JScoreComponent
 	
 	//private PointList blueBoxedInds; 
 	
-	int boxedNoteMargin = 4;
-	int positionalMargin = boxedNoteMargin + 2;
+	private static final int BOXED_NOTE_MARGIN = 4;
+	int positionalMargin = BOXED_NOTE_MARGIN + 2;
 	int redBoxMargin = positionalMargin + 2;
 	// lines = tmp working array that splits a list of music
 	// elements into a list of lists, representing line breaks.
@@ -125,7 +125,6 @@ public class BigScoreComponent extends JScoreComponent
 	public void myDrawRect(Rectangle r, Graphics g) {
 		// g.setPenColor(new Color(255, 0, 255));	
 		g.drawRect(r.x, r.y, r.width, r.height);
-		//accessToPane.getViewport().scrollRectToVisible(r); // TODO trying.
 		if(!accessToPane.getViewport().getViewRect().contains(r))
 		{
 			accessToPane.getVerticalScrollBar().setValue(r.y > 100 ? r.y - 100 : r.y /2);
@@ -142,7 +141,7 @@ public class BigScoreComponent extends JScoreComponent
 	/*
 	public void setPositionalSeq (Seq s) {
 		if (s==null) return;
-		int margin = boxedNoteMargin + 2; 
+		int margin = BOXED_NOTE_MARGIN + 2; 
 		positionalSeq = s;
 		// add rectangles
 		positionalSeq.lineRects = lineRectangles(s.musicElements, margin);
@@ -153,7 +152,7 @@ public class BigScoreComponent extends JScoreComponent
 	
 	public void setPositionalSeq2 (MySeq s) {
 		if (s==null) return;
-		int margin = boxedNoteMargin + 2; 
+		int margin = BOXED_NOTE_MARGIN + 2; 
 		
 		// add rectangles
 		ArrayList<MusicElement> sub = getMusicElements(s.start, s.stop);
@@ -423,7 +422,7 @@ public class BigScoreComponent extends JScoreComponent
 	}
 	
 	private void evenNewerDrawBoxedNotes(Graphics g){
-		int b = boxedNoteMargin;
+		int b = BOXED_NOTE_MARGIN;
 		if (boxedNotesList == null) {
 			return;
 		}
