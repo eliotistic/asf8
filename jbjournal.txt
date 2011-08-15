@@ -53,4 +53,5 @@ Possible to change number of strings, minimum and maximum height
 August 8 : MONDAY
 Implemented the basics of the fractions above the Boards, and double-clicking to remove boards now clears efficiently. 
 
-
+August 14 : SUNDAY
+Added the default XML File creation (although not complete)

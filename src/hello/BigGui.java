@@ -95,7 +95,6 @@ public class BigGui extends JFrame {
         });
 		
 		
-		
 		// implement the arrows
 		bigScore.addKeyListener(new KeyListener()
 		{

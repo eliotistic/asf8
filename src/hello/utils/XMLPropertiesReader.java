@@ -61,7 +61,7 @@ public class XMLPropertiesReader {
 			 
 			        if (qName.equalsIgnoreCase("SALARY")) {
 				           bsalary = true;
-				        }
+				    }
 				        
 			        if (qName.equalsIgnoreCase("allowopen")) {
 				           ballow = true;
@@ -216,6 +216,7 @@ public class XMLPropertiesReader {
 				//e.printStackTrace();
 				System.err.println("THE XML FILE WAS NOT FOUND; DEFAULT VALUES ENTERED (AND PERHAPS CREATED DEFAULT FILE)");
 			}
+			
 		    //System.out.println("Integer List is: " + intList);
 		}
 		catch (Exception e)
