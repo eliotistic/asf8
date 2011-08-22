@@ -15,7 +15,7 @@ public class FingerTrail  {
 	ArrayList<ChordFingering.Fingering> trails;
 	// System.out.println(abcS);
 	//Point[] coords;
-	private TPArray trailPoints; // 
+	private TPArray trailPoints; // contains all the points, for instance (0,0), (2,3), (3, 22)
 	int orders;
 	//private IntSet saiten;
 	public Saiten saiten; // set of strings we play on
@@ -23,7 +23,7 @@ public class FingerTrail  {
 	
 	public IntSet[] saitenArray; // array with sets of intervals for each string.
 	public Bowing bowing; // sequence of strings
-	public IntSet heightSet;
+	private IntSet heightSet;
 	public int lifts;
 	/**
 	 * @ array of array of <saite, int> grouped by same int
@@ -456,14 +456,31 @@ public class FingerTrail  {
 		Point range = fbHeightRange();
 		return instrument.getSpan(range);
 	}
+	
+	/**
+	 * while the first condition is by Eliot, thoe others are by Jean-Benoit.
+	 * 
+	 * @return
+	 */
 	public boolean reallyInSpan () {
 		boolean firstCondition = logHandSpan() <= instrument.maxSpan;
-		boolean secondCondition = heightSet.max()<=Constraints.MAX_HEIGHT && 
-				heightSet.min()>=Constraints.MIN_HEIGHT; // jb
-		boolean thirdCondition = saiten.usedOnlyUnder(Constraints.NUM_CHORDS);
+		/*boolean secondCondition = heightSet.max()<=Constraints.MAX_HEIGHT && 
+				heightSet.min()>=Constraints.MIN_HEIGHT; // jb*/
+		boolean secondCondition = true;
+		for(Trailpoint tp : trailPoints)
+		{
+			if(Constraints.VIOLIN_MIN_HEIGHTS[tp.saite] > tp.interval ||
+					tp.interval > Constraints.VIOLIN_MAX_HEIGHTS[tp.saite])
+			{
+				secondCondition = false;
+			}
+		}
 		
+		boolean thirdCondition = saiten.usedOnlyUnderConstraints();
+		boolean fourthCondition = trailPoints.openPermittedByConstraints();
 		
-		return firstCondition && secondCondition; // TODO add third condition
+		return firstCondition && secondCondition && thirdCondition && fourthCondition;
+		//return firstCondition;
 	}
 	
 	@Override public String toString(){
@@ -515,11 +532,14 @@ public class FingerTrail  {
 			arr = new boolean [len];
 		}
 		
-		public boolean usedOnlyUnder(int numChords) {
-			for(int i = numChords; i<len; i++)
+		public boolean usedOnlyUnderConstraints() {
+			for(int i = 0; i<len; i++)
 			{
-				if(arr[i])
+				if(arr[i]==true && Constraints.VIOLIN_PLAYABLES[i]==false)
 				{
+					System.out.println("NOT USED UNDER CONSTRAINTS");
+					System.out.println(arr);
+					System.out.println(Constraints.VIOLIN_PLAYABLES);
 					return false;
 				}
 			}
@@ -590,6 +610,18 @@ public class FingerTrail  {
 			return !unknownPoint;
 		}
 		
+		public boolean openPermittedByConstraints() {
+			boolean permit = true;
+			for(Trailpoint tp : this)
+			{
+				if(tp.interval == 0 && !Constraints.VIOLIN_OPEN[tp.saite])
+				{
+					permit = false;
+				}
+			}
+			return permit;
+		}
+
 		private boolean containsCoordinates(Trailpoint tp)
 		{
 			boolean contains = false;

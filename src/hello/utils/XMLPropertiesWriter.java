@@ -1,6 +1,8 @@
 package hello.utils;
 
 
+
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -15,56 +17,77 @@ import org.w3c.dom.Element;
 
 public class XMLPropertiesWriter {
 
+	private static Transformer transformer;
+	private static DOMSource source;
+	private static StreamResult result;
 	
 	
-	public static void generateDefaultXMLFile()
+	public static void makeDefaultSource()
 	{
-		String root = "Root";
+		
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder documentBuilder;
 		try {
 			documentBuilder = documentBuilderFactory.newDocumentBuilder();
 			Document document = documentBuilder.newDocument();
-			Element rootElement = document.createElement(root);
-			document.appendChild(rootElement);
-		
-		    String element = "element1";
-		    String data = "data1";
-		    Element em = document.createElement(element);
-		    em.appendChild(document.createTextNode(data));
-		    rootElement.appendChild(em);
+			Element rootElement = document.createElement("root");
+			
+			
+			Element instrumentSpecs = document.createElement("instrumentSpecifications");
+			rootElement.appendChild(instrumentSpecs);
+			
+		    Element em = document.createElement("allInstrumentStrings");
+		    em.appendChild(document.createTextNode("55 62 69 76"));
+		    instrumentSpecs.appendChild(em);
 		   
-		    String element2 = "element2";
-		    String data2 = "data2";
-		    Element em2 = document.createElement(element2);
-		    em2.appendChild(document.createTextNode(data2));
-		    rootElement.appendChild(em2);
+		    
+		    Element em2 = document.createElement("allOpen");
+		    em2.appendChild(document.createTextNode("true true true true"));
+		    instrumentSpecs.appendChild(em2);
 		   
-		    String element3 = "a";
-		    String data3 = "aa";
-		    Element em3 = document.createElement(element3);
-		    em3.appendChild(document.createTextNode(data3));
-		    rootElement.appendChild(em3); 
+		    
+		    Element em3 = document.createElement("allPlayable");
+		    em3.appendChild(document.createTextNode("true true true true"));
+		    instrumentSpecs.appendChild(em3); 
 
-		    String element4 = "b";
-		    String data4 = "bb";
-		    Element em4 = document.createElement(element4);
-		    em4.appendChild(document.createTextNode(data4));
-		    rootElement.appendChild(em4);
+		    
+		    Element em4 = document.createElement("allMinHeight");
+		    em4.appendChild(document.createTextNode("0 0 0 0"));
+		    instrumentSpecs.appendChild(em4);
 
+		    
+		    Element em5 = document.createElement("allMaxHeight");
+		    em5.appendChild(document.createTextNode("25 25 25 25"));
+		    instrumentSpecs.appendChild(em5);
+		   
+		    
+		    
+		    Element topoConstraints = document.createElement("topocst");
+		    rootElement.appendChild(topoConstraints);
+		    
+		    Element em10 = document.createElement("triangelo");
+		    em10.appendChild(document.createTextNode("true"));
+		    topoConstraints.appendChild(em10);
+		    
+		    Element em11 = document.createElement("tribar");
+		    em11.appendChild(document.createTextNode("true"));
+		    topoConstraints.appendChild(em11); 
 
-		    String element5 = "c";
-		    String data5 = "cc";
-		    Element em5 = document.createElement(element5);
-		    em5.appendChild(document.createTextNode(data5));
-		    rootElement.appendChild(em5);
-			   
-			TransformerFactory transformerFactory = 
-			TransformerFactory.newInstance();
-			Transformer transformer = transformerFactory.newTransformer();
-			DOMSource source = new DOMSource(document);
-			StreamResult result =  new StreamResult("DefaultXMLFile.xml");
-			transformer.transform(source, result);
+		    
+		    Element em12 = document.createElement("diamond");
+		    em12.appendChild(document.createTextNode("true"));
+		    topoConstraints.appendChild(em12);
+		    
+			
+		    
+		    document.appendChild(rootElement);
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			transformer = transformerFactory.newTransformer();
+			source = new DOMSource(document);
+			
+			result =  new StreamResult("DefaultXMLFile.xml");
+			
+			//transformer.transform(source, result);
 			
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
@@ -73,13 +96,38 @@ public class XMLPropertiesWriter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public static void generateDefaultXMLFile()
+	{
+		makeDefaultSource();
+		try {
+			transformer.transform(source, result);
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
+	}
+	
+	public static void generateXMLFileFromDefault()
+	{
+		makeDefaultSource();
+		StreamResult result2 = new StreamResult("SFProperties.xml");
+		try {
+			transformer.transform(source, result2);
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	
 	public static void main(String[] args)
 	{
+		
 		generateDefaultXMLFile();
+		generateXMLFileFromDefault();
 	}
 	
 }

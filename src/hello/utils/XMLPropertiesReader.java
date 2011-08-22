@@ -2,7 +2,6 @@ package hello.utils;
 
 import hello.Constraints;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 
 import javax.xml.parsers.SAXParser;
@@ -20,24 +19,18 @@ public class XMLPropertiesReader {
 		 {
 			 SAXParserFactory factory = SAXParserFactory.newInstance();
 		     SAXParser saxParser = factory.newSAXParser();
-		     //final ArrayList<Integer> intList = new ArrayList<Integer>();
-		     final int numChords;
-		     final int maxHeight;
-		     final int minHeight;
-		     final int salary;
 		     
 		     DefaultHandler handler = new DefaultHandler() {
 		 
-			     boolean bnumchord = false;
-			     boolean bminh = false;
-			     boolean bmaxh = false;
-			     boolean bsalary = false;
-			     boolean ballow = false;
+			     boolean bOrigins = false;
+			     boolean bOpen = false;
+			     boolean bPlayable = false;
+			     boolean bMinHeight = false;
+			     boolean bMaxHeight = false;
 			     
 			     boolean bbar = false;
 			     boolean btrilo = false;
 			     boolean bdiamond = false;
-			     boolean binstrStrings = false;
 			     //ArrayList<Integer> intList = new ArrayList<Integer>();
 			 
 			     public void startElement(String uri, String localName,
@@ -45,43 +38,40 @@ public class XMLPropertiesReader {
 			        throws SAXException 
 			     {
 			 
-			        System.out.println("Start Element :" + qName);
+			       System.out.println("Start Element :" + qName);
 			 
-			        if (qName.equalsIgnoreCase("numchords")) {
-			           bnumchord = true;
+			        if (qName.equalsIgnoreCase("allInstrumentStrings")) {
+			            bOrigins = true;
 			        }
 			 
-			        if (qName.equalsIgnoreCase("minheight")) {
-			           bminh = true;
+			        if (qName.equalsIgnoreCase("allOpen")) {
+			            bOpen = true;
 			        }
 			 
-			        if (qName.equalsIgnoreCase("maxheight")) {
-			           bmaxh = true;
+			        if (qName.equalsIgnoreCase("allPlayable")) {
+			            bPlayable = true;
 			        }
 			 
-			        if (qName.equalsIgnoreCase("SALARY")) {
-				           bsalary = true;
+			        if (qName.equalsIgnoreCase("allMinHeight")) {
+			        	bMinHeight = true;
 				    }
 				        
-			        if (qName.equalsIgnoreCase("allowopen")) {
-				           ballow = true;
+			        if (qName.equalsIgnoreCase("allMaxHeight")) {
+			        	bMaxHeight = true;
 				    }
 			        
 			        if (qName.equalsIgnoreCase("triangelo")) {
-				           btrilo = true;
+			        	btrilo = true;
 				    }
 			        
 			        if (qName.equalsIgnoreCase("tribar")) {
-				           bbar = true;
+			        	bbar = true;
 				    }
 			        
 			        if (qName.equalsIgnoreCase("diamond")) {
-				           bdiamond = true;
+			        	bdiamond = true;
 				    }
 			        
-			        if (qName.equalsIgnoreCase("instrumentStrings")) {
-				           binstrStrings = true;
-				    }
 			        
 			        
 			 
@@ -97,46 +87,74 @@ public class XMLPropertiesReader {
 		 
 			     public void characters(char ch[], int start, int length)
 			         throws SAXException {
-			 
-			        if (bnumchord) {
-			        	String str = new String(ch, start, length);
-			            System.out.println("Num Chords : "
+			    	 
+			         String str = new String(ch, start, length);
+			         if (bOrigins) {
+			        	
+			            System.out.println("Origins : "
 			                + str);
-			            Constraints.NUM_CHORDS = Integer.parseInt(str);
-			            bnumchord = false;
-			        }
+			            String [] numbers = str.split(" ");
+			            int[] ints = new int[numbers.length];
+			            for(int i = 0; i< numbers.length; i++)
+			            {
+			            	ints[i] = Integer.parseInt(numbers[i]);
+			            }
+			            Constraints.VIOLIN_STRINGS = ints;
+			            bOrigins = false;
+			         }
 			 
-			        if (bminh) {
-			        	String str = new String(ch, start, length);
-			            System.out.println("Min Height : "
+			         if (bOpen) {
+			            System.out.println("Open : "
 			                + str);
-			            Constraints.MIN_HEIGHT = Integer.parseInt(str);
-			            bminh = false;
-			        }
+			            String [] numbers = str.split(" ");
+			            boolean[] ints = new boolean[numbers.length];
+			            for(int i = 0; i< numbers.length; i++)
+			            {
+			            	ints[i] = Boolean.parseBoolean(numbers[i]);
+			            }
+			            Constraints.VIOLIN_OPEN = ints;
+			            bOpen = false;
+			         }
 			 
-			        if (bmaxh) {
-			        	String str = new String(ch, start, length);
-			            System.out.println("Max Height : "
+			         if (bPlayable) {
+			            System.out.println("Playable : "
 			                + str);
-			            Constraints.MAX_HEIGHT = Integer.parseInt(str);
-			            bmaxh = false;
-			        }
+			            String [] numbers = str.split(" ");
+			            boolean[] ints = new boolean[numbers.length];
+			            for(int i = 0; i< numbers.length; i++)
+			            {
+			            	ints[i] = Boolean.parseBoolean(numbers[i]);
+			            }
+			            Constraints.VIOLIN_PLAYABLES = ints;
+			            bPlayable = false;
+			         }
 			 
-			        if (bsalary) {
-			        	String str = new String(ch, start, length);
-			            System.out.println("Salary : "
+			         if (bMinHeight) {
+			            System.out.println("Min height : "
 			                + str);
-			            bsalary = false;
-			        }
+			            String [] numbers = str.split(" ");
+			            int[] ints = new int[numbers.length];
+			            for(int i = 0; i< numbers.length; i++)
+			            {
+			            	ints[i] = Integer.parseInt(numbers[i]);
+			            }
+			            Constraints.VIOLIN_MIN_HEIGHTS = ints;
+			            bMinHeight = false;
+			         }
 			        
-			        if(ballow)
-			        {
-			        	String str = new String(ch, start, length);
-			            System.out.println("ALLOW OPEN : "
+			         if(bMaxHeight)
+			         {
+			            System.out.println("Max height : "
 			                + str);
-			            Constraints.ALLOW_OPEN = Boolean.parseBoolean(str);
-			            ballow = false;
-			        }
+			            String [] numbers = str.split(" ");
+			            int[] ints = new int[numbers.length];
+			            for(int i = 0; i< numbers.length; i++)
+			            {
+			            	ints[i] = Integer.parseInt(numbers[i]);
+			            }
+			            Constraints.VIOLIN_MAX_HEIGHTS = ints;
+			            bMaxHeight = false;
+			         }
 			          
 			          /*if(bIndex)
 			          {
@@ -147,7 +165,6 @@ public class XMLPropertiesReader {
 			        
 			        if(btrilo)
 			        {
-			        	String str = new String(ch, start, length);
 			            System.out.println("TRIANGELO : "
 			                + str);
 			            Constraints.TRIANGELO = Boolean.parseBoolean(str);
@@ -156,7 +173,6 @@ public class XMLPropertiesReader {
 			          
 			        if(bbar)
 			        {
-			        	String str = new String(ch, start, length);
 			            System.out.println("TRIANGLE BAR : "
 			                + str);
 			            Constraints.TRIBAR = Boolean.parseBoolean(str);
@@ -165,28 +181,12 @@ public class XMLPropertiesReader {
 			          
 			        if(bdiamond)
 			        {
-			        	String str = new String(ch, start, length);
 			            System.out.println("DIAMOND : "
 			                + str);
 			            Constraints.DIAMOND = Boolean.parseBoolean(str);
 			            bdiamond = false;
 			        }
-			          
-			        if(binstrStrings)
-			        {
-			        	String str = new String(ch, start, length);
-			        	str.trim();
-			            System.out.println("Instr strings : "
-			                + str);
-			            String[] strTab = str.split(",");
-			            int[] intTab = new int[strTab.length];
-			            for(int i = 0; i<strTab.length; i++)
-			            {
-			            	intTab[i] = Integer.parseInt(strTab[i]);
-			            }
-			            Constraints.VIOLIN_STRINGS = intTab;
-			            binstrStrings = false;
-			        }
+			        
 			          
 			        
 			 
@@ -195,23 +195,24 @@ public class XMLPropertiesReader {
 		      };// end defaultHandler
 		 
 		    try {
-				saxParser.parse("c:\\Users\\JeanBenoit\\McGill\\ComputingMusic\\test3.xml", handler);
+				//saxParser.parse("c:\\Users\\JeanBenoit\\McGill\\ComputingMusic\\test4.xml", handler);
+		    	saxParser.parse("SFProperties.xml", handler);
 			} catch (FileNotFoundException e) {
 				System.out.println("GOTTA CREATE A NEW FILE");
-				File newXML = new File("c:\\Users\\JeanBenoit\\McGill\\ComputingMusic\\test3.xml");
+				//File newXML = new File("c:\\Users\\JeanBenoit\\McGill\\ComputingMusic\\test3.xml");
+				XMLPropertiesWriter.generateDefaultXMLFile();
+				//XMLPropertiesWriter.generateXMLFileFromDefault();
 				
-				//TODO create default xml file with default values
-				
-				Constraints.MAX_HEIGHT = 25;
-				Constraints.NUM_CHORDS = 4;
-				Constraints.MIN_HEIGHT = 1;
-				Constraints.ALLOW_OPEN = true;
 				
 				Constraints.DIAMOND = true;
 				Constraints.TRIANGELO = true;
 				Constraints.TRIBAR = true;
 				
 				Constraints.VIOLIN_STRINGS = new int[]{55, 62, 69, 76};
+				Constraints.VIOLIN_OPEN = new boolean[]{true, true, true, true};
+				Constraints.VIOLIN_PLAYABLES = new boolean[]{true, true, true, true};
+				Constraints.VIOLIN_MIN_HEIGHTS = new int[]{0, 0, 0, 0};
+				Constraints.VIOLIN_MAX_HEIGHTS = new int[]{25, 25, 25, 25};
 				
 				//e.printStackTrace();
 				System.err.println("THE XML FILE WAS NOT FOUND; DEFAULT VALUES ENTERED (AND PERHAPS CREATED DEFAULT FILE)");

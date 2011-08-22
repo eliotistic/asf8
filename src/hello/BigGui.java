@@ -71,7 +71,7 @@ public class BigGui extends JFrame {
 		//Constraints.MIN_HEIGHT = 1;
 		//Constraints.NUM_CHORDS = 4;
 		
-		System.out.println("The found max height is: "+ Constraints.MAX_HEIGHT);
+		
 		
 		
 		cfinger = new Cfinger2(this);

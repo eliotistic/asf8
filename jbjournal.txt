@@ -55,3 +55,7 @@ Implemented the basics of the fractions above the Boards, and double-clicking to
 
 August 14 : SUNDAY
 Added the default XML File creation (although not complete)
+
+August 21 : SUNDAY
+Completed: Default XML File, copying the default to the standard (SFProperties.xml), reading and applying the 
+new Properties for the 4 strings individually. 
