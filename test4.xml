@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<root>
+	<instrumentSpecification>
+		
+		<allInstrumentStrings>55 62 69 76</allInstrumentStrings>
+		<allOpen>true true false true</allOpen>
+		<allPlayable>true true true true</allPlayable>
+		<allMinHeight>0 0 0 0</allMinHeight>
+		<allMaxHeight>25 25 25 25</allMaxHeight>
+	</instrumentSpecification>
+	
+	<topocst>
+		<triangelo>true</triangelo>
+		<tribar>true</tribar>
+		<diamond>true</diamond>
+			
+	</topocst>
+</root>
