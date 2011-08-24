@@ -11,7 +11,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 /*
  * Left Panel: contains both the  fingering selection and the instrument representation.
@@ -130,6 +129,7 @@ public class Cfinger2 extends JPanel {
 		JScrollPane fingScrollPane = new JScrollPane(fingPane);
 		fingScrollPane.getHorizontalScrollBar().setUnitIncrement(15);
 		JSplitPane secondSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		secondSplit.setDividerLocation(240);
 		secondSplit.setTopComponent(ctl);
 		secondSplit.setBottomComponent(fingScrollPane);
 		c1.gridx = 0;
@@ -139,16 +139,6 @@ public class Cfinger2 extends JPanel {
 		c1.weighty = 0.5;
 		add(secondSplit, c1);
 		
-		/*else 
-		{
-			c2.gridx = 1;
-			c2.gridy = 0;
-			c2.fill = GridBagConstraints.VERTICAL;
-			c2.weightx = 0.5;
-			c2.weighty = 0.5;
-			c2.anchor = GridBagConstraints.CENTER;
-			add(fingBoard, c2);
-		}*/
 		
 		
 
@@ -584,6 +574,7 @@ public class Cfinger2 extends JPanel {
 			//System.out.println("No active trails in CFINGER");
 			return;
 		} else {
+			System.out.println("INDEX: " + indexViewActiveTrail);
 			FingerTrail ft = activeTrails.get(indexViewActiveTrail); // TODO out of bounds exception 1 1
 			//System.out.println("WE GOT HERE IN VIEWTRAIL");
 			ctl.entryPanel.setArrows(indexViewActiveTrail, activeTrails.size() - 1);

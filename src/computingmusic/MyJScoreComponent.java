@@ -49,7 +49,8 @@ public class MyJScoreComponent extends JScoreComponent {
 		getTemplate().setAttributeSize(ScoreAttribute.MARGIN_RIGHT,
 				mRight); 
 		getTemplate().setAttributeSize(ScoreAttribute.MARGIN_LEFT,
-				mLeft); 
+				mLeft);
+		
 	}
 	
 	public MyJScoreComponent() {

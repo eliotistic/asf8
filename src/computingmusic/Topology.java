@@ -294,7 +294,7 @@ public class Topology {
 	
 	private void triangleLoCheck (Point a, Point b, Point c){
 		
-		// b is lower than a + c; a + c are bigger than ma. 2.
+		// b is lower than a + c; a + c are bigger than a major second
 		// returns true if killer triangle..
 		//System.out.println("Triangle");
 		//System.out.println("Triangle: check "  + a.y + " " + b.y + " " + c.y );

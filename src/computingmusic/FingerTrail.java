@@ -465,6 +465,7 @@ public class FingerTrail  {
 	 */
 	public boolean reallyInSpan () {
 		boolean firstCondition = logHandSpan() <= instrument.maxSpan;
+		System.out.println("log hand span: " + logHandSpan());
 		/*boolean secondCondition = heightSet.max()<=Constraints.MAX_HEIGHT && 
 				heightSet.min()>=Constraints.MIN_HEIGHT; // jb*/
 		boolean secondCondition = true;
@@ -480,8 +481,10 @@ public class FingerTrail  {
 		boolean thirdCondition = saiten.usedOnlyUnderConstraints();
 		boolean fourthCondition = trailPoints.openPermittedByConstraints();
 		
-		return firstCondition && secondCondition && thirdCondition && fourthCondition;
-		//return firstCondition;
+		//boolean fifthCondition = logHandSpan() <= instrument.getSpan(1, Constraints.VIOLIN_HAND_SPANS[0]);
+		
+		//return firstCondition && secondCondition && thirdCondition && fourthCondition;
+		return firstCondition;
 	}
 	
 	@Override public String toString(){

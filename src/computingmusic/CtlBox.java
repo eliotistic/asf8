@@ -99,16 +99,18 @@ public class CtlBox extends JPanel {
 		c2.gridy = 1;
 		c2.fill = GridBagConstraints.BOTH;
 		c2.weightx = 0;
-		c2.weighty = 0.3;
-		c2.insets = new Insets(10, 0, 0, 0);
+		c2.weighty = 0.5;
+		//c2.insets = new Insets(0, 10, 0, 0);
+		//c2.ipadx = 50;
+		//c2.ipady = 50;
 		add(abcChord, c2);
 		
 		c3.gridx = 0;
 		c3.gridy = 2;
-		c3.fill = GridBagConstraints.VERTICAL;
+		c3.fill = GridBagConstraints.BOTH;
 		c3.weightx = 0;
 		c3.weighty = 0.3;
-		c3.anchor = GridBagConstraints.LINE_START;
+		c3.anchor = GridBagConstraints.PAGE_START;
 		add(topo, c3);
 		
 		c4.gridx = 0;

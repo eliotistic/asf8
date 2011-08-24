@@ -24,11 +24,6 @@ import computingmusic.utils.XMLPropertiesReader;
 //import java.awt.event.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Properties;
 
 /*
  * Main class. appFrame is the main Frame for the project. 
@@ -36,13 +31,8 @@ import java.util.Properties;
 public class BigGui extends JFrame {
 	
 	private static final long serialVersionUID = 1L;
+	@SuppressWarnings("unused")
 	private static final String USER_HOME = "user.home";
-	private static final String PROPERTY_FILE_NAME = ".stringfingering";
-	private static final String PROP1_PATH = "userLikesTurtles";
-	private static final String ANCHORS_PATH = "anchorsOn";
-	private static final String PATH_PATH = "filePath";
-	private static final String EXTENSION_PATH = "extensionString";
-	private static final String SETTINGS_SF_TOOL = "Settings for the StringFingering tool";
 	
 	private boolean arrowsOfRightPanelToKeyboard = true; // if false, then the keyboard maps to the arrows of left panel.
 	
@@ -51,10 +41,10 @@ public class BigGui extends JFrame {
 	public static FMenuBar menu;
 	public static String version = Version.version;
 	
-	public boolean prop_like_turtles;
-	public boolean prop_anchors_on;//jb
-	public String bool_file_path;
-	public String prop_extension;
+	//public boolean prop_like_turtles;
+	//public boolean prop_anchors_on;//jb
+	//public String bool_file_path;
+	//public String prop_extension;
 	public Cfinger2 cfinger; // I(jb) removed the static; any remarkable difference?
 	
 	BigGui (){
@@ -66,7 +56,7 @@ public class BigGui extends JFrame {
 		GridBagConstraints c1 = new GridBagConstraints();
 		
 		//loading of properties/constraints
-		loadProperties(); // to delete
+		//loadProperties(); // to delete
 		XMLPropertiesReader.main(null);
 		//Constraints.MAX_HEIGHT = 25;
 		//Constraints.MIN_HEIGHT = 1;
@@ -222,7 +212,73 @@ public class BigGui extends JFrame {
 		//Version.check();
 	}
 	
-	private void loadProperties()
+	
+	
+	
+	
+	public void recordPath() {
+		/*String homeDir = System.getProperty(USER_HOME);
+        File propertiesFile = new File(homeDir + File.separator + PROPERTY_FILE_NAME);
+        Properties swevizProperties = new Properties();
+        if(propertiesFile.exists())
+        {
+        	try
+	        {
+	        	swevizProperties.load(new FileReader(propertiesFile));
+	        	swevizProperties.setProperty(PATH_PATH, bool_file_path);
+	        	swevizProperties.store(new FileWriter(propertiesFile), SETTINGS_SF_TOOL);
+	        }
+	        catch(IOException e)
+	        {
+	            System.out.println("The boolean FILE PATH could not be stored");
+	            JOptionPane.showMessageDialog(this, "The boolean FILE PATH could not be stored, and " +
+	            		"the File was detected and loaded",
+	            		"error", 0);
+	            e.printStackTrace();
+	        }
+        }
+        else 
+        {
+        	System.err.println("The properties file was not found");
+        }*/
+		
+	}
+		
+	public void  showAboutDialog()
+	{
+		//AboutDialog.doDialog(this) ;
+	}
+
+	
+
+
+	public void setArrowsOfRightPanelToKeyboard(boolean arrowsOfRightPanelToKeyboard) {
+		this.arrowsOfRightPanelToKeyboard = arrowsOfRightPanelToKeyboard;
+	}
+
+
+	public boolean isArrowsOfRightPanelToKeyboard() {
+		return arrowsOfRightPanelToKeyboard;
+	}
+	
+	
+	
+	public static void main(String args[]) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				new BigGui();
+			}
+		});
+
+	}
+
+	
+
+	
+}
+
+/*
+ * private void loadProperties()
 	{
 		String homeDir = System.getProperty(USER_HOME);
         File propertiesFile = new File(homeDir + File.separator + PROPERTY_FILE_NAME);
@@ -278,120 +334,6 @@ public class BigGui extends JFrame {
 	        prop_anchors_on = false;
         }
 	}
-	
-	public void setPropAnchors(boolean anchorsOn)
-	{
-		String homeDir = System.getProperty(USER_HOME);
-        File propertiesFile = new File(homeDir + File.separator + PROPERTY_FILE_NAME);
-        Properties swevizProperties = new Properties();
-        if(propertiesFile.exists())
-        {
-        	try
-	        {
-	        	swevizProperties.load(new FileReader(propertiesFile));
-	        	swevizProperties.setProperty(ANCHORS_PATH, anchorsOn ? "true" : "false");
-	        	swevizProperties.store(new FileWriter(propertiesFile), SETTINGS_SF_TOOL);
-	        }
-	        catch(IOException e)
-	        {
-	            System.out.println("The boolean ANCHORS could not be stored");
-	            JOptionPane.showMessageDialog(this, "The boolean ANCHORS could not be stored, and " +
-	            		"the File was detected and loaded",
-	            		"error", 0);
-	            e.printStackTrace();
-	        }
-        }
-        else 
-        {
-        	System.err.println("The properties file was not found");
-        } 
-	}
-	
-	public void recordPath() {
-		String homeDir = System.getProperty(USER_HOME);
-        File propertiesFile = new File(homeDir + File.separator + PROPERTY_FILE_NAME);
-        Properties swevizProperties = new Properties();
-        if(propertiesFile.exists())
-        {
-        	try
-	        {
-	        	swevizProperties.load(new FileReader(propertiesFile));
-	        	swevizProperties.setProperty(PATH_PATH, bool_file_path);
-	        	swevizProperties.store(new FileWriter(propertiesFile), SETTINGS_SF_TOOL);
-	        }
-	        catch(IOException e)
-	        {
-	            System.out.println("The boolean FILE PATH could not be stored");
-	            JOptionPane.showMessageDialog(this, "The boolean FILE PATH could not be stored, and " +
-	            		"the File was detected and loaded",
-	            		"error", 0);
-	            e.printStackTrace();
-	        }
-        }
-        else 
-        {
-        	System.err.println("The properties file was not found");
-        }
-		
-	}
-		
-	public void  showAboutDialog()
-	{
-		//AboutDialog.doDialog(this) ;
-	}
-
-	
-
-
-	public void setArrowsOfRightPanelToKeyboard(boolean arrowsOfRightPanelToKeyboard) {
-		this.arrowsOfRightPanelToKeyboard = arrowsOfRightPanelToKeyboard;
-	}
-
-
-	public boolean isArrowsOfRightPanelToKeyboard() {
-		return arrowsOfRightPanelToKeyboard;
-	}
-	
-	public static void saveExtension(String extensionString) {
-		String homeDir = System.getProperty(USER_HOME);
-        File propertiesFile = new File(homeDir + File.separator + PROPERTY_FILE_NAME);
-        Properties swevizProperties = new Properties();
-        if(propertiesFile.exists())
-        {
-        	try
-	        {
-	        	swevizProperties.load(new FileReader(propertiesFile));
-	        	swevizProperties.setProperty(EXTENSION_PATH, extensionString);
-	        	swevizProperties.store(new FileWriter(propertiesFile), SETTINGS_SF_TOOL);
-	        }
-	        catch(IOException e)
-	        {
-	            System.out.println("The setting Extension could not be stored");
-	            /*JOptionPane.showMessageDialog(this, "The boolean ANCHORS could not be stored, and " +
-	            		"the File was detected and loaded",
-	            		"error", 0);*/
-	            e.printStackTrace();
-	        }
-        }
-        else 
-        {
-        	System.err.println("The properties file was not found");
-        } 
-		
-	}
-	
-	public static void main(String args[]) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				new BigGui();
-			}
-		});
-
-	}
-
-	
-
-	
-}
+ */
 
 

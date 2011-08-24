@@ -250,8 +250,8 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		anchorOn.addActionListener(this);
 		
 		//System.out.println("Anchors on: " + appFrame.prop_anchors_on);
-		anchorNone.setSelected(!appFrame.prop_anchors_on);
-		anchorOn.setSelected(appFrame.prop_anchors_on);
+		anchorNone.setSelected(false);
+		anchorOn.setSelected(true);
 		
 		add(anchor);
 		
@@ -406,12 +406,12 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		
 		if (e.getSource() == anchorNone) {
 			big.anchSeq.setStateOff();
-			appFrame.setPropAnchors(false);
+			//appFrame.setPropAnchors(false);
 			System.out.println("Anchor: None");
 		}
 		if (e.getSource() == anchorOn) {
 			big.anchSeq.setStateOn();
-			appFrame.setPropAnchors(true);
+			//appFrame.setPropAnchors(true);
 			System.out.println("Anchor: On");
 		}
 		

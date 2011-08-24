@@ -54,21 +54,21 @@ public class FingerBoardsPanel extends JPanel {
 		
 		c1.gridx = 0;
 		c1.gridy = 0;
-		c1.fill = GridBagConstraints.BOTH;
+		c1.fill = GridBagConstraints.VERTICAL;
 		c1.anchor = GridBagConstraints.LINE_END;
-		c1.weightx = 0.5;
+		c1.weightx = 0;
 		
 		c2.gridx = 1;
 		c2.gridy = 0;
 		c2.fill = GridBagConstraints.BOTH;
 		c2.anchor = GridBagConstraints.LINE_END;
-		c2.weightx = 0.5;
+		c2.weightx = 0;
 		
 		c3.gridx = 2;
 		c3.gridy = 0;
-		c3.fill = GridBagConstraints.BOTH;
+		c3.fill = GridBagConstraints.NONE;
 		c3.anchor = GridBagConstraints.LINE_END;
-		c3.weightx = 0.5;
+		c3.weightx = 0;
 		
 		c4.gridx = 0;
 		c4.gridy = 1;
@@ -239,7 +239,7 @@ public class FingerBoardsPanel extends JPanel {
 		c1.gridy = 0;
 		c1.fill = GridBagConstraints.BOTH;
 		c1.anchor = GridBagConstraints.LINE_END;
-		c1.weightx = 0.5;
+		c1.weightx = 0;
 		this.add(newAbove, c1);
 		c2.gridx = numBoards++;
 		c2.gridy = 1;

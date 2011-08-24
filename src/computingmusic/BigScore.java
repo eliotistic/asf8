@@ -286,7 +286,7 @@ public class BigScore extends JPanel{
 		// note that for this one, a MouseAdapter is used, since we want to isolate right click from left click
 		arrows.next.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if(e.getButton() == 1 && e.getClickCount() == 1)//if left click
+				if(e.getButton() == 1 /*&& e.getClickCount() == 1*/)//if left click
 				{
 					nextArrowActionPerformed();
 				}
@@ -294,13 +294,13 @@ public class BigScore extends JPanel{
 				{
 					jumpNextArrowActionPerformed();
 				}
-				else if(e.getClickCount() == 2)
+				/*else if(e.getClickCount() == 2)
             	{
             		for(int i = 0; i<FAST_FORWARD_SPEED; i++)
             		{
             			nextArrowActionPerformed();
             		}
-            	}
+            	}*/
 				requestFocusInWindow();
 				arrows.setBorder(BorderFactory.createLineBorder(Color.black));
 				appFrame.cfinger.ctl.entryPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
@@ -560,10 +560,9 @@ public class BigScore extends JPanel{
 			if (fingering) {
 				initFingering();
 			}
-			if(appFrame.prop_anchors_on)
-			{
-				anchSeq.setStateOn();
-			}
+			
+			anchSeq.setStateOn();
+			
 			cfinger.fingPane.giveAccess(this);
 
 			// scoreUI.repaint();
@@ -596,7 +595,8 @@ public class BigScore extends JPanel{
 		if (xmode == XMode.Anch){
 			anchSeq.doNext();
 		} else {
-			arpSeq.doNext();
+			//arpSeq.doNext(); // TODO revert back to anch /// arp ?
+			anchSeq.doNext();
 		}
 	}
 	public void doJumpNext(){
@@ -610,14 +610,14 @@ public class BigScore extends JPanel{
 		if (xmode == XMode.Anch){
 			anchSeq.doPrev();
 		} else {
-			arpSeq.doPrev();
+			anchSeq.doPrev();
 		}
 	}
 	public void doStart(){
 		if (xmode == XMode.Anch){
 			anchSeq.doStart();
 		} else {
-			arpSeq.doStart();
+			anchSeq.doStart();
 		}
 	}
 	
@@ -626,7 +626,7 @@ public class BigScore extends JPanel{
 		if (xmode == XMode.Anch){
 			anchSeq.extend();
 		} else {
-			arpSeq.extend();
+			anchSeq.extend();
 		}
 	}
 	
@@ -634,7 +634,7 @@ public class BigScore extends JPanel{
 		if (xmode == XMode.Anch){
 			anchSeq.shrink();
 		} else {
-			arpSeq.shrink();
+			anchSeq.shrink();
 		}
 	}
 	

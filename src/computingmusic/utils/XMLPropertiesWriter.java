@@ -44,6 +44,10 @@ public class XMLPropertiesWriter {
 		    Element em2 = document.createElement("allOpen");
 		    em2.appendChild(document.createTextNode("true true true true"));
 		    instrumentSpecs.appendChild(em2);
+		    
+		    Element em6 = document.createElement("allHandSpans");
+		    em6.appendChild(document.createTextNode("8 8 8 8"));
+		    instrumentSpecs.appendChild(em6);
 		   
 		    
 		    Element em3 = document.createElement("allPlayable");

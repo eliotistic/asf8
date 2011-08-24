@@ -8,7 +8,7 @@ public class AboveFingerBoard extends JLabel
 {
 
 	private static final long serialVersionUID = 1L;
-	private static final String DEFAULT_TEXT = "def";
+	private static final String DEFAULT_TEXT = " ";
 	
 	public AboveFingerBoard()
 	{

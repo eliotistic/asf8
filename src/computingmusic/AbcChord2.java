@@ -46,7 +46,7 @@ public class AbcChord2 extends JPanel {
 	
 	public AbcChord2(Cfinger2 c) {
 		this.setMinimumSize(new Dimension(60, 80));
-		cfinger2 = c; 
+		cfinger2 = c;
 		setBackground(Color.white);
 		setBorder(BorderFactory.createEtchedBorder());
 		scoreUI = new MyJScoreComponent();
@@ -56,7 +56,7 @@ public class AbcChord2 extends JPanel {
 		c1.gridx = 0;
 		c1.gridy = 0;
 		//c1.insets = new Insets(10, 10, 10, 10);
-		//c1.anchor = GridBagConstraints.PAGE_START; // was useless.
+		c1.anchor = GridBagConstraints.CENTER; // was useless.
 		//c1.fill = GridBagConstraints.NONE;
 		
 		add(scoreUI, c1);

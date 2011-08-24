@@ -98,7 +98,7 @@ public class AbcReader {
 		
 		if (f != null){
 			System.out.println("File: " + f.getPath());
-			big.appFrame.bool_file_path = f.getAbsolutePath();// TODO jb
+			// TODO jb here: confirm (save) the file path, it is valid
 			((BigGui) big.appFrame).recordPath();
 			//abcString = "";
 			getFile(f);

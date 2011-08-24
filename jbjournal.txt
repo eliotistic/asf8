@@ -59,3 +59,6 @@ Added the default XML File creation (although not complete)
 August 21 : SUNDAY
 Completed: Default XML File, copying the default to the standard (SFProperties.xml), reading and applying the 
 new Properties for the 4 strings individually. 
+
+August 24 : WEDNESDAY
+Fixed GridBag issues for the presentation, and *not properly* enabled the Arpeggios to display.

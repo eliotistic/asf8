@@ -28,6 +28,7 @@ public class XMLPropertiesReader {
 			     boolean bPlayable = false;
 			     boolean bMinHeight = false;
 			     boolean bMaxHeight = false;
+			     boolean bSpans = false;
 			     
 			     boolean bbar = false;
 			     boolean btrilo = false;
@@ -73,7 +74,10 @@ public class XMLPropertiesReader {
 			        	bdiamond = true;
 				    }
 			        
-			        
+			        if(qName.equalsIgnoreCase("allHandSpans"))
+			        {
+			        	bSpans = true;
+			        }
 			        
 			 
 			     }
@@ -115,6 +119,20 @@ public class XMLPropertiesReader {
 			            }
 			            Constraints.VIOLIN_OPEN = ints;
 			            bOpen = false;
+			         }
+			         
+			         if(bSpans)
+			         {
+			        	System.out.println("Hand Spans : "
+					                + str);
+			            String [] numbers = str.split(" ");
+			            int[] ints = new int[numbers.length];
+			            for(int i = 0; i< numbers.length; i++)
+			            {
+			            	ints[i] = Integer.parseInt(numbers[i]);
+			            }
+			            Constraints.VIOLIN_HAND_SPANS = ints;
+			            bSpans = false;
 			         }
 			 
 			         if (bPlayable) {
@@ -202,7 +220,7 @@ public class XMLPropertiesReader {
 				System.out.println("GOTTA CREATE A NEW FILE");
 				//File newXML = new File("c:\\Users\\JeanBenoit\\McGill\\ComputingMusic\\test3.xml");
 				XMLPropertiesWriter.generateDefaultXMLFile();
-				//XMLPropertiesWriter.generateXMLFileFromDefault();
+				XMLPropertiesWriter.generateXMLFileFromDefault();
 				
 				
 				Constraints.DIAMOND = true;
@@ -211,6 +229,7 @@ public class XMLPropertiesReader {
 				
 				Constraints.VIOLIN_STRINGS = new int[]{55, 62, 69, 76};
 				Constraints.VIOLIN_OPEN = new boolean[]{true, true, true, true};
+				Constraints.VIOLIN_HAND_SPANS = new int[] {8, 8, 8, 8};
 				Constraints.VIOLIN_PLAYABLES = new boolean[]{true, true, true, true};
 				Constraints.VIOLIN_MIN_HEIGHTS = new int[]{0, 0, 0, 0};
 				Constraints.VIOLIN_MAX_HEIGHTS = new int[]{25, 25, 25, 25};
