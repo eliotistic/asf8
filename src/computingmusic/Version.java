@@ -4,7 +4,7 @@ package computingmusic;
 
 public class Version {
 
-	public static String version = "0.0822";
+	public static String version = "0.0824";
 	public static double v = Double.parseDouble(version);
 	//public static String version = "0.2";
 	
