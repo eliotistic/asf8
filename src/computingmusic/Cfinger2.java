@@ -233,23 +233,19 @@ public class Cfinger2 extends JPanel {
 		 	 }
 		 });
 		 
-		 ctl.save.addActionListener(new ActionListener() {
-			 public void actionPerformed(ActionEvent e)
-		 	 {
-				 fingPane.save();
-		 	 }
-		 });
-		 
 		 ctl.load.addActionListener(new ActionListener() {
 			 public void actionPerformed(ActionEvent e)
 		 	 {
+				 //TODO What this did previously, was use the recorded position and length of the extension
+				 //(taking for granted that it's the same piece) to go back to the extension. 
+				 // Hence if the piece has been modified, the extension will have changed. 
 				 /*if(appFrame.prop_extension != null)
 				 {
 					 System.out.println("string is: "+appFrame.prop_extension);
 					 Scanner s = new Scanner(appFrame.prop_extension);
 					 int ind = 0;
 					 int len = 0;
-					 if(s.next() != "default")
+					 if(s.next() != "default") // the file had structure such as: blah 3 blah 4
 					 {
 						 ind = s.nextInt();
 						 s.next();

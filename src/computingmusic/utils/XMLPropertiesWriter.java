@@ -45,8 +45,8 @@ public class XMLPropertiesWriter {
 		    em2.appendChild(document.createTextNode("true true true true"));
 		    instrumentSpecs.appendChild(em2);
 		    
-		    Element em6 = document.createElement("allHandSpans");
-		    em6.appendChild(document.createTextNode("8 8 8 8"));
+		    Element em6 = document.createElement("handSpan");
+		    em6.appendChild(document.createTextNode("8"));
 		    instrumentSpecs.appendChild(em6);
 		   
 		    

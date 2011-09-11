@@ -62,3 +62,7 @@ new Properties for the 4 strings individually.
 
 August 24 : WEDNESDAY
 Fixed GridBag issues for the presentation, and *not properly* enabled the Arpeggios to display.
+
+September 11 : SUNDAY
+Mandatory commit, it had been a while since last. Among few updates are the centering of the panel numbers, and a new file for the next
+person to take on the project (not finished)

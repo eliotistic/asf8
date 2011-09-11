@@ -8,6 +8,8 @@
 
 //In AnchorSequencer, at the constructor of Anchor with Seq2, the activeTrails are generated. They should be selected 
 // with the user preferences.
+// add the user path property
+
 package computingmusic;
 
 //import java.awt.Dimension;
@@ -51,6 +53,7 @@ public class BigGui extends JFrame {
 		
 		this.setTitle("String fingering v" + version);
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		
 		//jb
 		this.setLayout(new GridBagLayout());
 		GridBagConstraints c1 = new GridBagConstraints();
@@ -173,7 +176,7 @@ public class BigGui extends JFrame {
 		JSplitPane principalSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		principalSplit.setTopComponent(cfinger);
 		principalSplit.setBottomComponent(bigScore);
-		
+		principalSplit.setDividerLocation(600);
 		c1.gridx=0;
 		c1.gridy=0;
 		c1.weightx = 0.1;

@@ -55,19 +55,19 @@ public class FingerBoardsPanel extends JPanel {
 		c1.gridx = 0;
 		c1.gridy = 0;
 		c1.fill = GridBagConstraints.VERTICAL;
-		c1.anchor = GridBagConstraints.LINE_END;
+		c1.anchor = GridBagConstraints.CENTER;
 		c1.weightx = 0;
 		
 		c2.gridx = 1;
 		c2.gridy = 0;
-		c2.fill = GridBagConstraints.BOTH;
-		c2.anchor = GridBagConstraints.LINE_END;
+		c2.fill = GridBagConstraints.VERTICAL;
+		c2.anchor = GridBagConstraints.CENTER;
 		c2.weightx = 0;
 		
 		c3.gridx = 2;
 		c3.gridy = 0;
-		c3.fill = GridBagConstraints.NONE;
-		c3.anchor = GridBagConstraints.LINE_END;
+		c3.fill = GridBagConstraints.VERTICAL;
+		c3.anchor = GridBagConstraints.CENTER;
 		c3.weightx = 0;
 		
 		c4.gridx = 0;
@@ -237,8 +237,8 @@ public class FingerBoardsPanel extends JPanel {
 		
 		c1.gridx = numBoards;
 		c1.gridy = 0;
-		c1.fill = GridBagConstraints.BOTH;
-		c1.anchor = GridBagConstraints.LINE_END;
+		c1.fill = GridBagConstraints.VERTICAL;
+		c1.anchor = GridBagConstraints.CENTER;
 		c1.weightx = 0;
 		this.add(newAbove, c1);
 		c2.gridx = numBoards++;
@@ -259,13 +259,16 @@ public class FingerBoardsPanel extends JPanel {
 		while(boards.size() > index)
 		{
 			boards.remove(index);
+			System.out.println("boARDS size is now:" + boards.size());
 		}
 		while(aboveBoards.size() > index)
 		{
 			aboveBoards.remove(index);
+			System.out.println("above size is now: " + aboveBoards.size());
 		}
 		while (this.getComponentCount() > index*2) // TODO not sure about that code
 		{
+			System.out.println("count = " + this.getComponentCount() + " and index*2 = " + index*2);
 			this.remove(index*2);
 		}
 		numBoards = index;
@@ -274,7 +277,6 @@ public class FingerBoardsPanel extends JPanel {
 		addABoard();
 		currentIndex = index;
 		FingerBoard currBoard = boards.get(index - 1); // could replace TODO by getCurrentBoard()
-		currBoard.setIsCurrentFingerBoard(true);
 		
 		scoreAccess.jumpToMasterIndex(currBoard.getMasterIndex());
 		

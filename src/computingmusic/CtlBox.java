@@ -21,7 +21,6 @@ public class CtlBox extends JPanel {
 	GluePanel gluePanel;
 	JButton showGlue;
 	JButton freeze;
-	JButton save;
 	JButton load;
 	JLabel currentTextDisplay; // jb
 	
@@ -60,7 +59,6 @@ public class CtlBox extends JPanel {
 		GridBagConstraints c8 = new GridBagConstraints();
 		GridBagConstraints c9 = new GridBagConstraints();
 		GridBagConstraints c10 = new GridBagConstraints();
-		GridBagConstraints c11 = new GridBagConstraints();
 		
 		
 		//this.setM
@@ -70,9 +68,8 @@ public class CtlBox extends JPanel {
 		gluePanel = new GluePanel();
 		showGlue = new JButton("Show glue");
 		currentTextDisplay = new JLabel();//jb
-		freeze = new JButton("Freeze");
-		save = new JButton("Save");
-		load = new JButton("Load");
+		freeze = new JButton("Freeze (UNIMPLEMENTED)");
+		load = new JButton("Load (UNIMPLEMENTED)");
 		
 		
 		
@@ -154,21 +151,15 @@ public class CtlBox extends JPanel {
 		c9.fill = GridBagConstraints.VERTICAL;
 		c9.weightx = 0;
 		c9.weighty = 0.1;
-		add(save, c9);
+		add(load, c9);
 		
 		c10.gridx = 0;
 		c10.gridy = 9;
 		c10.fill = GridBagConstraints.VERTICAL;
 		c10.weightx = 0;
 		c10.weighty = 0.1;
-		add(load, c10);
+		add(currentTextDisplay, c10);
 		
-		c11.gridx = 0;
-		c11.gridy = 10;
-		c11.fill = GridBagConstraints.VERTICAL;
-		c11.weightx = 0;
-		c11.weighty = 0.1;
-		add(currentTextDisplay, c11);
 		
 		
 		sf = new JFrame("Survey says ...");
