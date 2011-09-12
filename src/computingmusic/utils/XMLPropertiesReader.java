@@ -63,6 +63,9 @@ public class XMLPropertiesReader {
 				    }
 			        
 			        if (qName.equalsIgnoreCase("triangelo")) {
+			        	String s = attributes.getValue(0);
+			        	int triangeloLength = Integer.parseInt(s);
+			        	Constraints.TRIANGELO_LENGTH = triangeloLength;
 			        	btrilo = true;
 				    }
 			        
@@ -222,6 +225,7 @@ public class XMLPropertiesReader {
 				
 				Constraints.DIAMOND = true;
 				Constraints.TRIANGELO = true;
+				Constraints.TRIANGELO_LENGTH = 3;
 				Constraints.TRIBAR = true;
 				
 				Constraints.VIOLIN_STRINGS = new int[]{55, 62, 69, 76};

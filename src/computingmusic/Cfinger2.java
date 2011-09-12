@@ -569,7 +569,8 @@ public class Cfinger2 extends JPanel {
 		if (activeTrails == null) {
 			//System.out.println("No active trails in CFINGER");
 			return;
-		} else {
+		}
+		else if(activeTrails.size() != 0){
 			System.out.println("INDEX: " + indexViewActiveTrail);
 			FingerTrail ft = activeTrails.get(indexViewActiveTrail); // TODO out of bounds exception 1 1
 			//System.out.println("WE GOT HERE IN VIEWTRAIL");
@@ -584,10 +585,26 @@ public class Cfinger2 extends JPanel {
 			
 			//fing.setBvMap(ft.heightMap);
 			
-			
+			fingPane.getCurrentAboveBoard().setFraction(indexViewActiveTrail+1, activeTrails.size());
 			fingPane.getCurrentBoard().setFingerTrail(ft);
 			
 			
+			
+		}
+		else
+		{
+			int index = big.masterIndex;
+			if(fingPane.getCurrentBoard().representsAnExtension())
+			{
+				for(int i = index; i<index + fingPane.getCurrentBoard().getExtensionSize(); i++)
+				{
+					big.scoreUI.addRedNote(i);
+				}
+			}
+			else
+			{
+				big.scoreUI.addRedNote(index);
+			}
 			
 		}
 	}
@@ -608,6 +625,7 @@ public class Cfinger2 extends JPanel {
 			//fing.setBvMap(ft.heightMap);
 			
 			fingPane.addFingerTrail(ft);
+			fingPane.getCurrentAboveBoard().setFraction(indexViewActiveTrail+1, activeTrails.size());
 		}
 	}
 	

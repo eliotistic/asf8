@@ -71,20 +71,29 @@ public class XMLPropertiesWriter {
 		    
 		    Element em10 = document.createElement("triangelo");
 		    em10.appendChild(document.createTextNode("true"));
+		    em10.setAttribute("length", "3");
 		    topoConstraints.appendChild(em10);
 		    
 		    Element em11 = document.createElement("tribar");
 		    em11.appendChild(document.createTextNode("true"));
-		    topoConstraints.appendChild(em11); 
+		    topoConstraints.appendChild(em11);
 
 		    
 		    Element em12 = document.createElement("diamond");
 		    em12.appendChild(document.createTextNode("true"));
 		    topoConstraints.appendChild(em12);
 		    
+		    
+		    
+		    Element newElement = document.createElement("handSpans");
+		    //newElement.appendChild(document.create)
 			
 		    
 		    document.appendChild(rootElement);
+		    
+		    
+		    //System.out.println("InputEncoding: " + document.getXmlEncoding());
+		    //document.normalizeDocument();
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			transformer = transformerFactory.newTransformer();
 			source = new DOMSource(document);

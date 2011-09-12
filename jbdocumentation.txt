@@ -1,0 +1,61 @@
+Hello and Welcome to the String Fingering project. If you are searching for info on 
+how to use the program, please refer to the README file.
+
+This project has been made almost entirely by Mr. Eliot Handelman. I have only
+worked on this for one summer, and I've only made additions. This is intended
+for a person that would follow the work, as a description of what was done, what
+is to be done - and the explanations of the functionning of the program.
+
+I am pretty proud of my work with the class FingerBoardsPanel - but I'm not quite
+satisfied with the way I worked my way with the displaying of trails (see
+schema.png next to this file). I added on the top, and through that, one
+will notice that I totally cut off the links with the cfinger interaction 
+(box at the left middle), as well as the arpeggio mode (although I made 
+temporary code so that that one still works). 
+
+Methods in Cfinger such as doKeynumFingering, doFingering1 and especially
+doCurrentFingering totally mistified me one some parts. That last one, I
+commented out almost entirely! I also went, deep in FingerBoardPanel, to define what
+an Extension is - that is, the result after doing an extension - and I created the
+class. It was only later that I discovered that the FingerTrail class WAS an
+extension, so to speak, so I believe now that my structure can be reduced to be a 
+lot more concise. Also, I made it so that FingerBoard "remember" many things in 
+fields such as indexes of extension, among other things. I now believe this is 
+useless, because the FingerTrail that they contain might have that information already.
+
+For instance, let's enter a bit of details: I tried my best so that a 
+MASTER INDEX IN SCORE and an EXTENSION length be remembered, but in
+FingerTrail, there are the start() and stop() methods, which locate
+the bounds of the extension. So yeah, an Extension is in a FingerTrail.
+
+
+Still to be done:
+-Opening a file temporarily remembers the folder; it should be able to save the 
+location of that folder, to always use it.
+-We talked a lot (but never did) make the fingerboard enable to click on a note and move it;
+of course, with the way things are now, it's not useful; it would be nice in a new 
+part, which would also contain the Random button, and the space to write your own 
+fingering. That should happen another place in the program!
+-Being able to click on a note to go to it, I found was quite a challenge.
+Since it was not a must, I did not do it; it's feasible, but you have
+to find where to get the "borders" of a note - its location in the score - 
+and then put mouse listeners on the score which take the location
+if the event
+-I have not yet given a way (or interface) for the user to change properties.
+The intention is to pop-up when a Property is changed: 
+"A property has been changed - save changes?"
+-I had a small thing to make the box in the score always visible - and it made it
+ALWAYS visible, as in you could not scroll down to see the piece - so
+I commented it out
+
+
+
+
+
+When I want to add a new Constraint in the XML file, here are the steps:
+-Add it to the creation of the default file in XMLPropertiesWriter
+(-Delete the old XMLs and make the new ones)
+-Activate its reading in XMLPropertieReader
+-Write down again the default for it for when the XML file is not found,
+bottom from there in XMLPropertiesReader
+-Make use of Constraints.YOUR_CONSTRAINT in the program!

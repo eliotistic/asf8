@@ -336,14 +336,14 @@ public class AnchorSequencer {
 		System.out.println("HELLO -- Anchor PREV running Arp.");
 		big.arpSeq.doPrev();
 		updateAnchor();
-		setSEButtons(true, true);
+		setSEButtons(false, true);
 	}
 	public void doNext(){
 		//resetFingerboard();
 		System.out.println("HELLO -- Anchor NEXT running Arp.");
 		big.arpSeq.doNext();
 		updateAnchor();
-		setSEButtons(true, true);
+		setSEButtons(false, true);
 	}
 	
 	public void doJumpNext()

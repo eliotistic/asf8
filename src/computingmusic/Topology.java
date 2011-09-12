@@ -301,7 +301,7 @@ public class Topology {
 		if (b.y < a.y && b.y < c.y) {
 			int d1 = Math.abs(a.y - b.y);
 			int d2 = Math.abs(c.y - b.y); // 
-			if (d1<3 || d2<3) {
+			if (d1<Constraints.TRIANGELO_LENGTH || d2<Constraints.TRIANGELO_LENGTH) {
 				topos = Topos.TRIANGLELO;
 			} else
 			    topos = Topos.BAD_TRIANGLELO;

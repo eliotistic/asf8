@@ -3,6 +3,7 @@ package computingmusic;
 public class Constraints {
 	
 	public static boolean TRIANGELO;
+	public static int TRIANGELO_LENGTH;
 	public static boolean DIAMOND;
 	public static boolean TRIBAR;
 	
@@ -12,6 +13,8 @@ public class Constraints {
 	public static boolean [] VIOLIN_OPEN;
 	public static boolean [] VIOLIN_PLAYABLES;
 	public static int VIOLIN_HAND_SPAN;
+	
+	
 	
 	
 }

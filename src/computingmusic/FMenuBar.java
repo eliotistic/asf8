@@ -3,6 +3,9 @@ package computingmusic;
 import  java.awt.event.* ;
 import  javax.swing.* ;
 
+import computingmusic.utils.XMLPropertiesReader;
+import computingmusic.utils.XMLPropertiesWriter;
+
 public class FMenuBar extends JMenuBar implements ActionListener {
 	/**
 	 * 
@@ -72,6 +75,10 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 	
 	JMenu boards;
 	JMenuItem clearBtn;
+	
+	JMenu properties;
+	JMenuItem reloadBtn;
+	JMenuItem resetBtn;
 	
 	
 	public String arpMenuGetState() {
@@ -277,12 +284,22 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		
 		add(boards);
 		
+		properties = new JMenu("Properties");
+		reloadBtn = new JMenuItem("Reload Properties");
+		resetBtn = new JMenuItem("Reset Properties");
+		properties.add(reloadBtn);
+		properties.add(resetBtn);
+		
+		add(properties);
+		
 		helpMenu = new JMenu("Help");
 		help = new JMenuItem("About");
 		add(helpMenu);
 		helpMenu.add(help);
 		help.addActionListener(this);
 		clearBtn.addActionListener(this);
+		reloadBtn.addActionListener(this);
+		resetBtn.addActionListener(this);
 		helpMenu.setMnemonic(KeyEvent.VK_H);
 		// start with violin
 		vnCB.setSelected(true);
@@ -418,7 +435,15 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		if(e.getSource() == clearBtn)
 		{
 			appPanel.fingPane.clearAll();
-			System.out.println("event here in FMenubR");
+		}
+		if (e.getSource() == reloadBtn)
+		{
+			XMLPropertiesReader.main(null);
+		}
+		if(e.getSource() == resetBtn)
+		{
+			XMLPropertiesWriter.main(null);
+			XMLPropertiesReader.main(null);
 		}
 	}	
 

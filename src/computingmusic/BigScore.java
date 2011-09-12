@@ -31,7 +31,7 @@ public class BigScore extends JPanel{
 	//public JOptionPane errorPane; 
 	public Instrument instrument;
 	private static final long serialVersionUID = 1L;
-	protected static final int FAST_FORWARD_SPEED = 10;
+	protected static final int FAST_FORWARD_SPEED = 10; // speed of the scroll
 	AbcReader abcReader;
 	Cfinger2 cfinger;
 	
@@ -460,6 +460,9 @@ public class BigScore extends JPanel{
 		anchSeq.doCurr();
 	}
 	
+	/*
+	 * unused; taking an index and an extension size, it goes from the start of the score to the given extension.
+	 */
 	public void jumpToIndexAndExtend(int masterInd, int extensionSize)
 	{
 		masterIndex = masterInd;

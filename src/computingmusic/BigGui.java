@@ -9,6 +9,7 @@
 //In AnchorSequencer, at the constructor of Anchor with Seq2, the activeTrails are generated. They should be selected 
 // with the user preferences.
 // add the user path property
+// it would be nice if the XML file created spaces by default - without needing an xml reader.
 
 package computingmusic;
 
