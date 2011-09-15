@@ -1,7 +1,7 @@
 Hello and Welcome to the String Fingering project. If you are searching for info on 
 how to use the program, please refer to the README file.
 
-This project has been made almost entirely by Mr. Eliot Handelman. I have only
+This project has been made almost entirely by Dr. Handelman. I have only
 worked on this for one summer, and I've only made additions. This is intended
 for a person that would follow the work, as a description of what was done, what
 is to be done - and the explanations of the functionning of the program.
@@ -47,8 +47,8 @@ The intention is to pop-up when a Property is changed:
 -I had a small thing to make the box in the score always visible - and it made it
 ALWAYS visible, as in you could not scroll down to see the piece - so
 I commented it out
-
-
+-Two new topology constraints: Large Triangle and Open String Between.
+-Small bug: right-click right arrow one time, then double-click first panel
 
 
 

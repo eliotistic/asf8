@@ -42,6 +42,9 @@ public class FingerBoard extends JLabel {
     Point[] psCom; // no idea.
     Point[] grayNotes; // no idea either.
     
+    //jb
+    ArrayList<FingerTrail> listOfTrailsFromThisExtension = new ArrayList<FingerTrail>();
+    
     // trademark of JB Corp.
     public Point[][] noteCoordinates; 
     private int masterIndex;
@@ -547,6 +550,10 @@ public class FingerBoard extends JLabel {
         repaint();
 
     }
+
+	public void giveArrayListOfTrails(ArrayList<FingerTrail> newActiveTrails) {
+		listOfTrailsFromThisExtension = newActiveTrails;
+	}
     
 
 

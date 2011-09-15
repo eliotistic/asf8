@@ -99,6 +99,16 @@ public class FingerTrail  {
 		return trailPoints;
 	}
 	
+	/**
+	 * jb
+	 * @param otherTrail
+	 * @return
+	 */
+	public boolean isExtensionOf(FingerTrail otherTrail)
+	{
+		return this.trailPoints.IsExtensionOf(otherTrail.trailPoints);
+	}
+	
 	private void addSaitenHeight(Point p) {
 		if (p.y != 0) {
 			saitenArray[p.x].add(p.y);
@@ -464,33 +474,33 @@ public class FingerTrail  {
 	 * @return
 	 */
 	public boolean reallyInSpan () {
-		boolean firstCondition = logHandSpan() <= instrument.maxSpan;
-		System.out.println("log hand span: " + logHandSpan());
+		boolean basicCondition = logHandSpan() <= instrument.maxSpan;
+		//System.out.println("log hand span: " + logHandSpan());
 		/*boolean secondCondition = heightSet.max()<=Constraints.MAX_HEIGHT && 
 				heightSet.min()>=Constraints.MIN_HEIGHT; // jb*/
 		
 		boolean second = reallyJBApprovedInSpan();
-		return firstCondition && second;
+		return basicCondition && second;
 	}
 	
 	public boolean reallyJBApprovedInSpan()
 	{
-		boolean secondCondition = true;
+		boolean heightCondition = true;
 		for(Trailpoint tp : trailPoints)
 		{
-			if(Constraints.VIOLIN_MIN_HEIGHTS[tp.saite] > tp.interval ||
-					tp.interval > Constraints.VIOLIN_MAX_HEIGHTS[tp.saite])
+			if((Constraints.VIOLIN_MIN_HEIGHTS[tp.saite] > tp.interval && tp.interval!=0) ||
+					 tp.interval > Constraints.VIOLIN_MAX_HEIGHTS[tp.saite]  )
 			{
-				secondCondition = false;
+				heightCondition = false;
 			}
 		}
 		
-		boolean thirdCondition = saiten.usedOnlyUnderConstraints();
-		boolean fourthCondition = trailPoints.openPermittedByConstraints();
+		boolean playableCondition = saiten.usedOnlyUnderConstraints();
+		boolean validOpenCondition = trailPoints.openPermittedByConstraints();
 		
-		boolean fifthCondition = logHandSpan() <= instrument.getSpan(1, Constraints.VIOLIN_HAND_SPAN);
+		boolean handSpanCondition = logHandSpan() <= instrument.getSpan(1, Constraints.VIOLIN_HAND_SPAN);
 		
-		return secondCondition && thirdCondition && fourthCondition && fifthCondition;
+		return heightCondition && playableCondition && validOpenCondition && handSpanCondition;
 	}
 	
 	@Override public String toString(){

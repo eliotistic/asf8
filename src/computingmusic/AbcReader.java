@@ -80,7 +80,7 @@ public class AbcReader {
 		int result = fc.showOpenDialog(fc);
 		
 		if (result == JFileChooser.CANCEL_OPTION){
-			System.out.println("Cancel");
+			//System.out.println("Cancel");
 			readError = true;
 			return; // Cancel or the close-dialog icon was clicked 
 		}
@@ -90,14 +90,14 @@ public class AbcReader {
 		
 		fc.setSelectedFile(f);
 		currDir = fc.getCurrentDirectory();
-		System.out.println("CurrDir: " + currDir);
+		//System.out.println("CurrDir: " + currDir);
 		//AbcHome = f.getPath();
 		
 		kNotes = new ArrayList<KNote>();
 		om = 0;
 		
 		if (f != null){
-			System.out.println("File: " + f.getPath());
+			System.out.println("File: " + f.getPath() + "in AbcReader");
 			// TODO jb here: confirm (save) the file path, it is valid
 			((BigGui) big.appFrame).recordPath();
 			//abcString = "";
@@ -106,10 +106,10 @@ public class AbcReader {
 			try {
 				tune = new TuneParser(AbcVersion.v2_0).parse(abcString);
 				if (tune == null) {
-				System.out.println("Parse Problem: tune is null");
+					System.out.println("Parse Problem: tune is null");
 				};
 				if (tune.getMusic() == null) {
-				System.out.println("NULL TUNE");
+					System.out.println("NULL TUNE");
 				} else {
 				
 					makeNoteList();

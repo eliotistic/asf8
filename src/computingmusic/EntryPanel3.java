@@ -117,158 +117,77 @@ public class EntryPanel3 extends JPanel {
 		GridBagConstraints c8 = new GridBagConstraints();
 		GridBagConstraints c9 = new GridBagConstraints();
 		
-		boolean newGridBag = true;
-		if(newGridBag)
-		{
-				
-			
-			JPanel topPanel = new JPanel();
-			c1.gridx = 0;
-			c1.gridy = 0;
-			//c1.weightx = 0.4;
-			c1.fill = GridBagConstraints.BOTH;
-			
-			c2.gridx = 1;
-			c2.gridy = 0;
-			//c2.weightx = 0.6;
-			c2.fill = GridBagConstraints.BOTH;
-			//c2.weightx=0.5;
-			topPanel.add(clearBtn, c1);
-			topPanel.add(randBtn, c2);
-			
-			JPanel midPanel = new JPanel();
-			midPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
-			c3.gridx = 0;
-			c3.gridy = 0;
-			//c3.gridwidth = GridBagConstraints.RELATIVE;
-			//c3.weightx = 0.7;
-			//c3.fill = GridBagConstraints.BOTH;
-			c3.weightx = 1.0;
-			c3.weighty = 1.0;
-			c3.ipadx = 800;
-			c3.ipady = 30;
-			c4.gridx = 1;
-			c4.gridy = 0;
-			c4.weightx = 0.2;
-			c4.weighty = 0.5;
-			c4.fill = GridBagConstraints.BOTH;
-			c4.gridwidth = GridBagConstraints.REMAINDER;
-			midPanel.add(noteField, c3);
-			midPanel.add(fingerBtn, c4);
-			System.out.println("noteField's size:" + noteField.getSize());
-			
-			
-			JPanel bottomPanel = new JPanel();
-			c5.gridx = 0;
-			c5.gridy = 0;
-			c5.fill = GridBagConstraints.BOTH;
-			c6.gridx = 1;
-			c6.gridy = 0;
-			c6.fill = GridBagConstraints.BOTH;
-			bottomPanel.add(prevBtn, c5);
-			bottomPanel.add(nextBtn, c6);
-			
-			c7.gridx = 0;
-			c7.gridy = 0;
-			c7.weightx = 0.5;
-			c7.weighty = 0.5;
-			c7.fill = GridBagConstraints.BOTH;
-			//c7.anchor = GridBagConstraints.EAST;
-			c8.gridx = 0;
-			c8.gridy = 1;
-			c8.fill = GridBagConstraints.BOTH;
-			c8.weightx = 0.5;
-			c8.weighty = 0.5;
-			
-			c9.gridx = 0;
-			c9.gridy = 2;
-			c9.fill = GridBagConstraints.BOTH;
-			c9.weighty = 0.5;
-			c9.weightx = 0.5;
-			this.add(topPanel, c7);
-			this.add(midPanel, c8);
-			this.add(bottomPanel, c9);
-		}
 		
-		else 
-		{
+	
 			
 		
-			JButton btn1 = new JButton("1");
-			JButton btn2 = new JButton("2");
-			JButton btn3 = new JButton("3");
-			
-			
-			c1.gridx = 0;
-			c1.gridy = 0;
-			c1.fill = GridBagConstraints.BOTH;
-			//c1.weightx = 0.3;
-			//c1.weighty = 0.3;
-			add(clearBtn, c1);
-			
-			c2.gridx = 1;
-			c2.gridy = 0;
-			c2.gridwidth = 2;
-			c2.fill = GridBagConstraints.BOTH;
-			//c2.weightx = 0.3;
-			//c2.weighty = 0.3;
-			add(randBtn, c2);
-			
-			c7.gridx = 2;
-			c7.gridy = 0;
-			c7.fill = GridBagConstraints.BOTH;
-			//c7.weightx = 0.3;
-			//c7.weighty = 0.3;
-			add(btn1, c7);
-			
-			c3.gridx = 0;
-			c3.gridy = 1;
-			c3.gridwidth = 2;
-			c3.fill = GridBagConstraints.BOTH;
-			//c3.weightx = 0.3;
-			//c3.weighty = 0.3;
-			add(noteField, c3);
-			
-			c4.gridx = 2;
-			c4.gridy = 1;
-			c4.fill = GridBagConstraints.BOTH;
-			//c4.weightx = 0.3;
-			//c4.weighty = 0.3;
-			add(fingerBtn, c4);
-			
-			c8.gridx = 2;
-			c8.gridy = 1;
-			c8.fill = GridBagConstraints.BOTH;
-			//c8.weightx = 0.3;
-			//c8.weighty = 0.3;
-			add(btn2, c8);
-			
-			c5.gridx = 0;
-			c5.gridy = 2;
-			c5.fill = GridBagConstraints.VERTICAL;
-			c5.anchor = GridBagConstraints.LINE_END;
-			//c5.insets = new Insets(0, prevBtn.getWidth() - nextBtn.getWidth(), 0, 0);
-			//c5.weightx = 0.3;
-			//c5.weighty = 0.3;
-			add(prevBtn, c5);
-			
-			c6.gridx = 1;
-			c6.gridy = 2;
-			//c6.gridwidth = 2;
-			c6.fill = GridBagConstraints.BOTH;
-			//c6.weightx = 0.3;
-			//c6.weighty = 0.3;
-			add(nextBtn, c6);
-			
-			c9.gridx = 2;
-			c9.gridy = 2;
-			//c6.gridwidth = 2;
-			c9.fill = GridBagConstraints.BOTH;
-			//c9.weightx = 0.3;
-			//c9.weighty = 0.3;
-			add(btn3, c9);
+		JPanel topPanel = new JPanel();
+		c1.gridx = 0;
+		c1.gridy = 0;
+		//c1.weightx = 0.4;
+		c1.fill = GridBagConstraints.BOTH;
 		
-		}
+		c2.gridx = 1;
+		c2.gridy = 0;
+		//c2.weightx = 0.6;
+		c2.fill = GridBagConstraints.BOTH;
+		//c2.weightx=0.5;
+		topPanel.add(clearBtn, c1);
+		topPanel.add(randBtn, c2);
+		
+		JPanel midPanel = new JPanel();
+		midPanel.setBorder(BorderFactory.createLineBorder(Color.gray));
+		c3.gridx = 0;
+		c3.gridy = 0;
+		//c3.gridwidth = GridBagConstraints.RELATIVE;
+		//c3.weightx = 0.7;
+		//c3.fill = GridBagConstraints.BOTH;
+		c3.weightx = 1.0;
+		c3.weighty = 1.0;
+		c3.ipadx = 800;
+		c3.ipady = 30;
+		c4.gridx = 1;
+		c4.gridy = 0;
+		c4.weightx = 0.2;
+		c4.weighty = 0.5;
+		c4.fill = GridBagConstraints.BOTH;
+		c4.gridwidth = GridBagConstraints.REMAINDER;
+		midPanel.add(noteField, c3);
+		midPanel.add(fingerBtn, c4);
+		
+		
+		JPanel bottomPanel = new JPanel();
+		c5.gridx = 0;
+		c5.gridy = 0;
+		c5.fill = GridBagConstraints.BOTH;
+		c6.gridx = 1;
+		c6.gridy = 0;
+		c6.fill = GridBagConstraints.BOTH;
+		bottomPanel.add(prevBtn, c5);
+		bottomPanel.add(nextBtn, c6);
+		
+		c7.gridx = 0;
+		c7.gridy = 0;
+		c7.weightx = 0.5;
+		c7.weighty = 0.5;
+		c7.fill = GridBagConstraints.BOTH;
+		//c7.anchor = GridBagConstraints.EAST;
+		c8.gridx = 0;
+		c8.gridy = 1;
+		c8.fill = GridBagConstraints.BOTH;
+		c8.weightx = 0.5;
+		c8.weighty = 0.5;
+		
+		c9.gridx = 0;
+		c9.gridy = 2;
+		c9.fill = GridBagConstraints.BOTH;
+		c9.weighty = 0.5;
+		c9.weightx = 0.5;
+		this.add(topPanel, c7);
+		this.add(midPanel, c8);
+		this.add(bottomPanel, c9);
+		
+
 		
 		
 		

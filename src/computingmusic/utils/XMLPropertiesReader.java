@@ -40,7 +40,7 @@ public class XMLPropertiesReader {
 			        throws SAXException 
 			     {
 			 
-			       System.out.println("Start Element :" + qName);
+			       //System.out.println("Start Element :" + qName);
 			 
 			        if (qName.equalsIgnoreCase("allInstrumentStrings")) {
 			            bOrigins = true;
@@ -89,7 +89,7 @@ public class XMLPropertiesReader {
 			          String qName)
 			          throws SAXException {
 			 
-			          System.out.println("End Element :" + qName);
+			          //System.out.println("End Element :" + qName);
 			 
 			     }
 		 
@@ -99,8 +99,8 @@ public class XMLPropertiesReader {
 			         String str = new String(ch, start, length);
 			         if (bOrigins) {
 			        	
-			            System.out.println("Origins : "
-			                + str);
+			            //System.out.println("Origins : "
+			            //    + str);
 			            String [] numbers = str.split(" ");
 			            int[] ints = new int[numbers.length];
 			            for(int i = 0; i< numbers.length; i++)
@@ -112,8 +112,8 @@ public class XMLPropertiesReader {
 			         }
 			 
 			         if (bOpen) {
-			            System.out.println("Open : "
-			                + str);
+			            //System.out.println("Open : "
+			            //    + str);
 			            String [] numbers = str.split(" ");
 			            boolean[] ints = new boolean[numbers.length];
 			            for(int i = 0; i< numbers.length; i++)
@@ -126,8 +126,7 @@ public class XMLPropertiesReader {
 			         
 			         if(bSpan)
 			         {
-			        	System.out.println("Hand Span : "
-					                + str);
+			        	//System.out.println("Hand Span : "  + str);
 			            
 			            int inte = Integer.parseInt(str);
 			            
@@ -136,8 +135,7 @@ public class XMLPropertiesReader {
 			         }
 			 
 			         if (bPlayable) {
-			            System.out.println("Playable : "
-			                + str);
+			            //System.out.println("Playable : " + str);
 			            String [] numbers = str.split(" ");
 			            boolean[] ints = new boolean[numbers.length];
 			            for(int i = 0; i< numbers.length; i++)
@@ -149,8 +147,7 @@ public class XMLPropertiesReader {
 			         }
 			 
 			         if (bMinHeight) {
-			            System.out.println("Min height : "
-			                + str);
+			            //System.out.println("Min height : " + str);
 			            String [] numbers = str.split(" ");
 			            int[] ints = new int[numbers.length];
 			            for(int i = 0; i< numbers.length; i++)
@@ -163,8 +160,7 @@ public class XMLPropertiesReader {
 			        
 			         if(bMaxHeight)
 			         {
-			            System.out.println("Max height : "
-			                + str);
+			            //System.out.println("Max height : "  + str);
 			            String [] numbers = str.split(" ");
 			            int[] ints = new int[numbers.length];
 			            for(int i = 0; i< numbers.length; i++)
@@ -184,24 +180,21 @@ public class XMLPropertiesReader {
 			        
 			        if(btrilo)
 			        {
-			            System.out.println("TRIANGELO : "
-			                + str);
+			            //System.out.println("TRIANGELO : " + str);
 			            Constraints.TRIANGELO = Boolean.parseBoolean(str);
 			            btrilo = false;
 			        }
 			          
 			        if(bbar)
 			        {
-			            System.out.println("TRIANGLE BAR : "
-			                + str);
+			            //System.out.println("TRIANGLE BAR : " + str);
 			            Constraints.TRIBAR = Boolean.parseBoolean(str);
 			            bbar = false;
 			        }
 			          
 			        if(bdiamond)
 			        {
-			            System.out.println("DIAMOND : "
-			                + str);
+			            //System.out.println("DIAMOND : " + str);
 			            Constraints.DIAMOND = Boolean.parseBoolean(str);
 			            bdiamond = false;
 			        }
@@ -230,7 +223,7 @@ public class XMLPropertiesReader {
 				
 				Constraints.VIOLIN_STRINGS = new int[]{55, 62, 69, 76};
 				Constraints.VIOLIN_OPEN = new boolean[]{true, true, true, true};
-				Constraints.VIOLIN_HAND_SPAN = 8;
+				Constraints.VIOLIN_HAND_SPAN = 7;
 				Constraints.VIOLIN_PLAYABLES = new boolean[]{true, true, true, true};
 				Constraints.VIOLIN_MIN_HEIGHTS = new int[]{0, 0, 0, 0};
 				Constraints.VIOLIN_MAX_HEIGHTS = new int[]{25, 25, 25, 25};

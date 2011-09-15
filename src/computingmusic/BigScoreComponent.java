@@ -53,6 +53,7 @@ public class BigScoreComponent extends JScoreComponent
 	float mBot = 0f; // had 15f
 	float mRight = 0f; // 40f
 	float mLeft = 15f; // 40f
+	boolean notScrolling = true;
 	
 	//Color posColor = new Color(0x52C5FF);
 	Color posColor = new Color(0x005200); // greenish color.
@@ -126,8 +127,10 @@ public class BigScoreComponent extends JScoreComponent
 	public void myDrawRect(Rectangle r, Graphics g) {
 		// g.setPenColor(new Color(255, 0, 255));	
 		g.drawRect(r.x, r.y, r.width, r.height);
-		if(!accessToPane.getViewport().getViewRect().contains(r))
+		// jb code
+		if(!accessToPane.getViewport().getViewRect().contains(r) && notScrolling)
 		{
+			// not sure about that approximate formmula: does the job, put could be replaced.
 			accessToPane.getVerticalScrollBar().setValue(r.y > 100 ? r.y - 100 : r.y /2);
 			//TODO modify this code, perfect it; also, can't scroll down and leave the square.
 		}
@@ -612,6 +615,9 @@ public class BigScoreComponent extends JScoreComponent
 		// repaint();
 	}
 	
+	/*
+	 * not quite the right way of programming
+	 */
 	public void giveScrollPaneAccess(JScrollPane sPane) {
 		accessToPane = sPane;	
 	}

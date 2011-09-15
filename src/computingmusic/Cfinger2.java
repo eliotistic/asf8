@@ -495,12 +495,12 @@ public class Cfinger2 extends JPanel {
 		// note that the difference between a Fingering and a FingerTrail is that the Trail is made from many notes (anchor)
 		if(fingPane.getCurrentBoard().representsAnExtension())
 		{
-			System.out.println("Represents an ext");
+			//System.out.println("Represents an ext");
 			viewNextTrail();
 		}
 		else
 		{
-			System.out.println("Does not represent");
+			//System.out.println("Does not represent");
 			viewTrail();
 		}
 		
@@ -520,11 +520,12 @@ public class Cfinger2 extends JPanel {
 	}
 	
 	public void setNextExtendedTrails(ArrayList<FingerTrail> newActiveTrails) {
-		System.out.println("EXTENDING");
+		//System.out.println("EXTENDING");
 		boolean extendingExisted = false;
 		
 		FingerTrail prevFing = activeTrails.get(indexViewActiveTrail);
 		fingPane.getCurrentAboveBoard().setFraction(indexViewActiveTrail+1, activeTrails.size());
+		fingPane.getCurrentBoard().giveArrayListOfTrails(newActiveTrails);
 		indexViewActiveTrail = 0;
 		for(int i = newActiveTrails.size()-1; i>=0; i--)
 		{
@@ -563,6 +564,10 @@ public class Cfinger2 extends JPanel {
 		// NOW THE CURRENT BOARD IS THE NEW ONE
 		fingPane.getCurrentBoard().setRepresentsAnExtension(true);
 		fingPane.getCurrentBoard().setExtensionSize( previousExtensionSize + 1 );
+		if(!extendingExisted)
+		{
+			fingPane.migratePreviousBoardsToAValidExtension(activeTrails.get(indexViewActiveTrail));
+		}
 	}
 	
 	public void viewTrail() {
@@ -571,7 +576,7 @@ public class Cfinger2 extends JPanel {
 			return;
 		}
 		else if(activeTrails.size() != 0){
-			System.out.println("INDEX: " + indexViewActiveTrail);
+			//System.out.println("INDEX: " + indexViewActiveTrail);
 			FingerTrail ft = activeTrails.get(indexViewActiveTrail); // TODO out of bounds exception 1 1
 			//System.out.println("WE GOT HERE IN VIEWTRAIL");
 			ctl.entryPanel.setArrows(indexViewActiveTrail, activeTrails.size() - 1);

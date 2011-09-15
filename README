@@ -1,1 +1,17 @@
 This is a small tutorial on how to use the StringFingering application.
+
+To open a score, use the File menu. If you want to use anchors, do not forget to put Anchors On. 
+
+To go through the Score, use the right and left arrows under the Score. To clean up boards, either double-click on one (which will remove all at its right) or
+go to the Boards menu to Clear Panels. 
+
+To use the numerous Panels to go through followed fingerings (a trail), either use the Extend button or right-click on the right arrow. This will let fingerings as they are,
+and enable to move on. Note that extend will try to keep the current fingering so that it is coherent; if it cannot, it will go to a coherent trail, and notice you
+of the change. 
+
+The deeper arrows are there to go to the Start or End of the Score. 
+
+Clcik Solve to Extend repeatedly as much as you can.
+
+NOTE: For the arrows, one you click on an arrow, you can use the keyboard arrows to parse easily. Note that this uses focus; the keyboard arrows will work for 
+the last set of arrows used, be it in the Score or the Control Panel. 

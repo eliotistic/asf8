@@ -2,9 +2,13 @@ package computingmusic;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 /**
  * 
@@ -259,16 +263,16 @@ public class FingerBoardsPanel extends JPanel {
 		while(boards.size() > index)
 		{
 			boards.remove(index);
-			System.out.println("boARDS size is now:" + boards.size());
+			//System.out.println("boARDS size is now:" + boards.size());
 		}
 		while(aboveBoards.size() > index)
 		{
 			aboveBoards.remove(index);
-			System.out.println("above size is now: " + aboveBoards.size());
+			//System.out.println("above size is now: " + aboveBoards.size());
 		}
 		while (this.getComponentCount() > index*2) // TODO not sure about that code
 		{
-			System.out.println("count = " + this.getComponentCount() + " and index*2 = " + index*2);
+			//System.out.println("count = " + this.getComponentCount() + " and index*2 = " + index*2);
 			this.remove(index*2);
 		}
 		numBoards = index;
@@ -317,10 +321,51 @@ public class FingerBoardsPanel extends JPanel {
 	            	if(evt.getButton() == 3)
 	            	{
 	            		System.out.println("=3");
+	            		JPopupMenu menu = new JPopupMenu();
+	            		JMenuItem removeRight = new JMenuItem("Remove On Right (double-click)");
+	            		removeRight.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								deleteBoardsFrom(a);
+							}
+						});
+	            		menu.add(removeRight);
+	            		menu.show(evt.getComponent(), evt.getX(), evt.getY());
 	            	}
 	            }
 	        });
 		}
+	}
+
+	/**
+	 * When this method is called, the Current Board represents an extension that does not link with the ones before it.
+	 * This method takes the current board as a basis, and goes left to make all the previous boards link with
+	 * that last one. That way, the boards do not show a cut. This is the only method that makes use of 
+	 * the fact that FingerBoards keep their whole ArrayList of FingerTrails in memory. 
+	 * FingerTrail ft: FingerTrail which we want all the boards to connect to. 
+	 */
+	public void migratePreviousBoardsToAValidExtension(FingerTrail ft) {
+		int index = currentIndex-1;
+		FingerTrail ftModel = ft.copy();
+		while(boards.get(index).representsAnExtension())
+		{
+			ArrayList<FingerTrail> tList = boards.get(index).listOfTrailsFromThisExtension;
+			int validIndexInList = -1;
+			for(int i = 0; i<tList.size(); i++)
+			{
+				if(ftModel.isExtensionOf(tList.get(i)))
+				{
+					validIndexInList = i;
+				}
+			}
+			ftModel = tList.get(validIndexInList);
+			boards.get(index).setFingerTrail(ftModel);
+			
+			
+			
+			index -= 1;
+		}
+		
 	}
 	
 }

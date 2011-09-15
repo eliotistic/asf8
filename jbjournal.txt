@@ -69,3 +69,7 @@ person to take on the project (not finished)
 
 September 12 : MONDAY
 Last commit before the meeting; added new buttons in the menu, among others
+
+September 15 : THURSDAY
+Last Commit from JB, normally; finished last demands, the most important being that extending and not being able to keep the fingering results
+in the previous boards being adapted to a new fingering.

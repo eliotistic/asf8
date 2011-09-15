@@ -254,6 +254,18 @@ public class BigScore extends JPanel{
 		sPane = new JScrollPane(scoreUI);
 		sPane.getViewport().setBackground(Color.white);
 		sPane.getVerticalScrollBar().setUnitIncrement(15); // 15 seems legit
+		sPane.getVerticalScrollBar().addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent evt)
+			{
+				System.out.println("Scroll pressed");
+				scoreUI.notScrolling = false;
+			}
+			public void mouseReleased(MouseEvent evt)
+			{
+				System.out.println("Scroll released");
+				scoreUI.notScrolling = true;
+			}
+		});
 		scoreUI.giveScrollPaneAccess(sPane);
 		arrows = new ArrowKeys(true);
 		//arrows.setBackground(Color.white);
@@ -559,7 +571,7 @@ public class BigScore extends JPanel{
 			//setInstrument( Instrument.ofString(inst));
 			setInstrument(new Instrument(this,inst));
 			//cfinger.setInstrument(instrument);
-			System.out.println("Instrument: " + instrument.getInstName());
+			System.out.println("Instrument: " + instrument.getInstName() + " in BigScore");
 			if (fingering) {
 				initFingering();
 			}

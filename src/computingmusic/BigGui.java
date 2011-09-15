@@ -1,16 +1,5 @@
 
-
-//doCurrent, next and prev in cfinger (ONLY LEFT BOARD)
-//viewTrail in cfinger and addFingerTrail in FBP. Note that addFingerTrail is included in viewNextTrail
-// those are all the moments where we give notes to a fingerboard.
-
-//in FingerTrail: addFingering
-
-//In AnchorSequencer, at the constructor of Anchor with Seq2, the activeTrails are generated. They should be selected 
-// with the user preferences.
-// add the user path property
-// it would be nice if the XML file created spaces by default - without needing an xml reader.
-
+// anchor sequencer 1#3, extendByCF
 package computingmusic;
 
 //import java.awt.Dimension;
@@ -104,6 +93,7 @@ public class BigGui extends JFrame {
 					if(bigScore.arrows.next.isEnabled())
 					{
 						bigScore.nextArrowActionPerformed();
+						// TODO and jump to box
 					}
 				}
 				else if(evt.getKeyCode() == KeyEvent.VK_LEFT)

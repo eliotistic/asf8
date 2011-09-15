@@ -313,34 +313,34 @@ public class AnchorSequencer {
 	
 	private void updateAnchor(){
 		currAnchor = new Anchor(big.arpSeq.getCurrentArps());
-		System.out.println("updateAnchor -- activeTrails = " + currAnchor.countActiveTrails());
+		//System.out.println("updateAnchor -- activeTrails = " + currAnchor.countActiveTrails());
 		big.cfinger.setActiveTrails(currAnchor.activeTrails);
 	}
 	
 	private void updateNextAnchor()
 	{
 		currAnchor = new Anchor(big.arpSeq.getCurrentArps());
-		System.out.println("updateAnchor -- activeTrails = " + currAnchor.countActiveTrails());
+		//System.out.println("updateAnchor -- activeTrails = " + currAnchor.countActiveTrails());
 		big.cfinger.setNextActiveTrails(currAnchor.activeTrails);
 	}
 	
 	public void doCurr(){ // TODO verify if still necessary
 		//resetFingerboard();
-		System.out.println("HELLO -- Anchor CURR running Arp.");
+		System.out.println("HELLO -- Anchor CURR running Arp in AnchorSequencer.");
 		big.arpSeq.doCurr();
 		updateAnchor();
 		setSEButtons(false, true); // TODO verify if valid
 	}
 	public void doPrev(){
 		//resetFingerboard();
-		System.out.println("HELLO -- Anchor PREV running Arp.");
+		System.out.println("HELLO -- Anchor PREV running Arp in AnchorSequencer.");
 		big.arpSeq.doPrev();
 		updateAnchor();
 		setSEButtons(false, true);
 	}
 	public void doNext(){
 		//resetFingerboard();
-		System.out.println("HELLO -- Anchor NEXT running Arp.");
+		System.out.println("HELLO -- Anchor NEXT running Arp in AnchorSequencer.");
 		big.arpSeq.doNext();
 		updateAnchor();
 		setSEButtons(false, true);
@@ -353,6 +353,7 @@ public class AnchorSequencer {
 			big.arpSeq.doNext();
 		}
 		updateNextAnchor();
+		setSEButtons(false, true);
 	}
 	
 	
@@ -379,7 +380,7 @@ public class AnchorSequencer {
 		}
 		
 		boolean extended = currAnchor.extendForward();
-		System.out.println("BOOLEAN EXTENDED:" + extended);
+		//System.out.println("BOOLEAN EXTENDED:" + extended);
 		if (extended) {
 			setSEButtons(true, true);
 			//System.out.println(currAnchor);
