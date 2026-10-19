@@ -33,6 +33,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 	
 	JMenu helpMenu;
 	JMenuItem help;
+	JMenuItem controlsHelp;
 	
 	JMenu randMenu;
 	
@@ -107,6 +108,8 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		fileMenu.add(justABC);
 		readABC.addActionListener(this);
 		justABC.addActionListener(this);
+		readABC.setToolTipText("Open an ABC file, draw the score, and calculate fingerings.");
+		justABC.setToolTipText("Open and draw an ABC score without calculating fingerings.");
 		add(fileMenu);
 		
 		fileMenu.setMnemonic(KeyEvent.VK_F);
@@ -131,6 +134,9 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		vnCB.addActionListener(this);
 		vaCB.addActionListener(this);
 		vcCB.addActionListener(this);
+		vnCB.setToolTipText("Analyze fingerings using violin tuning and range.");
+		vaCB.setToolTipText("Analyze fingerings using viola tuning and range.");
+		vcCB.setToolTipText("Analyze fingerings using cello tuning and range.");
 		
 		
 		instMenu.add(vnCB);
@@ -151,6 +157,8 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		
 		rand1.addActionListener(this);
 		rand1_4.addActionListener(this);
+		rand1.setToolTipText("Make Random generate an ordinary random chord.");
+		rand1_4.setToolTipText("Make Random generate a four-note stop.");
 		//rand2.addActionListener(this);
 		
 		randMenu.add(rand1);
@@ -168,6 +176,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		topologyBG = new ButtonGroup();
 		filterBad = new JRadioButtonMenuItem("Filter bad topologies") ;
 		filterBad.addActionListener(this);
+		filterBad.setToolTipText("Reject playable fingerings whose fingerboard shape violates the topology rules.");
 		topologyMenu.add(filterBad);
 		filterBad.setSelected(big.filterBadToplogies);
 		add(topologyMenu);
@@ -211,6 +220,9 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		positionsNone.addActionListener(this);
 		positionsCursor.addActionListener(this);
 		cursorBindMaxPosition.addActionListener(this);
+		positionsNone.setToolTipText("Do not restrict the score by hand position.");
+		positionsCursor.setToolTipText("Choose hand-position sequences with the Positions controls below the score.");
+		cursorBindMaxPosition.setToolTipText("Automatically follow the maximum available position as the score cursor moves.");
 		
 		
 		positionsNone.setSelected(true);
@@ -236,6 +248,9 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		arpNone.addActionListener(this);
 		arpLongest.addActionListener(this);
 		arpJump.addActionListener(this);
+		arpNone.setToolTipText("Show the fingering at the current score event only.");
+		arpLongest.setToolTipText("Show the longest compatible arpeggiated passage beginning here.");
+		arpJump.setToolTipText("Make score navigation jump between changes in the longest arpeggiated passage.");
 		
 		arpNone.setSelected(true);
 		add(arp);
@@ -259,6 +274,8 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		//System.out.println("Anchors on: " + appFrame.prop_anchors_on);
 		anchorNone.setSelected(false);
 		anchorOn.setSelected(true);
+		anchorNone.setToolTipText("Navigate without preserving fingering trails between score events.");
+		anchorOn.setToolTipText("Track physically compatible fingering trails while navigating and extending.");
 		
 		add(anchor);
 		
@@ -268,6 +285,8 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		solveBG = new ButtonGroup ();
 		solveNone = new JRadioButtonMenuItem ("Off");
 		solveOn = new JRadioButtonMenuItem ("On");
+		solveNone.setToolTipText("Legacy solve-mode switch; currently not connected to an action.");
+		solveOn.setToolTipText("Legacy solve-mode switch; use the Solve button below the score instead.");
 		
 		solveBG.add(solveNone);
 		solveBG.add(solveOn);
@@ -279,7 +298,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		// HELP
 		
 		boards = new JMenu("Boards");
-		clearBtn = new JMenuItem("Clear Panels");
+		clearBtn = new JMenuItem("Reset Score and Panels");
 		boards.add(clearBtn);
 		
 		add(boards);
@@ -287,15 +306,23 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		properties = new JMenu("Properties");
 		reloadBtn = new JMenuItem("Reload Properties");
 		resetBtn = new JMenuItem("Reset Properties");
+		clearBtn.setToolTipText("Return to the start and clear fingerboards, Solve boxes, and position highlighting.");
+		reloadBtn.setToolTipText("Reload fingering constraints from SFProperties.xml.");
+		resetBtn.setToolTipText("Replace SFProperties.xml with the built-in defaults, then reload it.");
 		properties.add(reloadBtn);
 		properties.add(resetBtn);
 		
 		add(properties);
 		
 		helpMenu = new JMenu("Help");
+		controlsHelp = new JMenuItem("Controls");
 		help = new JMenuItem("About");
 		add(helpMenu);
+		helpMenu.add(controlsHelp);
 		helpMenu.add(help);
+		controlsHelp.setToolTipText("Open a guide to the main controls and interaction shortcuts.");
+		help.setToolTipText("Show version, copyright, and license information.");
+		controlsHelp.addActionListener(this);
 		help.addActionListener(this);
 		clearBtn.addActionListener(this);
 		reloadBtn.addActionListener(this);
@@ -369,6 +396,9 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		if ( e.getSource() == help){
 		AboutDialog.doDialog(appFrame);
 		}
+		if (e.getSource() == controlsHelp) {
+			ControlsHelpDialog.doDialog(appFrame);
+		}
 		if ( e.getSource() == filterBad) {
 		big.toggleBadTopologies();
 		}
@@ -434,7 +464,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		
 		if(e.getSource() == clearBtn)
 		{
-			appPanel.fingPane.clearAll();
+			big.resetScoreView();
 		}
 		if (e.getSource() == reloadBtn)
 		{

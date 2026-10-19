@@ -9,6 +9,7 @@ import java.util.Iterator;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import computingmusic.utils.IntSet;
 
@@ -69,6 +70,7 @@ public class AbcReader {
 		big = score;
 		fc = new JFileChooser();
 		fc.setDialogTitle("Select ABC file:");
+		fc.setFileFilter(new FileNameExtensionFilter("ABC notation files (*.abc)", "abc"));
 		noteList = new ArrayList<MusicElement> ();
 		kNotes = new ArrayList<KNote>();
 		readError = false;
@@ -86,18 +88,27 @@ public class AbcReader {
 		}
 		 
 		
-		File f = fc.getSelectedFile();
-		
+		read(fc.getSelectedFile());
+	}
+
+	public void read(File f){
+		readError = false;
+		if (!isAbcFile(f)) {
+			readError = true;
+			JOptionPane.showMessageDialog(null,
+					"Please choose an existing .abc file.",
+					"Unsupported file",
+					JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
 		fc.setSelectedFile(f);
-		currDir = fc.getCurrentDirectory();
-		//System.out.println("CurrDir: " + currDir);
-		//AbcHome = f.getPath();
-		
+		currDir = f.getAbsoluteFile().getParentFile();
 		kNotes = new ArrayList<KNote>();
 		om = 0;
-		
+
 		if (f != null){
-			System.out.println("File: " + f.getPath() + "in AbcReader");
+			System.out.println("File: " + f.getPath() + " in AbcReader");
 			// TODO jb here: confirm (save) the file path, it is valid
 			((BigGui) big.appFrame).recordPath();
 			//abcString = "";
@@ -134,8 +145,13 @@ public class AbcReader {
 			}
 		
 		}
-		
-		
+	}
+
+	public static boolean isAbcFile(File file) {
+		return file != null
+				&& file.isFile()
+				&& file.canRead()
+				&& file.getName().toLowerCase().endsWith(".abc");
 	}
 	
 	public class KNote {

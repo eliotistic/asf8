@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -402,14 +403,12 @@ public class BigScore extends JPanel{
 		});
 		extendPanel.clearSolvesBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// TODO implement. 
-				
-				// TODO set back the XMode?
-				// TODO AnchorSequencer.autoUpdateAchor() was called. Do we have to cancel?
-				boolean success = anchSeq.currAnchor.extendBack(); // TODO does that cancel the previous extend()?
-				System.out.println("Extend back success: " + success);
-				scoreUI.clearAnnotationBoxes(); // gg
-				anchSeq.doCurr(); // actually works
+				scoreUI.clearAnnotationBoxes();
+				if (anchSeq.currAnchor != null) {
+					boolean success = anchSeq.currAnchor.extendBack();
+					System.out.println("Extend back success: " + success);
+					anchSeq.doCurr();
+				}
 			}
 		});
 		extendPanel.positionRestrict.addActionListener(new ActionListener() {
@@ -552,8 +551,17 @@ public class BigScore extends JPanel{
 	}
 	
 
-	public void readandDrawABC (boolean fingering){
+	public boolean readandDrawABC (boolean fingering){
 		abcReader.read();
+		return finishReadAndDrawABC(fingering);
+	}
+
+	public boolean readandDrawABC(File file, boolean fingering){
+		abcReader.read(file);
+		return finishReadAndDrawABC(fingering);
+	}
+
+	private boolean finishReadAndDrawABC(boolean fingering) {
 		if (!abcReader.readError) {
 			//cfinger.clearAll(); // TODO added by jb
 			cfinger.fingPane.clearAll();
@@ -581,8 +589,9 @@ public class BigScore extends JPanel{
 			cfinger.fingPane.giveAccess(this);
 
 			// scoreUI.repaint();
+			return true;
 		}
-		
+		return false;
 	}
 	
 	
@@ -634,6 +643,18 @@ public class BigScore extends JPanel{
 		} else {
 			anchSeq.doStart();
 		}
+	}
+
+	public void resetScoreView() {
+		scoreUI.clearAnnotationBoxes();
+		scoreUI.turnoffPositions();
+		cfinger.fingPane.clearAll();
+		if (fingResultList != null && !fingResultList.isEmpty()) {
+			doStart();
+			setIndexArrows();
+		}
+		sPane.getVerticalScrollBar().setValue(0);
+		sPane.getHorizontalScrollBar().setValue(0);
 	}
 	
 	

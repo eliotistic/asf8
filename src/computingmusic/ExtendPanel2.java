@@ -124,6 +124,16 @@ public class ExtendPanel2 extends JPanel{
 		
 		positionRestrict = new JCheckBox("restrict to position");
 		fingerTrails = new JCheckBox("Fingering trails");
+		clear.setToolTipText("Legacy control; use Boards -> Reset Score and Panels instead.");
+		shrink.setToolTipText("Remove the last score event from the current extended fingering trail.");
+		extend.setToolTipText("Add the next score event while preserving a physically compatible fingering trail.");
+		extendForward.setToolTipText("Continue forward automatically when extending (legacy experimental option).");
+		extendMode.setToolTipText("Choose how candidate chord extensions are compared (legacy experimental option).");
+		positions.setToolTipText("Display hand-position sequences available at the current score location.");
+		solve.setToolTipText("Extend every compatible trail as far forward as possible and mark the resulting spans.");
+		clearSolvesBtn.setToolTipText("Remove Solve annotations and return to the current anchor.");
+		positionRestrict.setToolTipText("Restrict displayed fingerings to the selected hand position.");
+		fingerTrails.setToolTipText("Show the sequence of finger placements across the extended passage.");
 		//JPanel botbut = new JPanel();
 		//positionRestrict.addActionListener();
 		

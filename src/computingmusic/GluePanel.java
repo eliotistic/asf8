@@ -21,6 +21,8 @@ public class GluePanel extends JPanel {
 		
 		glue = new JButton("Glue");
 		unglue = new JButton("Unglue");
+		glue.setToolTipText("Lock the displayed fingering and discard incompatible alternatives in the passage.");
+		unglue.setToolTipText("Remove the fingering lock and rebuild the available alternatives.");
 		
 		
 		

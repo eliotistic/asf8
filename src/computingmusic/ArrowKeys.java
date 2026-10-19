@@ -46,6 +46,15 @@ public class ArrowKeys extends JPanel{
 		prev = new JButton("",prevIcon);
 		prev.setHorizontalTextPosition(AbstractButton.LEADING);
 		next = new JButton("", nextIcon);
+		if (fastKeys) {
+			start.setToolTipText("Go to the beginning of the score.");
+			prev.setToolTipText("Move to the previous score event. The Left Arrow key works after this panel has focus.");
+			next.setToolTipText("Move to the next score event. Right-click to jump past the current extended passage.");
+			stop.setToolTipText("Go to the end of the score.");
+		} else {
+			prev.setToolTipText("Show the previous hand-position sequence for the current score location.");
+			next.setToolTipText("Show the next hand-position sequence for the current score location.");
+		}
 		
 		//JPanel botbut = new JPanel();
 		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));

@@ -82,6 +82,7 @@ public class InstPanel extends JPanel {
         rangeLabel.setBorder(null);
         Font font = new Font("Verdana", Font.BOLD, 12);
         rangeLabel.setFont(font);
+		rangeLabel.setToolTipText("The selected instrument and its playable pitch range.");
         // txt.setForeground(Color.BLUE);
 
         fake = new JButton("fake");

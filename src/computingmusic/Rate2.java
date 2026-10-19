@@ -55,6 +55,7 @@ public class Rate2 extends JPanel {
 		for (int i=0; i<len; i++ ){
 		
 			butts[i] = new JButton(buttnames[i]);
+			butts[i].setToolTipText("Rate the displayed fingering as " + buttnames[i] + ".");
 			
 			
 			}

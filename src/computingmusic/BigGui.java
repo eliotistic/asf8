@@ -9,6 +9,9 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.datatransfer.DataFlavor;
+import java.io.File;
+import java.util.List;
 
 import javax.swing.*;
 
@@ -199,11 +202,66 @@ public class BigGui extends JFrame {
 		
 		
 		this.setJMenuBar(menu);
+		installAbcFileDrop();
 		
 		this.pack();
 		this.setVisible(true);
 		this.setSize(new Dimension(1700, 900)); // TODO adjust until the finale
 		//Version.check();
+	}
+
+	private void installAbcFileDrop() {
+		getRootPane().setTransferHandler(new TransferHandler() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public boolean canImport(TransferSupport support) {
+				if (!support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+					return false;
+				}
+				if (support.isDrop()) {
+					support.setDropAction(COPY);
+				}
+				return true;
+			}
+
+			@Override
+			@SuppressWarnings("unchecked")
+			public boolean importData(TransferSupport support) {
+				if (!canImport(support)) {
+					return false;
+				}
+				try {
+					List<File> files = (List<File>) support.getTransferable()
+							.getTransferData(DataFlavor.javaFileListFlavor);
+					if (files.size() != 1) {
+						showDropError("Drop one ABC file at a time.");
+						return false;
+					}
+					return loadAbcFile(files.get(0));
+				} catch (Exception exception) {
+					showDropError("Could not open the dropped file: " + exception.getMessage());
+					return false;
+				}
+			}
+		});
+	}
+
+	public boolean loadAbcFile(File file) {
+		if (!AbcReader.isAbcFile(file)) {
+			showDropError("Please drop an existing .abc file.");
+			return false;
+		}
+		if (bigScore.readandDrawABC(file, true)) {
+			setTitle("String fingering v" + version + " — " + file.getName());
+			return true;
+		}
+		return false;
+	}
+
+	private void showDropError(String message) {
+		JOptionPane.showMessageDialog(this, message, "Cannot open file",
+				JOptionPane.ERROR_MESSAGE);
 	}
 	
 	
@@ -260,7 +318,10 @@ public class BigGui extends JFrame {
 	public static void main(String args[]) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				new BigGui();
+				BigGui gui = new BigGui();
+				if (args.length > 0) {
+					gui.loadAbcFile(new File(args[0]));
+				}
 			}
 		});
 

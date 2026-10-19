@@ -70,6 +70,12 @@ public class EntryPanel3 extends JPanel {
 		//fingerBtn.setPreferredSize(new Dimension(25, 20));
 		nextBtn = new JButton("", nextIcon);
 		prevBtn = new JButton("", prevIcon );
+		clearBtn.setToolTipText("Clear the entered pitches and displayed fingering results.");
+		randBtn.setToolTipText("Generate and analyze a random chord using the Random menu setting.");
+		noteField.setToolTipText("Enter up to four pitches separated by spaces, for example: g5 bf5 d6");
+		fingerBtn.setToolTipText("Find and display all playable fingerings for the entered pitches.");
+		prevBtn.setToolTipText("Show the previous fingering solution for the entered chord.");
+		nextBtn.setToolTipText("Show the next fingering solution for the entered chord.");
 		prevBtn.setHorizontalTextPosition(AbstractButton.LEADING);
 		//prevBtn.setPreferredSize(new Dimension(90, 30));
 		//nextBtn.setPreferredSize(new Dimension(90, 30));

@@ -70,6 +70,9 @@ public class CtlBox extends JPanel {
 		currentTextDisplay = new JLabel();//jb
 		freeze = new JButton("Freeze (UNIMPLEMENTED)");
 		load = new JButton("Load (UNIMPLEMENTED)");
+		showGlue.setToolTipText("Print the score locations of locked (glued) fingerings to the terminal.");
+		freeze.setToolTipText("Experimental: remember the current extension in memory and advance; saving is unfinished.");
+		load.setToolTipText("Not implemented; this was intended to restore a previously frozen extension.");
 		
 		
 		
@@ -79,6 +82,7 @@ public class CtlBox extends JPanel {
 		msg = new Hello("Enter up to 4 notes:"); // Hello();
 		topo = new Hello("Topology:");
 		survey = new JButton("Very brief survey");
+		survey.setToolTipText("Open the legacy playability-feedback survey.");
 		
 		instPanel.setMinimumSize(new Dimension(200, 20));
 
