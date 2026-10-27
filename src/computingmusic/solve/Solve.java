@@ -37,7 +37,7 @@ public class Solve {
 		hp.size = size;
 		Constraints.HAND = new FrameTest(Geometry.VIOLIN, hp, true);
 		FrameTest comfortable = new FrameTest(Geometry.VIOLIN, hp, false);
-		PieceSolver.Solution sol = new PieceSolver(new PieceSolver.Costs(), comfortable).solve(ins, items);
+		PieceSolver.Solution sol = new PieceSolver(new PieceSolver.Costs(), comfortable, Constraints.HAND).solve(ins, items);
 		summary(System.out, base, items, sol, size);
 		write(base, items, sol);
 	}
@@ -100,6 +100,11 @@ public class Solve {
 						if (row.get(j) != null) {
 							e.put("string", str[row.get(j).string]);
 							e.put("height", row.get(j).height);
+							int fg = c.fingerOf(row.get(j).height);
+							if (fg >= 0) {
+								e.put("finger", fg);
+								e.put("fingerForced", c.fingerIsForced(row.get(j).height));
+							}
 						}
 						notes.add(e);
 					}

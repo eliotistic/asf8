@@ -377,6 +377,7 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 		return -1;
 	}
 
+	private static final Color FINGER_FORCED = new Color(20, 40, 110), FINGER_CHOSEN = new Color(80, 95, 135), DISAGREE = new Color(200, 60, 50);
 	private static final Color FORCED_BAND = new Color(168, 228, 160, 110);     // Crayola granny smith apple, see-through
 	private static final Color FORCED_EDGE = new Color(60, 150, 70);
 
@@ -406,7 +407,7 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 		bowStyle = style;
 		repaint();
 	}
-	private static final int LEVEL = 11;                               // screen pixels between strings in the icon
+	private static final int LEVEL = 14;                               // screen pixels between strings in the icon
 
 	private static final Color SWEEP_UNIQUE = new Color(147, 204, 234);          // Crayola cornflower
 	private static final Color SWEEP_SEVERAL = new Color(205, 197, 194);         // Crayola silver
@@ -465,7 +466,8 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 						Rectangle r = noteRect(d, 0);
 						int str = Math.max(0, Math.min(3, e[2]));
 						bySystem.computeIfAbsent(itemSystem[e[0]], k -> new ArrayList<double[]>())
-								.add(new double[] {r.x + r.width / 2.0, str, s.unique ? 1 : 0, fm.stringWidth(ROMAN[str]), e[0]});
+								.add(new double[] {r.x + r.width / 2.0, str, s.unique ? 1 : 0, fm.stringWidth(ROMAN[str]), e[0],
+										e.length > 3 ? e[3] : -1, e.length > 4 ? e[4] : 0, e.length > 5 ? e[5] : -1});
 						break;
 					}
 				}
@@ -532,7 +534,19 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 							g.fillOval(x - 4, y - 4, 8, 8);
 						} else {
 							int next = k + 1 < row.size() ? (int) Math.round(row.get(k + 1)[0]) : x + 12;
-							g.fillRect(x - 1, y - LEVEL / 2 + 1, Math.max(3, next - x - 2), LEVEL - 2);
+							int cw = Math.max(3, next - x - 2);
+							g.fillRect(x - 1, y - LEVEL / 2 + 1, cw, LEVEL - 2);
+							int ours = (int) n[5], printed = (int) n[7];
+							if (ours >= 0 && printed >= 0 && ours != printed) {                 // our finger and the printed one disagree
+								g.setColor(DISAGREE);
+								g.setStroke(new BasicStroke(1.6f));
+								g.drawRect(x - 1, y - LEVEL / 2 + 1, cw, LEVEL - 2);
+							}
+							if (ours >= 0 && cw >= 7) {                                          // our finger, in the cell
+								g.setFont(g.getFont().deriveFont(n[6] > 0 ? java.awt.Font.BOLD : java.awt.Font.PLAIN, 10f));
+								g.setColor(n[6] > 0 ? FINGER_FORCED : FINGER_CHOSEN);
+								g.drawString(String.valueOf(ours), x - 1 + cw / 2 - 3, y + 4);
+							}
 							cellHits.add(new Object[] {new Rectangle(x - 1, top - LEVEL / 2, Math.max(3, next - x), 4 * LEVEL), (int) n[4]});
 						}
 					}

@@ -43,6 +43,8 @@ public class Verify {
 		FrameTest hand = new FrameTest(Geometry.VIOLIN, hp, true);
 		int[] open = {55, 62, 69, 76};
 		String names = "GDAE";
+		int[][] confusion = new int[5][5];
+		int fingerAgree = 0, fingerDisagree = 0, forcedAgree = 0, forcedDisagree = 0, openStopMiss = 0;
 		int expectedItem = 0, bad = 0, notes = 0, wrongPitch = 0, overHeight = 0, frameFail = 0, printed = 0, printedOpenAgree = 0, printedStoppedAgree = 0;
 		StringBuilder first = new StringBuilder();
 		for (Object so : stretches) {
@@ -79,6 +81,22 @@ public class Verify {
 					String pf = jn.fingering();
 					if (jn.pitch == pitch && pf != null && pf.matches("[0-4]")) {
 						printed++;
+						if (n.containsKey("finger")) {
+							confusion[Integer.parseInt(pf)][((Number) n.get("finger")).intValue()]++;
+							boolean same = pf.equals(String.valueOf(((Number) n.get("finger")).intValue()));
+							boolean forcedF = Boolean.TRUE.equals(n.get("fingerForced"));
+							if (same) {
+								fingerAgree++;
+								if (forcedF) {
+									forcedAgree++;
+								}
+							} else {
+								fingerDisagree++;
+								if (forcedF) {
+									forcedDisagree++;
+								}
+							}
+						}
 						if (pf.equals("0") && h == 0) {
 							printedOpenAgree++;
 						} else if (!pf.equals("0") && h > 0) {
@@ -103,6 +121,12 @@ public class Verify {
 		System.out.printf("%s: %d stretches, %d notes placed (score has %d)%n", base, stretches.size(), notes, score.notes.size());
 		System.out.printf("  coverage faults %d | pitch not equal to string+height %d | height over the limit %d | stretch frame failing the hand model %d%n", bad, wrongPitch, overHeight, frameFail);
 		System.out.printf("  printed single digits %d: agree on open/stopped %d (open %d, stopped %d)%n", printed, printedOpenAgree + printedStoppedAgree, printedOpenAgree, printedStoppedAgree);
+		System.out.printf("  our finger against the printed one: agree %d, differ %d of %d  (where the hand allows no other finger: agree %d, differ %d)%n",
+				fingerAgree, fingerDisagree, fingerAgree + fingerDisagree, forcedAgree, forcedDisagree);
+		System.out.println("  printed (rows) against ours (columns), fingers 0-4:");
+		for (int r = 0; r < 5; r++) {
+			System.out.printf("    printed %d: %s%n", r, java.util.Arrays.toString(confusion[r]));
+		}
 		if (first.length() > 0) {
 			System.out.print(first);
 		}

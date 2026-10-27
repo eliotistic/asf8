@@ -766,7 +766,7 @@ public class BigScore extends JPanel{
 				Constraints.HAND = new computingmusic.hand.FrameTest(computingmusic.hand.Geometry.VIOLIN, hp, true);
 				computingmusic.solve.PieceSolver.Solution sol = new computingmusic.solve.PieceSolver(
 						new computingmusic.solve.PieceSolver.Costs(),
-						new computingmusic.hand.FrameTest(computingmusic.hand.Geometry.VIOLIN, hp, false)).solve(ins, items);
+						new computingmusic.hand.FrameTest(computingmusic.hand.Geometry.VIOLIN, hp, false), Constraints.HAND).solve(ins, items);
 				marked = new ArrayList<ScoreView.Stretch>();
 				for (computingmusic.solve.PieceSolver.Choice c : sol.choices) {
 					if (c.trail == null) {
@@ -784,7 +784,10 @@ public class BigScore extends JPanel{
 						java.util.List<computingmusic.jj.JJNote> ns = items.notes.get(item);
 						for (int j = 0; j < row.size(); j++) {
 							if (row.get(j) != null) {
-								st.strings.add(new int[] {item, ns.get(j).pitch, row.get(j).string});
+								int height = row.get(j).height, ours = c.fingerOf(height);
+								String pf = ns.get(j).fingering();
+								int printed = pf != null && pf.matches("[0-4]") ? Integer.parseInt(pf) : -1;
+								st.strings.add(new int[] {item, ns.get(j).pitch, row.get(j).string, ours, c.fingerIsForced(height) ? 1 : 0, printed});
 							}
 						}
 						item++;

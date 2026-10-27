@@ -49,6 +49,8 @@ public final class PieceSolver {
 		public final int onCheapestPath;          // options that lie on some cheapest path
 		public final double within, transition;   // cost inside this stretch, and from the stretch before
 		public final int[] frame;                 // distinct stopped heights of the chosen trail, ascending
+		public int[] fingers;                     // the finger for each height of the frame (null if the hand model gives none)
+		public boolean fingersForced;             // the hand allows no other assignment
 		public List<List<NoteByNote.Spot>> spots; // for each item of the stretch, the spot of each note
 
 		Choice(NoteByNote.Stretch stretch, FingerTrail trail, int options, int onCheapestPath, double within, double transition, int[] frame) {
@@ -64,6 +66,26 @@ public final class PieceSolver {
 		public boolean forced() {
 			return options == 1;
 		}
+
+		/** The finger our model gives a note at this height: 0 for an open string, -1 if there is none. */
+		public int fingerOf(int height) {
+			if (height == 0) {
+				return 0;
+			}
+			if (fingers != null) {
+				for (int i = 0; i < frame.length; i++) {
+					if (frame[i] == height) {
+						return fingers[i];
+					}
+				}
+			}
+			return -1;
+		}
+
+		/** True when the hand allows only this finger there: an open string, or a frame with only one assignment. */
+		public boolean fingerIsForced(int height) {
+			return height == 0 || fingersForced;
+		}
 	}
 
 	public static final class Solution {
@@ -73,11 +95,13 @@ public final class PieceSolver {
 	}
 
 	private final Costs costs;
-	private final FrameTest comfortable;
+	private final FrameTest comfortable, absolute;
 
-	public PieceSolver(Costs costs, FrameTest comfortable) {
+	/** comfortable: the model at its comfortable limits (a cost); absolute: at its absolute limits (which fingers are possible). */
+	public PieceSolver(Costs costs, FrameTest comfortable, FrameTest absolute) {
 		this.costs = costs;
 		this.comfortable = comfortable;
+		this.absolute = absolute;
 	}
 
 	static int[] frameOf(FingerTrail t) {
@@ -235,6 +259,11 @@ public final class PieceSolver {
 			double tr = (i > 0 && has && !opts.get(i - 1).isEmpty()) ? transition(frames.get(i - 1)[pick[i - 1]], fr) : 0;
 			Choice c = new Choice(s, t, opts.get(i).size(), cheapest, has ? unary.get(i)[pick[i]] : 0, tr, fr);
 			if (has) {
+				FrameTest.Assignment as = absolute == null ? null : absolute.assign(fr);
+				if (as != null) {
+					c.fingers = as.fingers;
+					c.fingersForced = as.forced();
+				}
 				c.spots = NoteByNote.spots(ins, items, s, t);
 				for (List<NoteByNote.Spot> row : c.spots) {
 					for (NoteByNote.Spot sp : row) {
