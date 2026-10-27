@@ -50,6 +50,8 @@ def toolkit():
     lib.vrvToolkit_getMIDIValuesForElement.restype = c.c_char_p
     lib.vrvToolkit_getElementAttr.argtypes = [c.c_void_p, c.c_char_p]
     lib.vrvToolkit_getElementAttr.restype = c.c_char_p
+    lib.vrvToolkit_getMEI.argtypes = [c.c_void_p, c.c_char_p]
+    lib.vrvToolkit_getMEI.restype = c.c_char_p
     return lib, lib.vrvToolkit_constructorResourcePath(DATA.encode())
 
 
@@ -100,6 +102,24 @@ def note_origins(root):
     return out
 
 
+def grace_note_ids(lib, tk):
+    """ids of the notes that are grace notes: the note has @grace itself, or it is a member of a chord that does
+    (the attribute is then on the <chord>, not on the note), or of a <graceGrp>.  Complexity: O(elements)."""
+    root = ET.fromstring(lib.vrvToolkit_getMEI(tk, b'{}').decode('utf-8'))
+    ids = set()
+
+    def walk(node, in_grace):
+        name = node.tag.split('}')[-1]
+        here = in_grace or 'grace' in node.attrib or name == 'graceGrp'
+        if name == 'note' and here:
+            ids.add(node.attrib.get('{http://www.w3.org/XML/1998/namespace}id', node.attrib.get('xml:id')))
+        for child in node:
+            walk(child, here)
+
+    walk(root, False)
+    return ids
+
+
 def main(score, outdir, width=1400):
     lib, tk = toolkit()
     load_score(lib, tk, score)
@@ -122,6 +142,7 @@ def main(score, outdir, width=1400):
             replay_from = None
         for note_id in ons:
             onset[note_id] = entry['qstamp'] - offset
+    graces = grace_note_ids(lib, tk)
     os.makedirs(outdir, exist_ok=True)
     pages, notes = [], []
     for page in range(1, lib.vrvToolkit_getPageCount(tk) + 1):
@@ -141,7 +162,7 @@ def main(score, outdir, width=1400):
         for note_id, x, y in note_origins(root):
             midi = json.loads(lib.vrvToolkit_getMIDIValuesForElement(tk, note_id.encode()))
             # a grace note has no duration in the data JJ reads (it is not a note of the piece's rhythm)
-            grace = 'grace' in json.loads(lib.vrvToolkit_getElementAttr(tk, note_id.encode()))
+            grace = note_id in graces
             notes.append({'id': note_id, 'page': page, 'grace': grace,
                           'x': round(x * scale, 1), 'y': round((y - 0.6 * space) * scale, 1),
                           'w': round(1.4 * space * scale, 1), 'h': round(1.2 * space * scale, 1),

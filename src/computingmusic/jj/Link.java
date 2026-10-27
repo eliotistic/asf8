@@ -18,6 +18,13 @@ public class Link {
 	 * matched one to one; every pair must agree on pitch and onset or the pairing is refused, naming the first
 	 * pair that does not.  Complexity: O(n log n).
 	 */
+	/**
+	 * How far, in quarters, a drawn note's onset may lie from the data's.  Verovio's timemap gives a grace note
+	 * played time and delays the main note after it (about 0.06 of a quarter in Paganini's Caprice 3), whereas the
+	 * data is exact.  A whole 32nd is 0.125, so a note off by a place in the order is still refused.
+	 */
+	static final double ONSET_TOLERANCE = 0.1;
+
 	public static List<Link> pair(JJScore score, NotationData notation) {
 		List<JJNote> data = score.byOnset();
 		List<NotationData.Drawn> drawnNotes = new ArrayList<NotationData.Drawn>();
@@ -34,7 +41,7 @@ public class Link {
 		for (int i = 0; i < data.size(); i++) {
 			JJNote n = data.get(i);
 			NotationData.Drawn d = drawnNotes.get(i);
-			if (n.pitch != d.pitch || Math.abs(n.quarters() - d.onset) > 1e-3) {
+			if (n.pitch != d.pitch || Math.abs(n.quarters() - d.onset) > ONSET_TOLERANCE) {
 				throw new IllegalStateException(String.format(
 						"note %d: JJ has %s at %.4f quarters, Verovio drew pitch %d at %.4f",
 						i, n.abcName(), n.quarters(), d.pitch, d.onset));
