@@ -21,6 +21,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 	JMenuItem readABC;
 	JMenuItem justABC;
 	JMenuItem readScore;
+	JMenuItem restartItem;
 	JMenu openRecent;
 	javax.swing.JCheckBoxMenuItem markUnique;
 	
@@ -122,6 +123,12 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 			}
 		};
 		fillRecent();
+		fileMenu.addSeparator();
+		restartItem = new JMenuItem("Restart");
+		restartItem.setToolTipText("Start a fresh copy of the program (it loads the classes as built now) and reopen the last score.");
+		restartItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK | java.awt.event.InputEvent.SHIFT_DOWN_MASK));
+		restartItem.addActionListener(this);
+		fileMenu.add(restartItem);
 		readABC.addActionListener(this);
 		justABC.addActionListener(this);
 		readABC.setToolTipText("Open an ABC file, draw the score, and calculate fingerings.");
@@ -409,6 +416,10 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 			if (markUnique.isSelected() && big.marked.isEmpty()) {
 				markUnique.setSelected(false);
 			}
+		}
+		if (e.getSource() == restartItem){
+			appFrame.restart();
+			return;
 		}
 		if (e.getSource() == readScore){
 			javax.swing.JFileChooser chooser = new javax.swing.JFileChooser(new java.io.File(System.getProperty("user.home"), "libmusic"));

@@ -459,6 +459,42 @@ public class BigGui extends JFrame {
 	
 	
 	
+	/**
+	 * Start a fresh copy of the program and close this one, for testing: a new JVM reads the classes as they are
+	 * built now.  It is given this JVM's options and class path, the control flag if this window has one, and the
+	 * most recently opened score, which it opens.  The new process waits a second before it starts, so this one has
+	 * let go of the control port by then.
+	 */
+	public void restart() {
+		try {
+			java.util.List<String> cmd = new java.util.ArrayList<String>();
+			cmd.add("sh");
+			cmd.add("-c");
+			cmd.add("sleep 1; exec \"$@\"");
+			cmd.add("sh");
+			cmd.add(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java");
+			cmd.addAll(java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments());
+			cmd.add("-cp");
+			cmd.add(System.getProperty("java.class.path"));
+			cmd.add(BigGui.class.getName());
+			if (controlled) {
+				cmd.add("--control");
+			}
+			for (File f : recent.list()) {
+				if (f.isFile()) {
+					cmd.add(f.getPath());
+					break;
+				}
+			}
+			new ProcessBuilder(cmd).inheritIO().start();
+		} catch (Exception e) {
+			showDropError("Could not restart: " + e.getMessage());
+			return;
+		}
+		dispose();
+		System.exit(0);
+	}
+
 	public static void main(String args[]) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
