@@ -50,6 +50,11 @@ public class AnnotatedBoxes {
 		topMargin = margin;
 	}
 	
+	/** The view changed its scale or layout: work the rectangles out again at the next draw. */
+	public void invalidate() {
+		requireRectUpdate = true;
+	}
+
 	public void addPoint (Point p){
 		requireRectUpdate = true;
 		boxPoints = boxPoints.chainAdd(p);

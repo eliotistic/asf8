@@ -41,6 +41,21 @@ public class BigGui extends JFrame {
 	//public String bool_file_path;
 	//public String prop_extension;
 	public Cfinger2 cfinger; // I(jb) removed the static; any remarkable difference?
+
+	/** True when another program is driving the window (--control): errors are reported to it, not shown in dialogs. */
+	public static boolean controlled = false;
+	/** The last error reported while controlled. */
+	public String lastError;
+
+	/** Tell the user, or the controlling program, that something could not be done. */
+	public void reportError(String title, String message) {
+		if (controlled) {
+			lastError = title + ": " + message;
+			System.err.println(lastError);
+		} else {
+			JOptionPane.showMessageDialog(this, message, title, JOptionPane.ERROR_MESSAGE);
+		}
+	}
 	
 	BigGui (){
 		
@@ -235,16 +250,39 @@ public class BigGui extends JFrame {
 					List<File> files = (List<File>) support.getTransferable()
 							.getTransferData(DataFlavor.javaFileListFlavor);
 					if (files.size() != 1) {
-						showDropError("Drop one ABC file at a time.");
+						showDropError("Drop one score file at a time.");
 						return false;
 					}
-					return loadAbcFile(files.get(0));
+					return loadScoreFile(files.get(0));
 				} catch (Exception exception) {
 					showDropError("Could not open the dropped file: " + exception.getMessage());
 					return false;
 				}
 			}
 		});
+	}
+
+	/** Open a score of any kind the program can read: ABC through abc4j, the rest through JJ and Verovio. */
+	public boolean loadScoreFile(File file) {
+		String name = file.getName().toLowerCase();
+		if (name.endsWith(".abc")) {
+			return loadAbcFile(file);
+		}
+		for (String ext : new String[] { ".musicxml", ".xml", ".mxl", ".mei", ".krn", ".kern" }) {
+			if (name.endsWith(ext)) {
+				if (!file.isFile()) {
+					showDropError("There is no file " + file.getPath());
+					return false;
+				}
+				if (bigScore.readNotation(file)) {
+					setTitle("String fingering v" + version + " \u2014 " + file.getName());
+					return true;
+				}
+				return false;
+			}
+		}
+		showDropError("Cannot read " + file.getName() + ": use .abc, .musicxml, .xml, .mxl, .mei or .krn.");
+		return false;
 	}
 
 	public boolean loadAbcFile(File file) {
@@ -260,8 +298,7 @@ public class BigGui extends JFrame {
 	}
 
 	private void showDropError(String message) {
-		JOptionPane.showMessageDialog(this, message, "Cannot open file",
-				JOptionPane.ERROR_MESSAGE);
+		reportError("Cannot open file", message);
 	}
 	
 	
@@ -319,8 +356,18 @@ public class BigGui extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				BigGui gui = new BigGui();
-				if (args.length > 0) {
-					gui.loadAbcFile(new File(args[0]));
+				for (String a : args) {
+					if (a.equals("--control")) {
+						// let another program drive this window: see GuiControl
+						controlled = true;
+						try {
+							System.out.println("control port " + GuiControl.start(gui));
+						} catch (java.io.IOException e) {
+							System.err.println("could not start the control server: " + e.getMessage());
+						}
+					} else {
+						gui.loadScoreFile(new File(a));
+					}
 				}
 			}
 		});

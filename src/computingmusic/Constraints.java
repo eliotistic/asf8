@@ -13,6 +13,8 @@ public class Constraints {
 	public static boolean [] VIOLIN_OPEN;
 	public static boolean [] VIOLIN_PLAYABLES;
 	public static int VIOLIN_HAND_SPAN;
+	/** When set, the hand's frame (the stopped heights of a trail) is tested by this model instead of the fixed span. */
+	public static computingmusic.hand.FrameTest HAND;
 	
 	
 	

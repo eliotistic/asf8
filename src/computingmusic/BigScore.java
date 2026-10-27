@@ -19,6 +19,7 @@ import javax.swing.JScrollPane;
 
 import computingmusic.AbcReader.KNote;
 import computingmusic.AnchorSequencer.State;
+import computingmusic.jj.MusicXmlSession;
 
 import abc.notation.Tune;
 import abc.notation.Tune.Music;
@@ -40,7 +41,11 @@ public class BigScore extends JPanel{
 	
 	public Glue gluer;
 	
-	public BigScoreComponent scoreUI;
+	public ScoreView scoreUI;                  // whichever view is drawing the score now
+	private BigScoreComponent abcView;        // abc4j drawing, for ABC files
+	private VerovioScoreComponent verovioView; // Verovio engraving, for MusicXML, MEI, kern
+	private computingmusic.jj.JJScore notationScore;   // the notes of the open MusicXML/MEI/kern score, or null
+	java.util.List<ScoreView.Stretch> marked = new ArrayList<ScoreView.Stretch>();
 	public static Music m;
 	public Tune tune;
 	
@@ -247,27 +252,32 @@ public class BigScore extends JPanel{
 		//setBackground(Color.white);
 		
 		abcReader = new AbcReader(this);
-		scoreUI = new BigScoreComponent();
+		abcView = new BigScoreComponent();
+		verovioView = new VerovioScoreComponent();
+		scoreUI = abcView;
 		
 		
 		//arpSeq = new ArpeggioSequencer(this);
 		
-		sPane = new JScrollPane(scoreUI);
+		sPane = new JScrollPane(abcView);
 		sPane.getViewport().setBackground(Color.white);
 		sPane.getVerticalScrollBar().setUnitIncrement(15); // 15 seems legit
 		sPane.getVerticalScrollBar().addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent evt)
 			{
 				System.out.println("Scroll pressed");
-				scoreUI.notScrolling = false;
+				abcView.setNotScrolling(false);
+				verovioView.setNotScrolling(false);
 			}
 			public void mouseReleased(MouseEvent evt)
 			{
 				System.out.println("Scroll released");
-				scoreUI.notScrolling = true;
+				abcView.setNotScrolling(true);
+				verovioView.setNotScrolling(true);
 			}
 		});
-		scoreUI.giveScrollPaneAccess(sPane);
+		abcView.giveScrollPaneAccess(sPane);
+		verovioView.giveScrollPaneAccess(sPane);
 		arrows = new ArrowKeys(true);
 		//arrows.setBackground(Color.white);
 		arrows.setBorder(BorderFactory.createEtchedBorder());
@@ -401,9 +411,15 @@ public class BigScore extends JPanel{
 				//System.out.println("Hit position restrict");
 				solSeq.solve();				}
 		});
+		extendPanel.solveAll.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				solveAll(true);
+			}
+		});
 		extendPanel.clearSolvesBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				scoreUI.clearAnnotationBoxes();
+				solveAll(false);
 				if (anchSeq.currAnchor != null) {
 					boolean success = anchSeq.currAnchor.extendBack();
 					System.out.println("Extend back success: " + success);
@@ -441,7 +457,7 @@ public class BigScore extends JPanel{
 		
 		
 		initFingering();
-		scoreUI.setBackground(Color.white);
+		scoreUI.component().setBackground(Color.white);
 	    //controlMode = "CHORD";
 		
 		
@@ -569,7 +585,9 @@ public class BigScore extends JPanel{
 			
 			//scoreUI.noteList = abcReader.noteList;
 			//scoreUI.setTune(tune);
-			scoreUI.setABCTune(abcReader);
+			notationScore = null;
+			useView(abcView);
+			abcView.setABCTune(abcReader);
 			
 			String inst = tune.getInformation();
 			if (inst == null) {
@@ -675,13 +693,168 @@ public class BigScore extends JPanel{
 	}
 	
 	
+	/** Put a different drawing of the score in the scroll pane. */
+	private void useView(ScoreView view) {
+		if (scoreUI != view) {
+			scoreUI = view;
+			sPane.setViewportView(view.component());
+		}
+	}
+
+	/**
+	 * Open a MusicXML, MEI or kern score.  JJ reads the notes, Verovio draws the pages, the engine's items are made
+	 * from the notes, and the drawn notes are paired with the items so the sequencers can box them.  Takes a few
+	 * seconds (JJ starts a process).  Returns false, after telling the user, if the score cannot be read.
+	 */
+	public boolean readNotation(File file) {
+		MusicXmlSession session;
+		try {
+			session = MusicXmlSession.open(file);
+		} catch (Exception e) {
+			appFrame.reportError("Error reading " + file.getPath(), String.valueOf(e.getMessage()));
+			return false;
+		}
+		cfinger.fingPane.clearAll();
+		verovioView.setItemClickListener(item -> showStretchAt(item));
+		tune = null;
+		notationScore = session.score;
+		marked = new ArrayList<ScoreView.Stretch>();
+		useView(verovioView);
+		setInstrument(new Instrument(this, "VN"));
+		TrailRun.Items items = TrailRun.items(session.score, instrument);
+		java.util.IdentityHashMap<computingmusic.jj.JJNote, computingmusic.jj.NotationData.Drawn> drawn =
+				new java.util.IdentityHashMap<computingmusic.jj.JJNote, computingmusic.jj.NotationData.Drawn>();
+		for (computingmusic.jj.Link link : session.links) {
+			drawn.put(link.note, link.drawn);
+		}
+		java.util.List<java.util.List<computingmusic.jj.NotationData.Drawn>> boxes =
+				new ArrayList<java.util.List<computingmusic.jj.NotationData.Drawn>>();
+		for (java.util.List<computingmusic.jj.JJNote> group : items.notes) {
+			java.util.List<computingmusic.jj.NotationData.Drawn> row = new ArrayList<computingmusic.jj.NotationData.Drawn>();
+			for (computingmusic.jj.JJNote n : group) {
+				row.add(drawn.get(n));
+			}
+			boxes.add(row);
+		}
+		verovioView.setNotation(session.notation, boxes);
+		initFingering(items.chords);
+		anchSeq.setStateOn();
+		cfinger.fingPane.giveAccess(this);
+		return true;
+	}
+
+	/**
+	 * Solve the open score as a whole (computingmusic.solve.PieceSolver) and show the solution, or clear it.  The
+	 * piece is cut into stretches note by note; a stretch with one trail is forced (blue), any other has options and
+	 * the cheapest sequence is chosen (grey).  Worked out on a copy of the score's notes, so the interactive state is
+	 * untouched, and with the hand model at its absolute limits only while the solver runs.  Needs a score opened
+	 * with readNotation.  Returns the stretches now shown.
+	 */
+	public java.util.List<ScoreView.Stretch> solveAll(boolean on) {
+		if (!on) {
+			marked = new ArrayList<ScoreView.Stretch>();
+		} else {
+			if (notationScore == null) {
+				appFrame.reportError("Solve the piece", "Open a MusicXML, MEI or kern score first (File \u2192 Open score).");
+				return marked;
+			}
+			Instrument ins = new Instrument(this, "VN");
+			TrailRun.Items items = TrailRun.items(notationScore, ins);
+			computingmusic.hand.FrameTest before = Constraints.HAND;
+			try {
+				computingmusic.hand.HandParams hp = new computingmusic.hand.HandParams();
+				Constraints.HAND = new computingmusic.hand.FrameTest(computingmusic.hand.Geometry.VIOLIN, hp, true);
+				computingmusic.solve.PieceSolver.Solution sol = new computingmusic.solve.PieceSolver(
+						new computingmusic.solve.PieceSolver.Costs(),
+						new computingmusic.hand.FrameTest(computingmusic.hand.Geometry.VIOLIN, hp, false)).solve(ins, items);
+				marked = new ArrayList<ScoreView.Stretch>();
+				for (computingmusic.solve.PieceSolver.Choice c : sol.choices) {
+					if (c.trail == null) {
+						continue;                                // no fingering exists here: nothing to draw
+					}
+					int lo = c.frame.length == 0 ? 0 : c.frame[0], hi = c.frame.length == 0 ? 0 : c.frame[c.frame.length - 1];
+					String heights = c.frame.length == 0 ? "open strings" : "heights " + lo + "\u2013" + hi;
+					ScoreView.Stretch st = new ScoreView.Stretch(c.stretch.start, c.stretch.stop,
+							items.notes.get(c.stretch.start).get(0).measure(), items.notes.get(c.stretch.stop).get(0).measure(),
+							(c.forced() ? "one trail \u00b7 " + heights : c.options + " options, chosen by cost \u00b7 " + heights)
+									+ (c.trail.lifts > 0 ? " \u00b7 " + c.trail.lifts + " lifts" : ""));
+					st.unique = c.forced();
+					int item = c.stretch.start;
+					for (java.util.List<computingmusic.eval.NoteByNote.Spot> row : c.spots) {
+						java.util.List<computingmusic.jj.JJNote> ns = items.notes.get(item);
+						for (int j = 0; j < row.size(); j++) {
+							if (row.get(j) != null) {
+								st.strings.add(new int[] {item, ns.get(j).pitch, row.get(j).string});
+							}
+						}
+						item++;
+					}
+					marked.add(st);
+				}
+			} catch (Exception e) {
+				appFrame.reportError("Solve the piece", String.valueOf(e));
+			} finally {
+				Constraints.HAND = before;
+			}
+		}
+		scoreUI.setStretches(marked);
+		return marked;
+	}
+
+	/**
+	 * The user clicked item `item` on the drawing: go to the start of the marked stretch it belongs to and extend
+	 * through the stretch, so the fingerboards show its trail.  Outside any stretch, just go to the item.
+	 * Returns the item range now shown.
+	 */
+	public java.awt.Point showStretchAt(int item) {
+		int first = item, last = item;
+		for (ScoreView.Stretch st : marked) {
+			if (item >= st.start && item <= st.stop) {
+				first = st.start;
+				last = st.stop;
+				break;
+			}
+		}
+		jumpToMasterIndex(first);
+		setIndexArrows();
+		while (anchSeq.currAnchor != null && anchSeq.currAnchor.stop < last) {
+			int before = anchSeq.currAnchor.stop;
+			extend();
+			if (anchSeq.currAnchor.stop == before) {
+				break;
+			}
+		}
+		return new java.awt.Point(first, anchSeq.currAnchor == null ? first : anchSeq.currAnchor.stop);
+	}
+
+	/** How the strings of the marked stretches are drawn (Verovio view only): 0 line, 1 dots, 2 cells. */
+	public void setBowStyle(int style) {
+		if (scoreUI instanceof VerovioScoreComponent) {
+			((VerovioScoreComponent) scoreUI).setBowStyle(style);
+		}
+	}
+
+	/** Start the fingering from items the engine has already made (a score that did not come from ABC). */
+	public void initFingering(ArrayList<ChordFingering> chords) {
+		masterIndex = 0;
+		fingResultList = chords;
+		for (int ind = 0; ind < chords.size(); ind++) {
+			if (chords.get(ind).impossible()) {
+				scoreUI.addRedNote(ind);
+			}
+		}
+		startFingering();
+	}
+
 	public void initFingering() {
 		masterIndex = 0;
 		kNoteList = abcReader.kNotes;
 		
 		genFingeringResultList();
-		
-		
+		startFingering();
+	}
+
+	private void startFingering() {
 		// 
 		makeArpeggioSequencer (arpSeq);
 		 //makeFingerSeqList();

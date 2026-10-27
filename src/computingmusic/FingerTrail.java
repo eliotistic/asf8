@@ -26,6 +26,8 @@ public class FingerTrail  {
 	public Bowing bowing; // sequence of strings
 	private IntSet heightSet;
 	public int lifts;
+	/** Each lift: {order, string, height} of the finger that left the string at that step (an earlier, higher finger a lower note makes way for). */
+	public java.util.List<int[]> liftEvents = new java.util.ArrayList<int[]>();
 	/**
 	 * @ array of array of <saite, int> grouped by same int
 	 */
@@ -149,6 +151,7 @@ public class FingerTrail  {
 		
 	    FingerTrail c = new FingerTrail(instrument);
 	    c.lifts = lifts;
+	    c.liftEvents = new java.util.ArrayList<int[]>(liftEvents);
 	    c.startInd = startInd;
 	    c.stopInd = stopInd;
 	    c.nStops = nStops;
@@ -224,12 +227,16 @@ public class FingerTrail  {
 		// but if same, the set down.
 		for (Point p1 : p) {
 			for (Trailpoint tp : trailPoints){
-				int bvsz = tp.contactBv.size()-1;
+				// The contact bits run from this order to the end of the vector.  The vector is 64 bits
+				// wide, so a trail of more than 63 steps (the whole-piece run, TrailRun) must still
+				// have a range that ends after `order`; the bits past 63 are then set step by step.
+				int bvsz = Math.max(tp.contactBv.size()-1, order+1);
 				if (p1.x == tp.saite ){
 					if (p1.y < tp.interval ) {
 						tp.fingerDown = false;
 						tp.contactBv.set(order, bvsz, false);
 						lifts++;
+						liftEvents.add(new int[] {order, tp.saite, tp.interval});
 					}
 					if (p1.y == tp.interval){ // we're forcing all fingers below current down
 							                  // because we should recalculate the whole trajectory.
@@ -366,7 +373,7 @@ public class FingerTrail  {
 			trail.inSpan = true;
 		} else {
 			//t.inSpan = instrument.inSpan(t.FBLo, t.FBHi);
-			trail.inSpan = trail.logSpan <= instrument.maxSpan;
+			trail.inSpan = trail.frameFits();
 			
 			
 		}
@@ -453,6 +460,23 @@ public class FingerTrail  {
 		
 	}
 	
+	/**
+	 * Does the hand hold this trail's stopped heights at once?  With a hand model (Constraints.HAND) the model says,
+	 * from the physical distances; without one, the fixed log span of the instrument.
+	 */
+	boolean frameFits() {
+		if (Constraints.HAND == null) {
+			return logHandSpan() <= instrument.maxSpan;
+		}
+		int[] hs = new int[heightSet.size()];
+		int i = 0;
+		for (int h : heightSet) {
+			hs[i++] = h;
+		}
+		java.util.Arrays.sort(hs);
+		return Constraints.HAND.feasible(hs);
+	}
+
 	public double logHandSpan (){
 		if (spanNotSet) {
 			return 0;
@@ -474,7 +498,7 @@ public class FingerTrail  {
 	 * @return
 	 */
 	public boolean reallyInSpan () {
-		boolean basicCondition = logHandSpan() <= instrument.maxSpan;
+		boolean basicCondition = frameFits();
 		//System.out.println("log hand span: " + logHandSpan());
 		/*boolean secondCondition = heightSet.max()<=Constraints.MAX_HEIGHT && 
 				heightSet.min()>=Constraints.MIN_HEIGHT; // jb*/
@@ -498,7 +522,7 @@ public class FingerTrail  {
 		boolean playableCondition = saiten.usedOnlyUnderConstraints();
 		boolean validOpenCondition = trailPoints.openPermittedByConstraints();
 		
-		boolean handSpanCondition = logHandSpan() <= instrument.getSpan(1, Constraints.VIOLIN_HAND_SPAN);
+		boolean handSpanCondition = Constraints.HAND != null || logHandSpan() <= instrument.getSpan(1, Constraints.VIOLIN_HAND_SPAN);
 		
 		return heightCondition && playableCondition && validOpenCondition && handSpanCondition;
 	}
@@ -715,7 +739,7 @@ public class FingerTrail  {
 	    	
 	    	public void finalizeOrders() {
 	    		int lastOrder = onOrder.max();
-	    		contactBv.set(lastOrder+1, (contactBv.size()-1), false); 
+	    		contactBv.set(lastOrder+1, Math.max(contactBv.size()-1, lastOrder+2), false); // see liftOccludingFingers
 	    	}
 	    	
 	    		    		

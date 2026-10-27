@@ -20,6 +20,8 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 	JMenu fileMenu;
 	JMenuItem readABC;
 	JMenuItem justABC;
+	JMenuItem readScore;
+	javax.swing.JCheckBoxMenuItem markUnique;
 	
 	JMenu instMenu;
 	
@@ -104,6 +106,10 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		fileMenu = new JMenu("File");
 		readABC = new JMenuItem("Analyze ABC file");
 		justABC = new JMenuItem("Draw ABC, no analysis");
+		readScore = new JMenuItem("Open score (MusicXML, MEI, kern)...");
+		readScore.setToolTipText("Open a MusicXML, MEI or kern score: JJ reads the notes, Verovio draws them, and fingerings are calculated.");
+		readScore.addActionListener(this);
+		fileMenu.add(readScore);
 		fileMenu.add(readABC);
 		fileMenu.add(justABC);
 		readABC.addActionListener(this);
@@ -314,6 +320,13 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		
 		add(properties);
 		
+		JMenu trailsMenu = new JMenu("Trails");
+		markUnique = new javax.swing.JCheckBoxMenuItem("Solve all");
+		markUnique.setToolTipText("Finger the whole piece. Stretches with only one possible trail are marked; the rest are chosen by cost. Needs a score opened with File > Open score.");
+		markUnique.addActionListener(this);
+		trailsMenu.add(markUnique);
+		add(trailsMenu);
+
 		helpMenu = new JMenu("Help");
 		controlsHelp = new JMenuItem("Controls");
 		help = new JMenuItem("About");
@@ -349,6 +362,19 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 	public void  actionPerformed( ActionEvent e )
 	
 	{
+		if (e.getSource() == markUnique){
+			big.solveAll(markUnique.isSelected());
+			if (markUnique.isSelected() && big.marked.isEmpty()) {
+				markUnique.setSelected(false);
+			}
+		}
+		if (e.getSource() == readScore){
+			javax.swing.JFileChooser chooser = new javax.swing.JFileChooser(new java.io.File(System.getProperty("user.home"), "libmusic"));
+			chooser.setDialogTitle("Open a score");
+			if (chooser.showOpenDialog(appFrame) == javax.swing.JFileChooser.APPROVE_OPTION) {
+				appFrame.loadScoreFile(chooser.getSelectedFile());
+			}
+		}
 		if (e.getSource() == readABC){
 			// reads & draws a score
 			//AbcReader abc = new AbcReader(big);

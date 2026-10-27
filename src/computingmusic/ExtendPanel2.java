@@ -31,6 +31,7 @@ public class ExtendPanel2 extends JPanel{
 	public JCheckBox fingerTrails;
 	
 	public JButton solve;
+	public JButton solveAll;
 	public JButton clearSolvesBtn;
 	
 	public void disable (){
@@ -120,6 +121,7 @@ public class ExtendPanel2 extends JPanel{
 		posArrows = new ArrowKeys(false);
 		
 		solve = new JButton("Solve");
+		solveAll = new JButton("Solve all");
 		clearSolvesBtn = new JButton("Clear solutions");
 		
 		positionRestrict = new JCheckBox("restrict to position");
@@ -131,6 +133,7 @@ public class ExtendPanel2 extends JPanel{
 		extendMode.setToolTipText("Choose how candidate chord extensions are compared (legacy experimental option).");
 		positions.setToolTipText("Display hand-position sequences available at the current score location.");
 		solve.setToolTipText("Extend every compatible trail as far forward as possible and mark the resulting spans.");
+		solveAll.setToolTipText("Finger the whole piece: stretches with only one possible trail are marked, the rest are chosen by cost. Needs a score opened with File > Open score.");
 		clearSolvesBtn.setToolTipText("Remove Solve annotations and return to the current anchor.");
 		positionRestrict.setToolTipText("Restrict displayed fingerings to the selected hand position.");
 		fingerTrails.setToolTipText("Show the sequence of finger placements across the extended passage.");
@@ -168,6 +171,7 @@ public class ExtendPanel2 extends JPanel{
 		//poscxPanel.add(fingerTrails);
 		
 		poscxPanel.add(solve);
+		poscxPanel.add(solveAll);
 		poscxPanel.add(clearSolvesBtn);
 		
 		exBot.add(Box.createRigidArea(new Dimension(10, 0)));

@@ -31,7 +31,7 @@ import abc.notation.*;
 import abc.ui.swing.*;
 import abc.ui.scoretemplates.*;
 
-public class BigScoreComponent extends JScoreComponent 
+public class BigScoreComponent extends JScoreComponent implements ScoreView
 			//implements Scrollable, MouseMotionListener 
 			{
 	
@@ -124,6 +124,22 @@ public class BigScoreComponent extends JScoreComponent
 		return m;
 	}
 	// 
+	public javax.swing.JComponent component() {
+		return this;
+	}
+
+	/** Stretches are marked on the Verovio drawing only. */
+	public void setStretches(java.util.List<ScoreView.Stretch> stretches) {
+	}
+
+	/** Clicks are taken on the Verovio drawing only. */
+	public void setItemClickListener(java.util.function.IntConsumer listener) {
+	}
+
+	public void setNotScrolling(boolean notScrolling) {
+		this.notScrolling = notScrolling;
+	}
+
 	public void myDrawRect(Rectangle r, Graphics g) {
 		// g.setPenColor(new Color(255, 0, 255));	
 		g.drawRect(r.x, r.y, r.width, r.height);

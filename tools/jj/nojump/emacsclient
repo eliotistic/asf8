@@ -1,0 +1,3 @@
+#!/bin/sh
+# JJ calls emacsclient when a script fails to parse, which would move the user's editor.  Not from here.
+exit 0
