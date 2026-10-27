@@ -7,7 +7,7 @@ writes OUTDIR/page-N.png and OUTDIR/notation.json:
 
     {"pages": [{"png": "page-1.png", "width": W, "height": H}, ...],
      "notes": [{"id": "...", "page": 1, "x": px, "y": px, "w": px, "h": px,
-                "pitch": 64, "on": 0.125}, ...]}
+                "pitch": 64, "on": 0.125, "grace": false}, ...]}
 
 "on" is Verovio's own onset for the note in quarter notes (its timemap's qstamp) and "pitch" its MIDI
 pitch.  The notes are written sorted by (on, pitch), so a consumer can pair them with another sorted list
@@ -48,6 +48,8 @@ def toolkit():
     lib.vrvToolkit_renderToTimemap.restype = c.c_char_p
     lib.vrvToolkit_getMIDIValuesForElement.argtypes = [c.c_void_p, c.c_char_p]
     lib.vrvToolkit_getMIDIValuesForElement.restype = c.c_char_p
+    lib.vrvToolkit_getElementAttr.argtypes = [c.c_void_p, c.c_char_p]
+    lib.vrvToolkit_getElementAttr.restype = c.c_char_p
     return lib, lib.vrvToolkit_constructorResourcePath(DATA.encode())
 
 
@@ -102,10 +104,24 @@ def main(score, outdir, width=1400):
     lib, tk = toolkit()
     load_score(lib, tk, score)
     # the timemap lists, for every instant, the ids of the notes that begin there (qstamp = quarters)
-    onset = {}
+    # The timemap plays the repeats out: the replayed notes carry ids ending -rendN, and everything after a replay
+    # is later than where it is written.  The data JJ reads is in written time, so skip the replays and take the
+    # length of each replay as an offset to subtract from what follows (with first and second endings the replay
+    # is the repeated part only, and the second ending's notes come after it, so the same rule holds).
+    onset, offset, replay_from = {}, 0.0, None
     for entry in json.loads(lib.vrvToolkit_renderToTimemap(tk, b'{"includeRests": false}')):
-        for note_id in entry.get('on', []):
-            onset[note_id] = entry['qstamp']
+        ons = entry.get('on', [])
+        if not ons:
+            continue
+        if all('-rend' in i for i in ons):
+            if replay_from is None:
+                replay_from = entry['qstamp']
+            continue
+        if replay_from is not None:
+            offset += entry['qstamp'] - replay_from
+            replay_from = None
+        for note_id in ons:
+            onset[note_id] = entry['qstamp'] - offset
     os.makedirs(outdir, exist_ok=True)
     pages, notes = [], []
     for page in range(1, lib.vrvToolkit_getPageCount(tk) + 1):
@@ -124,7 +140,9 @@ def main(score, outdir, width=1400):
         space = staff_space(root)
         for note_id, x, y in note_origins(root):
             midi = json.loads(lib.vrvToolkit_getMIDIValuesForElement(tk, note_id.encode()))
-            notes.append({'id': note_id, 'page': page,
+            # a grace note has no duration in the data JJ reads (it is not a note of the piece's rhythm)
+            grace = 'grace' in json.loads(lib.vrvToolkit_getElementAttr(tk, note_id.encode()))
+            notes.append({'id': note_id, 'page': page, 'grace': grace,
                           'x': round(x * scale, 1), 'y': round((y - 0.6 * space) * scale, 1),
                           'w': round(1.4 * space * scale, 1), 'h': round(1.2 * space * scale, 1),
                           'pitch': midi['pitch'], 'on': onset[note_id]})

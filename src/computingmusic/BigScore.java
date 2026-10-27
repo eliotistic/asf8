@@ -714,6 +714,12 @@ public class BigScore extends JPanel{
 			appFrame.reportError("Error reading " + file.getPath(), String.valueOf(e.getMessage()));
 			return false;
 		}
+		showNotation(session);
+		return true;
+	}
+
+	/** Show a score read by MusicXmlSession.open (which takes seconds and may run off the Swing thread); Swing thread only. */
+	public void showNotation(MusicXmlSession session) {
 		cfinger.fingPane.clearAll();
 		verovioView.setItemClickListener(item -> showStretchAt(item));
 		tune = null;
@@ -740,7 +746,6 @@ public class BigScore extends JPanel{
 		initFingering(items.chords);
 		anchSeq.setStateOn();
 		cfinger.fingPane.giveAccess(this);
-		return true;
 	}
 
 	/**

@@ -14,7 +14,7 @@ start)
   Xvfb "$DISP" -screen 0 1700x1000x24 >"$STATE/xvfb.log" 2>&1 &
   echo $! > "$STATE/xvfb.pid"
   sleep 1
-  cd "$APP" && DISPLAY="$DISP" java -Xmx3g -Dsf.control.file="$STATE/control.port" \
+  cd "$APP" && DISPLAY="$DISP" java -Xmx3g -Dsf.control.file="$STATE/control.port" -Dsf.recent.file="$STATE/recent.txt" \
     -cp "build/classes:$ABC" computingmusic.BigGui --control >"$STATE/gui.log" 2>&1 &
   echo $! > "$STATE/java.pid"
   for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do

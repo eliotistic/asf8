@@ -118,21 +118,133 @@ public class FingerBoard extends JLabel {
 	}
    
     public FingerBoard() {
+    	javax.swing.ToolTipManager.sharedInstance().registerComponent(this);
     	trails = new ArrayList<ColoredNote>();
     	fingerTrailsOn = false;
     	
     }
     
+    /** The items of the piece (as the engine holds them, with the score's own spelling of each note); set by the panel. */
+    public java.util.function.Supplier<java.util.List<ChordFingering>> chords;
+
+    /**
+     * The spellings, in ABC notation, that the notes of this board's items give to `pitch`: the score's own
+     * (a note the red circles stand for).  Empty if no note of those items has that pitch.  The items are the
+     * ones from the board's first item for its extension size.  Complexity: O(items x notes).
+     */
+    private java.util.List<String> scoreSpellings(int pitch) {
+    	java.util.List<String> out = new java.util.ArrayList<String>();
+    	java.util.List<ChordFingering> list = chords == null ? null : chords.get();
+    	if (list == null) {
+    		return out;
+    	}
+    	for (int i = Math.max(0, masterIndex); i < Math.min(list.size(), masterIndex + Math.max(1, extensionSize)); i++) {
+    		Keynum.K[] ks = list.get(i).ks;
+    		if (ks == null) {
+    			continue;
+    		}
+    		for (Keynum.K k : ks) {
+    			if (k.pitch == pitch) {
+    				int alter = k.name.indexOf('#') > 0 ? 1 : k.name.indexOf('b') > 0 ? -1 : 0;
+    				String n = AbcPitch.name(pitch, alter);
+    				if (!out.contains(n)) {
+    					out.add(n);
+    				}
+    			}
+    		}
+    	}
+    	return out;
+    }
+
+    /** The hand model used to say which finger a stopped point of this board would be: violin, default limits. */
+    private static computingmusic.hand.FrameTest fingerModel;
+
+    /**
+     * What is under the mouse: the disc nearest to it, as its pitch in ABC notation, its string and height (semitones
+     * above the open string, with its distance from the nut in mm), and, if it is one of the points shown on this
+     * board, the finger the hand model gives it: the stopped heights shown are held by fingers in order from the
+     * nut.  Empty away from a disc.  Complexity: O(strings x heights).
+     */
     @Override
     public String getToolTipText(MouseEvent evt)
     {
-    	String s = "";
-    	/*int x_position = evt.getX();
-        int y_position = evt.getY();
-        //System.out.println("X:" + x_position);
-        //System.out.println("Y:" + y_position);
-        int noteHeight = getHeightAtLocation(x_position, y_position);*/
-    	return s;
+    	if (noteCoordinates == null || instrument == null) {
+    		return null;
+    	}
+    	int bestH = -1, bestS = -1;
+    	double best = (DOT / 2 + 3) * (DOT / 2 + 3);
+    	for (int h = 0; h < noteCoordinates.length; h++) {
+    		for (int st = 0; st < noteCoordinates[h].length; st++) {
+    			Point c = noteCoordinates[h][st];
+    			if (c == null) {
+    				continue;
+    			}
+    			double d = (c.x - evt.getX()) * (double) (c.x - evt.getX()) + (c.y - evt.getY()) * (double) (c.y - evt.getY());
+    			if (d < best) {
+    				best = d;
+    				bestH = h + 1;
+    				bestS = st;
+    			}
+    		}
+    	}
+    	if (bestS < 0) {
+    		return null;
+    	}
+    	int pitch = instrument.openStringPitch(bestS) + bestH;
+    	String[] names = { "G", "D", "A", "E" };
+    	String stringName = (instrument.nStrings == 4 && instrument.instr == Instrument.Instr.VN ? names[bestS] : "string " + bestS) + " string";
+    	computingmusic.hand.Geometry g = computingmusic.hand.Geometry.VIOLIN;
+    	// a red circle is a note of the score: its pitch is spelled as the score spells it.  A disc with no note on it
+    	// has no spelling of its own, so a black key is given both.
+    	java.util.List<String> spelled = scoreSpellings(pitch);
+    	String pitchText;
+    	if (!spelled.isEmpty()) {
+    		pitchText = String.join(" and ", spelled);
+    	} else if (TrailRun.whiteKey(pitch)) {
+    		pitchText = AbcPitch.name(pitch, 0);
+    	} else {
+    		pitchText = AbcPitch.name(pitch, 1) + " or " + AbcPitch.name(pitch, -1);
+    	}
+    	StringBuilder s = new StringBuilder("<html>");
+    	s.append("<b>").append(pitchText).append("</b><br>").append(stringName).append(instrument.instr == Instrument.Instr.VN ? "" : "").append("<br>height ").append(bestH);
+    	if (instrument.instr == Instrument.Instr.VN) {
+    		s.append(String.format("<br>%.0fmm", g.distance(bestH)));
+    	}
+    	boolean shown = false;
+    	java.util.TreeSet<Integer> held = new java.util.TreeSet<Integer>();
+    	if (ps1 != null) {
+    		for (Point p : ps1) {
+    			if (p.y > 0) {
+    				held.add(p.y);
+    			}
+    			if (p.x == bestS && p.y == bestH) {
+    				shown = true;
+    			}
+    		}
+    	}
+    	if (shown && instrument.instr == Instrument.Instr.VN) {
+    		if (fingerModel == null) {
+    			fingerModel = new computingmusic.hand.FrameTest(g, new computingmusic.hand.HandParams(), true);
+    		}
+    		int[] hs = new int[held.size()];
+    		int i = 0;
+    		for (int h : held) {
+    			hs[i++] = h;
+    		}
+    		computingmusic.hand.FrameTest.Assignment a = fingerModel.assign(hs);
+    		if (a != null) {
+    			int k = 0;
+    			for (int h : held) {
+    				if (h == bestH) {
+    					s.append("<br>finger ").append(a.fingers[k]).append(a.forced() ? "" : "?");
+    				}
+    				k++;
+    			}
+    		}
+    	} else if (shown) {
+    		s.append("<br>down");
+    	}
+    	return s.append("</html>").toString();
     }
    
     

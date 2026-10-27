@@ -10,6 +10,8 @@ import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.util.ArrayList;
 import java.io.File;
 import java.util.List;
 
@@ -225,13 +227,51 @@ public class BigGui extends JFrame {
 		//Version.check();
 	}
 
-	private void installAbcFileDrop() {
-		getRootPane().setTransferHandler(new TransferHandler() {
+	/** The last scores opened by any route, newest first (File > Open recent). */
+	public final RecentFiles recent = new RecentFiles();
+	/** True while a score is being read off the Swing thread (File > Open, drag and drop). */
+	public volatile boolean loading;
+	/** Called on the Swing thread whenever the recent list changes (the menu rebuilds itself from it). */
+	public Runnable recentChanged = new Runnable() {
+		public void run() {
+		}
+	};
+
+	/**
+	 * Which files a drop carries.  A file manager gives a file list; some give only text (file:// URIs from
+	 * text/uri-list, or plain paths), so that is read too.  Empty when it carries neither.
+	 */
+	static List<File> droppedFiles(Transferable t) throws Exception {
+		List<File> out = new ArrayList<File>();
+		if (t.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+			@SuppressWarnings("unchecked")
+			List<File> files = (List<File>) t.getTransferData(DataFlavor.javaFileListFlavor);
+			out.addAll(files);
+		} else if (t.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+			for (String line : String.valueOf(t.getTransferData(DataFlavor.stringFlavor)).split("\\r?\\n")) {
+				line = line.trim();
+				if (line.startsWith("#") || line.isEmpty()) {
+					continue;                                      // text/uri-list comment
+				}
+				try {
+					out.add(line.startsWith("file:") ? new File(new java.net.URI(line)) : new File(line));
+				} catch (IllegalArgumentException | java.net.URISyntaxException e) {
+					// not a file: ignore the line
+				}
+			}
+		}
+		return out;
+	}
+
+	/** The handler for dropping a score onto the window (also called directly by GuiControl's gui_drop). */
+	TransferHandler scoreDropHandler() {
+		return new TransferHandler() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
 			public boolean canImport(TransferSupport support) {
-				if (!support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+				if (!support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
+						&& !support.isDataFlavorSupported(DataFlavor.stringFlavor)) {
 					return false;
 				}
 				if (support.isDrop()) {
@@ -241,45 +281,111 @@ public class BigGui extends JFrame {
 			}
 
 			@Override
-			@SuppressWarnings("unchecked")
 			public boolean importData(TransferSupport support) {
 				if (!canImport(support)) {
 					return false;
 				}
 				try {
-					List<File> files = (List<File>) support.getTransferable()
-							.getTransferData(DataFlavor.javaFileListFlavor);
+					List<File> files = droppedFiles(support.getTransferable());
 					if (files.size() != 1) {
 						showDropError("Drop one score file at a time.");
 						return false;
 					}
-					return loadScoreFile(files.get(0));
+					return openScoreFile(files.get(0));
 				} catch (Exception exception) {
 					showDropError("Could not open the dropped file: " + exception.getMessage());
 					return false;
 				}
 			}
-		});
+		};
 	}
 
-	/** Open a score of any kind the program can read: ABC through abc4j, the rest through JJ and Verovio. */
+	private void installAbcFileDrop() {
+		TransferHandler handler = scoreDropHandler();
+		getRootPane().setTransferHandler(handler);
+		setTransferHandler(handler);
+	}
+
+	private static boolean isNotationFile(File file) {
+		String name = file.getName().toLowerCase();
+		for (String ext : new String[] { ".musicxml", ".xml", ".mxl", ".mei", ".krn", ".kern" }) {
+			if (name.endsWith(ext)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Open a score for a person: like loadScoreFile, but a MusicXML/MEI/kern score (JJ and Verovio, seconds) is read
+	 * off the Swing thread, with a busy cursor and the title saying so, and shown when ready.  Returns true when
+	 * the file was accepted (an ABC file: when it is loaded).  Swing thread only.
+	 */
+	public boolean openScoreFile(final File file) {
+		if (!isNotationFile(file)) {
+			return loadScoreFile(file);
+		}
+		if (!file.isFile()) {
+			showDropError("There is no file " + file.getPath());
+			return false;
+		}
+		if (loading) {
+			showDropError("Still reading the previous score: wait for it.");
+			return false;
+		}
+		loading = true;
+		final String shownTitle = getTitle();
+		setTitle("String fingering v" + version + " \u2014 reading " + file.getName() + " ...");
+		setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+		new SwingWorker<computingmusic.jj.MusicXmlSession, Void>() {
+			@Override
+			protected computingmusic.jj.MusicXmlSession doInBackground() throws Exception {
+				return computingmusic.jj.MusicXmlSession.open(file);
+			}
+
+			@Override
+			protected void done() {
+				try {
+					computingmusic.jj.MusicXmlSession session = get();
+					bigScore.showNotation(session);
+					setTitle("String fingering v" + version + " \u2014 " + file.getName());
+					noteOpened(file);
+				} catch (Exception e) {
+					Throwable cause = e.getCause() != null ? e.getCause() : e;
+					setTitle(shownTitle);
+					reportError("Error reading " + file.getPath(), String.valueOf(cause.getMessage()));
+				} finally {
+					setCursor(java.awt.Cursor.getDefaultCursor());
+					loading = false;
+				}
+			}
+		}.execute();
+		return true;
+	}
+
+	/** `file` was opened: remember it. */
+	void noteOpened(File file) {
+		recent.add(file);
+		recentChanged.run();
+	}
+
+	/** Open a score of any kind the program can read: ABC through abc4j, the rest through JJ and Verovio (waits for it). */
 	public boolean loadScoreFile(File file) {
 		String name = file.getName().toLowerCase();
 		if (name.endsWith(".abc")) {
 			return loadAbcFile(file);
 		}
-		for (String ext : new String[] { ".musicxml", ".xml", ".mxl", ".mei", ".krn", ".kern" }) {
-			if (name.endsWith(ext)) {
-				if (!file.isFile()) {
-					showDropError("There is no file " + file.getPath());
-					return false;
-				}
-				if (bigScore.readNotation(file)) {
-					setTitle("String fingering v" + version + " \u2014 " + file.getName());
-					return true;
-				}
+		if (isNotationFile(file)) {
+			if (!file.isFile()) {
+				showDropError("There is no file " + file.getPath());
 				return false;
 			}
+			if (bigScore.readNotation(file)) {
+				setTitle("String fingering v" + version + " \u2014 " + file.getName());
+				noteOpened(file);
+				return true;
+			}
+			return false;
 		}
 		showDropError("Cannot read " + file.getName() + ": use .abc, .musicxml, .xml, .mxl, .mei or .krn.");
 		return false;
@@ -292,6 +398,7 @@ public class BigGui extends JFrame {
 		}
 		if (bigScore.readandDrawABC(file, true)) {
 			setTitle("String fingering v" + version + " — " + file.getName());
+			noteOpened(file);
 			return true;
 		}
 		return false;

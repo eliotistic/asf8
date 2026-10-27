@@ -129,6 +129,9 @@ public class FingerBoardsPanel extends JPanel {
 	public void giveAccess(BigScore access)
 	{
 		scoreAccess = access;
+		for (FingerBoard b : boards) {
+			b.chords = () -> access.fingResultList;
+		}
 	}
 	
 	/**
@@ -232,6 +235,10 @@ public class FingerBoardsPanel extends JPanel {
 		GridBagConstraints c1 = new GridBagConstraints();
 		GridBagConstraints c2 = new GridBagConstraints();
 		FingerBoard newBoard = new FingerBoard();
+		if (scoreAccess != null) {
+			final BigScore access = scoreAccess;
+			newBoard.chords = () -> access.fingResultList;
+		}
 		AboveFingerBoard newAbove = new AboveFingerBoard();
 		
 		boards.add(newBoard);

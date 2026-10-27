@@ -49,12 +49,35 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 	private JScrollPane pane;
 	private boolean notScrolling = true;
 	private double zoom = 0.75;
+	/** The scale at which a page fills the view's width; zoom is limited to MIN_RELATIVE..MAX_RELATIVE times this. */
+	private double fitScale = 0.75;
+	/** Once the user has zoomed, resizing the window and loading a score keep the zoom; Ctrl+0 / Shift+0 give it back to fit-to-width. */
+	private boolean userZoomed = false;
+	static final double MIN_RELATIVE = 0.25, MAX_RELATIVE = 4.0, WHEEL_STEP = 1.1;
 
 	public VerovioScoreComponent() {
 		setBackground(Color.white);
 		setOpaque(true);
 		javax.swing.ToolTipManager.sharedInstance().registerComponent(this);
+		setFocusable(true);
+		addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+			public void mouseWheelMoved(java.awt.event.MouseWheelEvent ev) {
+				wheel(ev);
+			}
+		});
+		javax.swing.Action refit = new javax.swing.AbstractAction() {
+			private static final long serialVersionUID = 1L;
+			public void actionPerformed(java.awt.event.ActionEvent e) {
+				resetZoom();
+			}
+		};
+		getInputMap(WHEN_FOCUSED).put(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_0, java.awt.event.InputEvent.CTRL_DOWN_MASK), "refit");
+		getInputMap(WHEN_FOCUSED).put(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_0, java.awt.event.InputEvent.SHIFT_DOWN_MASK), "refit");
+		getActionMap().put("refit", refit);
 		addMouseListener(new java.awt.event.MouseAdapter() {
+			public void mousePressed(java.awt.event.MouseEvent ev) {
+				requestFocusInWindow();
+			}
 			public void mouseClicked(java.awt.event.MouseEvent ev) {
 				int item = itemAt(ev.getPoint());
 				if (item >= 0 && itemClick != null) {
@@ -98,10 +121,126 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 		int available = pane != null ? pane.getViewport().getWidth() : 0;
 		double z = available > 100 ? (available - 8.0) / pageWidth() : 0.75;
 		z = Math.max(0.3, Math.min(z, 2.0));
-		if (Math.abs(z - zoom) > 1e-3) {
+		fitScale = z;
+		if (userZoomed) {
+			double kept = Math.max(z * MIN_RELATIVE, Math.min(zoom, z * MAX_RELATIVE));   // the limits move with the fit
+			if (Math.abs(kept - zoom) > 1e-3) {
+				zoom = kept;
+				refreshDerived();
+			}
+		} else if (Math.abs(z - zoom) > 1e-3) {
 			zoom = z;
 			refreshDerived();
 		}
+	}
+
+	// ---- zoom --------------------------------------------------------------------------------------
+
+	/** The scale of the page images on screen. */
+	public double zoom() {
+		return zoom;
+	}
+
+	/** The zoom as a multiple of the fit-to-width scale: 1 = a page fills the width. */
+	public double relativeZoom() {
+		return zoom / fitScale;
+	}
+
+	public boolean userHasZoomed() {
+		return userZoomed;
+	}
+
+	/** Set the zoom to `factor` times the fit-to-width scale (clamped to 0.25..4), keeping the score point at `anchor` under it. */
+	public void setRelativeZoom(double factor, Point anchor) {
+		zoomTo(fitScale * factor, anchor);
+	}
+
+	/** Go back to fit-to-width, about the middle of the view, and let resizes refit again. */
+	public void resetZoom() {
+		Point mid = null;
+		if (pane != null) {
+			Rectangle v = pane.getViewport().getViewRect();
+			mid = new Point(v.x + v.width / 2, v.y + v.height / 2);
+		}
+		zoomTo(fitScale, mid);
+		userZoomed = false;
+		fitToWidth();
+	}
+
+	/**
+	 * Multiply the zoom by `factor` about the point (in component coordinates); the score under that point stays
+	 * under the cursor.  Complexity: O(pages + overlays).
+	 */
+	void zoomBy(double factor, Point anchor) {
+		zoomTo(zoom * factor, anchor);
+	}
+
+	private void zoomTo(double wanted, Point anchor) {
+		if (notation == null || notation.pages.isEmpty()) {
+			return;
+		}
+		double z = Math.max(fitScale * MIN_RELATIVE, Math.min(wanted, fitScale * MAX_RELATIVE));
+		userZoomed = true;
+		if (Math.abs(z - zoom) < 1e-9) {
+			return;
+		}
+		// the anchor, as a point of a page image (the gap between pages counts as the edge of the page above or below)
+		int page = 0;
+		if (anchor != null) {
+			for (int i = 0; i < notation.pages.size(); i++) {
+				if (anchor.y >= pageTop(i) - GAP / 2) {
+					page = i;
+				}
+			}
+		}
+		double ix = 0, iy = 0;
+		if (anchor != null) {
+			ix = anchor.x / zoom;
+			iy = (anchor.y - pageTop(page)) / zoom;
+		}
+		Point offset = null;
+		if (anchor != null && pane != null) {
+			Point vp = pane.getViewport().getViewPosition();
+			offset = new Point(anchor.x - vp.x, anchor.y - vp.y);
+		}
+		zoom = z;
+		cellHits.clear();
+		bracketTips.clear();
+		refreshDerived();
+		if (offset != null) {
+			setSize(getPreferredSize());
+			pane.validate();
+			int nx = (int) Math.round(ix * zoom) - offset.x, ny = pageTop(page) + (int) Math.round(iy * zoom) - offset.y;
+			Dimension ext = pane.getViewport().getExtentSize(), all = getPreferredSize();
+			nx = Math.max(0, Math.min(nx, Math.max(0, all.width - ext.width)));
+			ny = Math.max(0, Math.min(ny, Math.max(0, all.height - ext.height)));
+			pane.getViewport().setViewPosition(new Point(nx, ny));
+		}
+		repaint();
+	}
+
+	/** Shift+wheel zooms by 10% a notch (fractions of a notch count); anything else scrolls as it always did. */
+	private void wheel(java.awt.event.MouseWheelEvent ev) {
+		if (ev.isShiftDown() && !ev.isControlDown() && !ev.isAltDown() && !ev.isMetaDown()) {
+			double turn = ev.getPreciseWheelRotation();
+			if (turn != 0) {
+				zoomBy(Math.pow(WHEEL_STEP, -turn), ev.getPoint());     // up (negative) = in
+			}
+			ev.consume();
+		} else if (pane != null) {
+			pane.dispatchEvent(javax.swing.SwingUtilities.convertMouseEvent(this, ev, pane));
+		}
+	}
+
+	/** The component point at the middle of the first drawn note of the item, or null. */
+	public Point notePoint(int item) {
+		Rectangle r = item >= 0 && item < itemBoxes.size() && !itemBoxes.get(item).isEmpty() ? noteRect(itemBoxes.get(item).get(0), 0) : null;
+		return r == null ? null : new Point(r.x + r.width / 2, r.y + r.height / 2);
+	}
+
+	/** What a click at the point would choose: the item, or -1. */
+	public int itemAtPoint(Point p) {
+		return itemAt(p);
 	}
 
 	/** Rectangles worked out at one scale must be worked out again at another. */

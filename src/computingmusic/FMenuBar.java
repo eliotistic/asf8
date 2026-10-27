@@ -21,6 +21,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 	JMenuItem readABC;
 	JMenuItem justABC;
 	JMenuItem readScore;
+	JMenu openRecent;
 	javax.swing.JCheckBoxMenuItem markUnique;
 	
 	JMenu instMenu;
@@ -112,6 +113,15 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		fileMenu.add(readScore);
 		fileMenu.add(readABC);
 		fileMenu.add(justABC);
+		openRecent = new JMenu("Open recent");
+		openRecent.setToolTipText("The last ten scores opened, newest first.");
+		fileMenu.add(openRecent);
+		appFrame.recentChanged = new Runnable() {
+			public void run() {
+				fillRecent();
+			}
+		};
+		fillRecent();
 		readABC.addActionListener(this);
 		justABC.addActionListener(this);
 		readABC.setToolTipText("Open an ABC file, draw the score, and calculate fingerings.");
@@ -359,6 +369,38 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		//ctl.inst.rangeLabel.setText(it.rangeString());
 	}
 	
+	/** Rebuild File > Open recent from the list on disk: a file that is gone is shown disabled. */
+	void fillRecent() {
+		openRecent.removeAll();
+		java.util.List<java.io.File> files = appFrame.recent.list();
+		for (final java.io.File f : files) {
+			JMenuItem item = new JMenuItem(f.getName());
+			item.setToolTipText(f.getPath());
+			item.setEnabled(f.isFile());
+			item.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					appFrame.openScoreFile(f);
+				}
+			});
+			openRecent.add(item);
+		}
+		if (files.isEmpty()) {
+			JMenuItem none = new JMenuItem("(none yet)");
+			none.setEnabled(false);
+			openRecent.add(none);
+		}
+		openRecent.addSeparator();
+		JMenuItem clear = new JMenuItem("Clear recent");
+		clear.setEnabled(!files.isEmpty());
+		clear.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				appFrame.recent.clear();
+				fillRecent();
+			}
+		});
+		openRecent.add(clear);
+	}
+
 	public void  actionPerformed( ActionEvent e )
 	
 	{
@@ -372,7 +414,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 			javax.swing.JFileChooser chooser = new javax.swing.JFileChooser(new java.io.File(System.getProperty("user.home"), "libmusic"));
 			chooser.setDialogTitle("Open a score");
 			if (chooser.showOpenDialog(appFrame) == javax.swing.JFileChooser.APPROVE_OPTION) {
-				appFrame.loadScoreFile(chooser.getSelectedFile());
+				appFrame.openScoreFile(chooser.getSelectedFile());
 			}
 		}
 		if (e.getSource() == readABC){
@@ -380,13 +422,17 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 			//AbcReader abc = new AbcReader(big);
 			//big.abcReader.readAndDraw();
 			
-			big.readandDrawABC(true); // boolean says whether to do fingering
+			if (big.readandDrawABC(true)) { // boolean says whether to do fingering
+				appFrame.noteOpened(big.abcReader.fc.getSelectedFile());
+			}
 			//System.out.println(abc.abcString);
 			//ctl.abc.setH(5f);
 			
 		}
 		if (e.getSource() == justABC){
-			big.readandDrawABC(false); // boolean says whether to do fingering
+			if (big.readandDrawABC(false)) { // boolean says whether to do fingering
+				appFrame.noteOpened(big.abcReader.fc.getSelectedFile());
+			}
 		}
 		
 		if (e.getSource() == rand1){

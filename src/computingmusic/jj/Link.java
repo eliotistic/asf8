@@ -20,13 +20,20 @@ public class Link {
 	 */
 	public static List<Link> pair(JJScore score, NotationData notation) {
 		List<JJNote> data = score.byOnset();
-		if (data.size() != notation.notes.size()) {
-			throw new IllegalStateException("JJ has " + data.size() + " notes, Verovio drew " + notation.notes.size());
+		List<NotationData.Drawn> drawnNotes = new ArrayList<NotationData.Drawn>();
+		for (NotationData.Drawn d : notation.notes) {
+			if (!d.grace) {
+				drawnNotes.add(d);          // grace notes are drawn but are not in JJ's data
+			}
+		}
+		if (data.size() != drawnNotes.size()) {
+			throw new IllegalStateException("JJ has " + data.size() + " notes, Verovio drew " + drawnNotes.size()
+					+ " (" + (notation.notes.size() - drawnNotes.size()) + " more are grace notes)");
 		}
 		List<Link> links = new ArrayList<Link>(data.size());
 		for (int i = 0; i < data.size(); i++) {
 			JJNote n = data.get(i);
-			NotationData.Drawn d = notation.notes.get(i);
+			NotationData.Drawn d = drawnNotes.get(i);
 			if (n.pitch != d.pitch || Math.abs(n.quarters() - d.onset) > 1e-3) {
 				throw new IllegalStateException(String.format(
 						"note %d: JJ has %s at %.4f quarters, Verovio drew pitch %d at %.4f",

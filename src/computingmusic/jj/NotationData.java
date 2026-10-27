@@ -26,6 +26,8 @@ public class NotationData {
 		public final double x, y, w, h;
 		public final int pitch;
 		public final double onset;
+		/** a grace note: drawn, but JJ's data has no such note, so it is not paired */
+		public final boolean grace;
 
 		Drawn(Map<String, Object> m) {
 			id = String.valueOf(m.get("id"));
@@ -36,6 +38,7 @@ public class NotationData {
 			h = ((Number) m.get("h")).doubleValue();
 			pitch = ((Number) m.get("pitch")).intValue();
 			onset = ((Number) m.get("on")).doubleValue();
+			grace = Boolean.TRUE.equals(m.get("grace"));
 		}
 	}
 

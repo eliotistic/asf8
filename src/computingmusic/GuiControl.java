@@ -39,11 +39,20 @@ import computingmusic.jj.Json;
  *   gui_state                      title, size, the piece, the master index, how many items
  *   gui_load {path}                what dropping a score file on the window does (ABC, MusicXML, MEI, kern);
  *                                  gui_load_abc is the same
+ *   gui_drop {path, as}            drop a file on the window's real drop handler, as a "files" list (default) or as
+ *                                  "uri-list" text; it is read off the Swing thread: poll gui_state "loading"
+ *   gui_recent                     File > Open recent: the paths, newest first
  *   gui_start | gui_next | gui_prev | gui_jump_next        the arrow buttons
  *   gui_jump {index}               go to item `index`
  *   gui_extend | gui_shrink        the Extend and Shrink buttons
  *   gui_click {item}               what a click on that note does: show the fingerboards for its marked stretch
  *   gui_unique {on: true|false}    mark (or unmark) the stretches with only one fingering; replies with them
+ *   gui_zoom {factor, x, y}        Verovio view: zoom to `factor` times the fit-to-width scale (clamped 0.25..4), the
+ *                                  point x,y of the view staying put; {reset: true} refits (as Ctrl+0); replies
+ *                                  with zoom, zoomRelative, userZoomed, prefWidth/prefHeight, viewX/viewY
+ *   gui_wheel {rotation, x, y, shift, ctrl}   a wheel event on the view (rotation < 0 = up; shift default true)
+ *   gui_note_point {item}          where the item's first note is on the view, and what a click there hits
+ *   gui_item_at {x, y}             the item a click at that view point would choose, or -1
  *   gui_trail                      the trail under the red box: its items, and for each note the string and
  *                                  height the head trail puts it on, with the heights used and the hand span
  *   gui_menus                      the menus, with their items
@@ -190,8 +199,15 @@ public class GuiControl {
 			m.put("width", gui.getWidth());
 			m.put("height", gui.getHeight());
 			m.put("visible", gui.isVisible());
+			m.put("loading", gui.loading);
 			m.put("masterIndex", score.masterIndex);
 			m.put("items", score.fingResultList == null ? 0 : score.fingResultList.size());
+			if (score.scoreUI instanceof VerovioScoreComponent) {
+				VerovioScoreComponent v = (VerovioScoreComponent) score.scoreUI;
+				m.put("zoom", v.zoom());
+				m.put("zoomRelative", v.relativeZoom());
+				m.put("userZoomed", v.userHasZoomed());
+			}
 			return m;
 		}
 		if (cmd.equals("gui_load_abc") || cmd.equals("gui_load")) {
@@ -201,6 +217,37 @@ public class GuiControl {
 				m.put("error", gui.lastError);
 			}
 			m.put("items", score.fingResultList == null ? 0 : score.fingResultList.size());
+			return m;
+		}
+		if (cmd.equals("gui_recent")) {
+			List<Object> paths = new ArrayList<Object>();
+			for (File f : gui.recent.list()) {
+				paths.add(f.getPath());
+			}
+			m.put("recent", paths);
+			return m;
+		}
+		if (cmd.equals("gui_drop")) {
+			final File f = new File(String.valueOf(r.get("path")));
+			final boolean asText = "uri-list".equals(r.get("as"));
+			gui.lastError = null;
+			java.awt.datatransfer.Transferable t = new java.awt.datatransfer.Transferable() {
+				public java.awt.datatransfer.DataFlavor[] getTransferDataFlavors() {
+					return new java.awt.datatransfer.DataFlavor[] {
+							asText ? java.awt.datatransfer.DataFlavor.stringFlavor : java.awt.datatransfer.DataFlavor.javaFileListFlavor };
+				}
+				public boolean isDataFlavorSupported(java.awt.datatransfer.DataFlavor fl) {
+					return fl.equals(getTransferDataFlavors()[0]);
+				}
+				public Object getTransferData(java.awt.datatransfer.DataFlavor fl) {
+					return asText ? "# dropped\r\n" + f.toURI() + "\r\n" : java.util.Collections.singletonList(f);
+				}
+			};
+			javax.swing.TransferHandler h = gui.getRootPane().getTransferHandler();
+			m.put("accepted", h.importData(new javax.swing.TransferHandler.TransferSupport(gui.getRootPane(), t)));
+			if (gui.lastError != null) {
+				m.put("error", gui.lastError);
+			}
 			return m;
 		}
 		boolean empty = score.fingResultList == null || score.fingResultList.isEmpty();
@@ -229,6 +276,11 @@ public class GuiControl {
 			java.awt.Point shown = score.showStretchAt(((Number) r.get("item")).intValue());
 			m.put("firstItem", shown.x);
 			m.put("lastItem", shown.y);
+		} else if (cmd.equals("gui_zoom") || cmd.equals("gui_wheel") || cmd.equals("gui_note_point") || cmd.equals("gui_item_at")) {
+			if (!(score.scoreUI instanceof VerovioScoreComponent)) {
+				throw new IllegalStateException("the score is not shown by Verovio: no zoom");
+			}
+			return zoom((VerovioScoreComponent) score.scoreUI, cmd, r);
 		} else if (cmd.equals("gui_bow_style")) {
 			score.setBowStyle(((Number) r.get("style")).intValue());
 		} else if (cmd.equals("gui_unique")) {
@@ -267,6 +319,52 @@ public class GuiControl {
 			throw new IllegalArgumentException("unknown window command '" + cmd + "'");
 		}
 		m.put("masterIndex", score.masterIndex);
+		return m;
+	}
+
+	/** The zoom commands, on the Verovio view.  Complexity: O(pages). */
+	private Map<String, Object> zoom(VerovioScoreComponent v, String cmd, Map<String, Object> r) {
+		Map<String, Object> m = new LinkedHashMap<String, Object>();
+		java.awt.Point at = r.containsKey("x") ? new java.awt.Point(((Number) r.get("x")).intValue(), ((Number) r.get("y")).intValue()) : null;
+		if (cmd.equals("gui_zoom")) {
+			if (Boolean.TRUE.equals(r.get("reset"))) {
+				v.resetZoom();
+			} else {
+				v.setRelativeZoom(((Number) r.get("factor")).doubleValue(), at);
+			}
+		} else if (cmd.equals("gui_wheel")) {
+			// a real wheel event to the view: rotation < 0 is up; shift defaults to true
+			int mods = Boolean.FALSE.equals(r.get("shift")) ? 0 : java.awt.event.InputEvent.SHIFT_DOWN_MASK;
+			if (Boolean.TRUE.equals(r.get("ctrl"))) {
+				mods |= java.awt.event.InputEvent.CTRL_DOWN_MASK;
+			}
+			double rot = ((Number) r.get("rotation")).doubleValue();
+			java.awt.Point p = at != null ? at : new java.awt.Point(10, 10);
+			v.dispatchEvent(new java.awt.event.MouseWheelEvent(v, java.awt.event.MouseEvent.MOUSE_WHEEL, System.currentTimeMillis(), mods,
+					p.x, p.y, p.x, p.y, 0, false, java.awt.event.MouseWheelEvent.WHEEL_UNIT_SCROLL, 3, (int) Math.signum(rot), rot));
+		} else if (cmd.equals("gui_note_point")) {
+			java.awt.Point p = v.notePoint(((Number) r.get("item")).intValue());
+			if (p == null) {
+				throw new IllegalArgumentException("that item has no drawn note");
+			}
+			m.put("x", p.x);
+			m.put("y", p.y);
+			m.put("hit", v.itemAtPoint(p));
+		} else {
+			if (at == null) {
+				throw new IllegalArgumentException("gui_item_at needs x and y");
+			}
+			m.put("item", v.itemAtPoint(at));
+		}
+		m.put("zoom", v.zoom());
+		m.put("zoomRelative", v.relativeZoom());
+		m.put("userZoomed", v.userHasZoomed());
+		java.awt.Dimension d = v.getPreferredSize();
+		m.put("prefWidth", d.width);
+		m.put("prefHeight", d.height);
+		javax.swing.JViewport vp = (javax.swing.JViewport) v.getParent();
+		m.put("viewX", vp.getViewPosition().x);
+		m.put("viewY", vp.getViewPosition().y);
 		return m;
 	}
 

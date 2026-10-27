@@ -53,6 +53,38 @@ public class HandPanel extends JPanel {
 		};
 		addMouseListener(m);
 		addMouseMotionListener(m);
+		javax.swing.ToolTipManager.sharedInstance().registerComponent(this);
+	}
+
+	/** The string and height under the mouse: its pitch (ABC), string, height, distance from the nut, and the finger on it if one is placed there. */
+	@Override
+	public String getToolTipText(MouseEvent e) {
+		double mm = (e.getY() - TOP) / scale();
+		if (mm < 0) {
+			return null;
+		}
+		int best = 0;
+		double bestD = Double.MAX_VALUE;
+		for (int s = 0; s < geometry.strings(); s++) {
+			double d = Math.abs(cx() + geometry.lateral(s, mm) * scale() - e.getX());
+			if (d < bestD) {
+				bestD = d;
+				best = s;
+			}
+		}
+		int h = (int) Math.round(geometry.height(mm));
+		if (h < 1 || h > maxHeight) {
+			return null;
+		}
+		int pitch = geometry.open[best] + h;
+		StringBuilder t = new StringBuilder("<html><b>" + computingmusic.AbcPitch.name(pitch, computingmusic.TrailRun.whiteKey(pitch) ? 0 : 1)
+				+ "</b><br>" + geometry.stringNames[best] + " string<br>height " + h + String.format("<br>%.0fmm", geometry.distance(h)));
+		for (int f = 1; f <= 4; f++) {
+			if (placed[f] != null && placed[f][0] == best && placed[f][1] == h) {
+				t.append("<br>finger ").append(f);
+			}
+		}
+		return t.append("</html>").toString();
 	}
 
 	public void setOnChange(Runnable r) {
