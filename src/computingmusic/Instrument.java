@@ -153,6 +153,9 @@ public class Instrument {
 	 
 	 
 	public boolean inSpan(int p1, int p2){	 
+		if (Constraints.HAND != null) {       // the hand model, when there is one, decides what the hand can hold
+			return Constraints.HAND.feasible(p1 == p2 ? new int[] { p1 } : new int[] { Math.min(p1, p2), Math.max(p1, p2) });
+		}
 		return getSpan(p1, p2) <= maxSpan;
 	}
 	public boolean inEZSpan(int a, int b){

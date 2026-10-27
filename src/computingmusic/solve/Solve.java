@@ -32,10 +32,10 @@ public class Solve {
 		File dump = new File(System.getProperty("user.home"), ".string_fingering/cache/" + base + "/dump.json");
 		JJScore score = dump.isFile() ? JJScore.read(dump) : MusicXmlSession.loadNotes(file);
 		Instrument ins = TrailRun.violin();
-		TrailRun.Items items = TrailRun.items(score, ins);
 		HandParams hp = new HandParams();
 		hp.size = size;
-		Constraints.HAND = new FrameTest(Geometry.VIOLIN, hp, true);
+		Constraints.HAND = new FrameTest(Geometry.VIOLIN, hp, true);     // before the items: the chord fingerings are made with it
+		TrailRun.Items items = TrailRun.items(score, ins);
 		FrameTest comfortable = new FrameTest(Geometry.VIOLIN, hp, false);
 		PieceSolver.Solution sol = new PieceSolver(new PieceSolver.Costs(), comfortable, Constraints.HAND).solve(ins, items);
 		summary(System.out, base, items, sol, size);
@@ -60,6 +60,17 @@ public class Solve {
 			}
 			if (c.within >= 2.0) {
 				beyond++;
+			}
+		}
+		for (PieceSolver.Choice c : sol.choices) {
+			if (c.trail == null) {
+				for (int it = c.stretch.start; it <= c.stretch.stop; it++) {
+					StringBuilder nm = new StringBuilder();
+					for (JJNote jn : items.notes.get(it)) {
+						nm.append(jn.abcName()).append(' ');
+					}
+					out.printf("  NO FINGERING for item %d (measure %d): %s%n", it, items.notes.get(it).get(0).measure(), nm);
+				}
 			}
 		}
 		out.printf("%s, hand size x%.2f%n", base, size);

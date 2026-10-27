@@ -759,11 +759,11 @@ public class BigScore extends JPanel{
 				return marked;
 			}
 			Instrument ins = new Instrument(this, "VN");
-			TrailRun.Items items = TrailRun.items(notationScore, ins);
 			computingmusic.hand.FrameTest before = Constraints.HAND;
 			try {
 				computingmusic.hand.HandParams hp = new computingmusic.hand.HandParams();
 				Constraints.HAND = new computingmusic.hand.FrameTest(computingmusic.hand.Geometry.VIOLIN, hp, true);
+				TrailRun.Items items = TrailRun.items(notationScore, ins);      // with the model set: the chord fingerings use it
 				computingmusic.solve.PieceSolver.Solution sol = new computingmusic.solve.PieceSolver(
 						new computingmusic.solve.PieceSolver.Costs(),
 						new computingmusic.hand.FrameTest(computingmusic.hand.Geometry.VIOLIN, hp, false), Constraints.HAND).solve(ins, items);

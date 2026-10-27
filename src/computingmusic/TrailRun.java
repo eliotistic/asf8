@@ -108,10 +108,24 @@ public class TrailRun {
 
 	/** The engine's key for a MIDI pitch written with an alteration (+1 sharp, -1 flat). */
 	static K keyOf(int midi, int alter) {
+		if (!whiteKey(midi - alter)) {
+			// JJ keeps one accidental sign, so a double sharp or double flat arrives as a single one and
+			// names the wrong letter: spell the pitch itself (only the pitch matters to the fingering)
+			alter = whiteKey(midi) ? 0 : 1;
+		}
 		int natural = midi - alter;
 		String letters = "CCDDEFFGGAAB";
 		String name = letters.charAt(natural % 12) + (alter > 0 ? "#" : alter < 0 ? "b" : "") + (natural / 12);
 		return Keynum.parseKey(name);
+	}
+
+	static boolean whiteKey(int midi) {
+		switch (((midi % 12) + 12) % 12) {
+		case 0: case 2: case 4: case 5: case 7: case 9: case 11:
+			return true;
+		default:
+			return false;
+		}
 	}
 
 	/** A violin with the constraints of SFProperties.xml, read from the working directory as the app does. */

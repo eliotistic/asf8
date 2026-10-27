@@ -52,13 +52,17 @@ public class JJNote {
 
 	/** ABC pitch notation: C is middle C, c the octave above, C, the octave below; ^ sharp, _ flat. */
 	public String abcName() {
-		int natural = pitch - alter();
+		int alter = alter();
+		if (!white(pitch - alter)) {              // a double sharp or flat: JJ holds one sign only, so spell the pitch itself
+			alter = white(pitch) ? 0 : 1;
+		}
+		int natural = pitch - alter;
 		String letters = "CCDDEFFGGAAB";
 		int pc = natural % 12;
 		char letter = letters.charAt(pc);
 		int octave = natural / 12 - 1;
 		StringBuilder b = new StringBuilder();
-		b.append(alter() > 0 ? "^" : alter() < 0 ? "_" : "");
+		b.append(alter > 0 ? "^" : alter < 0 ? "_" : "");
 		b.append(octave >= 5 ? Character.toLowerCase(letter) : letter);
 		for (int k = 5; k < octave; k++) {
 			b.append('\'');
@@ -67,6 +71,11 @@ public class JJNote {
 			b.append(',');
 		}
 		return b.toString();
+	}
+
+	private static boolean white(int midi) {
+		int pc = ((midi % 12) + 12) % 12;
+		return pc == 0 || pc == 2 || pc == 4 || pc == 5 || pc == 7 || pc == 9 || pc == 11;
 	}
 
 	public String fingering() {

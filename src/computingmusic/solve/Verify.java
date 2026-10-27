@@ -44,6 +44,8 @@ public class Verify {
 		int[] open = {55, 62, 69, 76};
 		String names = "GDAE";
 		int[][] confusion = new int[5][5];
+		int[][] uConfusion = new int[5][5];
+		int uPrinted = 0, uOpenStop = 0, uAgree = 0;
 		int fingerAgree = 0, fingerDisagree = 0, forcedAgree = 0, forcedDisagree = 0, openStopMiss = 0;
 		int expectedItem = 0, bad = 0, notes = 0, wrongPitch = 0, overHeight = 0, frameFail = 0, printed = 0, printedOpenAgree = 0, printedStoppedAgree = 0;
 		StringBuilder first = new StringBuilder();
@@ -57,6 +59,7 @@ public class Verify {
 				}
 			}
 			expectedItem = b + 1;
+			boolean uniq = Boolean.TRUE.equals(s.get("forced"));         // exactly one trail for the stretch: the fingering is univocal
 			java.util.TreeSet<Integer> heights = new java.util.TreeSet<Integer>();
 			for (Object no : (List<Object>) s.get("notes")) {
 				Map<String, Object> n = (Map<String, Object>) no;
@@ -81,6 +84,19 @@ public class Verify {
 					String pf = jn.fingering();
 					if (jn.pitch == pitch && pf != null && pf.matches("[0-4]")) {
 						printed++;
+						if (uniq) {
+							uPrinted++;
+							if (pf.equals("0") == (h == 0)) {
+								uOpenStop++;
+							}
+							if (n.containsKey("finger")) {
+								int ourF = ((Number) n.get("finger")).intValue();
+								uConfusion[Integer.parseInt(pf)][ourF]++;
+								if (pf.equals(String.valueOf(ourF))) {
+									uAgree++;
+								}
+							}
+						}
 						if (n.containsKey("finger")) {
 							confusion[Integer.parseInt(pf)][((Number) n.get("finger")).intValue()]++;
 							boolean same = pf.equals(String.valueOf(((Number) n.get("finger")).intValue()));
@@ -123,6 +139,10 @@ public class Verify {
 		System.out.printf("  printed single digits %d: agree on open/stopped %d (open %d, stopped %d)%n", printed, printedOpenAgree + printedStoppedAgree, printedOpenAgree, printedStoppedAgree);
 		System.out.printf("  our finger against the printed one: agree %d, differ %d of %d  (where the hand allows no other finger: agree %d, differ %d)%n",
 				fingerAgree, fingerDisagree, fingerAgree + fingerDisagree, forcedAgree, forcedDisagree);
+		System.out.printf("  UNIVOCAL stretches only (one trail): printed digits %d; open/stopped agree %d; our finger agrees %d (%.0f%%)%n", uPrinted, uOpenStop, uAgree, uPrinted == 0 ? 0.0 : 100.0 * uAgree / uPrinted);
+		for (int r = 0; r < 5; r++) {
+			System.out.printf("    univocal, printed %d: %s%n", r, java.util.Arrays.toString(uConfusion[r]));
+		}
 		System.out.println("  printed (rows) against ours (columns), fingers 0-4:");
 		for (int r = 0; r < 5; r++) {
 			System.out.printf("    printed %d: %s%n", r, java.util.Arrays.toString(confusion[r]));

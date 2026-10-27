@@ -26,6 +26,7 @@ public class Calibrate {
 		TrailRun.Items items = TrailRun.items(score, ins);
 		System.out.println("piece " + base + ": " + items.chords.size() + " items");
 		report("baseline: fixed span (Constraints.VIOLIN_HAND_SPAN)", ins, items);
+		items = null;
 		double[] sizes = {1.0};
 		if (args.length > 1) {
 			sizes = new double[args.length - 1];
@@ -38,7 +39,7 @@ public class Calibrate {
 				HandParams p = new HandParams();
 				p.size = size;
 				Constraints.HAND = new FrameTest(Geometry.VIOLIN, p, absolute);
-				report(Constraints.HAND.toString(), ins, items);
+				report(Constraints.HAND.toString(), ins, TrailRun.items(score, ins));   // items made with the model set
 			}
 		}
 		Constraints.HAND = null;
