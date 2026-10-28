@@ -22,3 +22,8 @@ at the nut, 33-34 mm at the bridge); viola, cello and bass geometry are chosen a
 - Not wired into the trail engine (`FingerTrail` still uses the fixed 6-semitone frame); doing so replaces that frame.
 - Finger numbers are placed by hand in the window, not deduced.
 - No shift or preparation timing; no coupling cost between fingers; no sizes from a hand-size database (ANSUR II).
+- SLIDING with one finger (portamento, a finger gliding from one pitch to another without lifting): a technique the
+  model does not know. Probably it matters mostly as a way of CHOOSING hand position (a slide is a shift that keeps
+  a finger down), so it belongs with the shift-cost work, not with the frame test. Noted 2026-10-27, EH: "important
+  technique ... probably about choosing hand position, so perhaps not so important now".
+

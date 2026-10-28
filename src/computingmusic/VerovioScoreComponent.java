@@ -520,6 +520,32 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 	private static final Color FORCED_BAND = new Color(168, 228, 160, 110);     // Crayola granny smith apple, see-through
 	private static final Color FORCED_EDGE = new Color(60, 150, 70);
 
+	/**
+	 * The x range {left, right} of the cells of stretch `s` in this system's row of notes (sorted by x): from the left
+	 * edge of its first cell to the position of the next note after its last, so the band covers the time the notes
+	 * last, not only the points where they begin.  Null if the stretch has no note here.  Complexity: O(row).
+	 */
+	private double[] cellSpan(ArrayList<double[]> row, ScoreView.Stretch s) {
+		double lo = Double.MAX_VALUE, last = -1;
+		for (double[] n : row) {
+			if (n[4] >= s.start && n[4] <= s.stop) {
+				lo = Math.min(lo, n[0] - n[9] / 2);
+				last = Math.max(last, n[0]);
+			}
+		}
+		if (last < 0) {
+			return null;
+		}
+		double next = last + 12;
+		for (double[] n : row) {
+			if (Math.round(n[0]) > Math.round(last)) {
+				next = n[0] - n[9] / 2;
+				break;
+			}
+		}
+		return new double[] {lo, next - 1};
+	}
+
 	/** The x range {lo, hi} of the notes of stretch `s` in system `sys`, or null if it has none there. */
 	private double[] spanInSystem(ScoreView.Stretch s, int sys) {
 		double lo = Double.MAX_VALUE, hi = -1;
@@ -606,7 +632,7 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 						int str = Math.max(0, Math.min(3, e[2]));
 						bySystem.computeIfAbsent(itemSystem[e[0]], k -> new ArrayList<double[]>())
 								.add(new double[] {r.x + r.width / 2.0, str, s.unique ? 1 : 0, fm.stringWidth(ROMAN[str]), e[0],
-										e.length > 3 ? e[3] : -1, e.length > 4 ? e[4] : 0, e.length > 5 ? e[5] : -1});
+										e.length > 3 ? e[3] : -1, e.length > 4 ? e[4] : 0, e.length > 5 ? e[5] : -1, e[1], r.width});
 						break;
 					}
 				}
@@ -646,14 +672,15 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 					}
 				}
 				for (ScoreView.Stretch s : stretches) {                                     // where there is no choice: a green band behind the cells
-					double[] span = s.unique ? spanInSystem(s, en.getKey()) : null;
+					double[] span = s.unique ? cellSpan(row, s) : null;
 					if (span != null) {
-						int l = (int) span[0] - 7, w = (int) (span[1] - span[0]) + 14;
+						int l = (int) span[0] - 3, w = (int) (span[1] - span[0]) + 6;
 						g.setColor(FORCED_BAND);
 						g.fillRect(l, top - LEVEL / 2 - 3, w, 4 * LEVEL + 6);
 						g.setColor(FORCED_EDGE);
 						g.setStroke(new BasicStroke(1.3f));
 						g.drawRect(l, top - LEVEL / 2 - 3, w, 4 * LEVEL + 6);
+						bracketTips.add(new Object[] {new Rectangle(l, top - LEVEL / 2 - 3, w, 4 * LEVEL + 6), s.label});
 					}
 				}
 				if (bowStyle == 0) {
@@ -672,36 +699,33 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 						if (bowStyle == 1) {
 							g.fillOval(x - 4, y - 4, 8, 8);
 						} else {
-							int next = k + 1 < row.size() ? (int) Math.round(row.get(k + 1)[0]) : x + 12;
-							int cw = Math.max(3, next - x - 2);
-							g.fillRect(x - 1, y - LEVEL / 2 + 1, cw, LEVEL - 2);
+							// a cell starts at the left edge of its notehead and runs to the left edge of the next note's head;
+							// the digit is centred under the notehead itself, so it lines up with its note
+							int half = (int) Math.round(n[9] / 2);
+							int j = k + 1;                                  // the next note at a LATER position: the notes of a chord share one
+							while (j < row.size() && Math.round(row.get(j)[0]) <= x) {
+								j++;
+							}
+							int cl = x - half;
+							int next = j < row.size() ? (int) Math.round(row.get(j)[0]) - (int) Math.round(row.get(j)[9] / 2) : cl + 2 * half + 12;
+							int cw = Math.max(3, next - cl - 2);
+							g.fillRect(cl, y - LEVEL / 2 + 1, cw, LEVEL - 2);
 							int ours = (int) n[5], printed = (int) n[7];
 							if (ours >= 0 && printed >= 0 && ours != printed) {                 // our finger and the printed one disagree
 								g.setColor(DISAGREE);
 								g.setStroke(new BasicStroke(1.6f));
-								g.drawRect(x - 1, y - LEVEL / 2 + 1, cw, LEVEL - 2);
+								g.drawRect(cl, y - LEVEL / 2 + 1, cw, LEVEL - 2);
 							}
-							if (ours >= 0 && cw >= 7) {                                          // our finger, in the cell
+							if (ours >= 0 && cw >= 7) {                                          // our finger, centred under its note
 								g.setFont(g.getFont().deriveFont(n[6] > 0 ? java.awt.Font.BOLD : java.awt.Font.PLAIN, 10f));
 								g.setColor(n[6] > 0 ? FINGER_FORCED : FINGER_CHOSEN);
-								g.drawString(String.valueOf(ours), x - 1 + cw / 2 - 3, y + 4);
+								g.drawString(String.valueOf(ours), x - g.getFontMetrics().stringWidth(String.valueOf(ours)) / 2, y + 4);
 							}
-							cellHits.add(new Object[] {new Rectangle(x - 1, top - LEVEL / 2, Math.max(3, next - x), 4 * LEVEL), (int) n[4]});
+							cellHits.add(new Object[] {new Rectangle(cl, top - LEVEL / 2, Math.max(3, next - cl), 4 * LEVEL), (int) n[4]});
 						}
 					}
 				}
 				bottom = top + 3 * LEVEL + 12;
-			}
-			// the stretches with only one trail: a heavy bracket under their part of this system, and their label as tooltip
-			g.setStroke(new BasicStroke(3.2f));
-			g.setColor(FORCED_EDGE);
-			for (ScoreView.Stretch s : stretches) {
-				double[] span = s.unique ? spanInSystem(s, en.getKey()) : null;
-				if (span != null) {
-					int l = (int) span[0] - 7, rr = (int) span[1] + 7;
-					g.drawLine(l, bottom + 2, rr, bottom + 2);
-					bracketTips.add(new Object[] {new Rectangle(l, top0(bottom) , rr - l, bottom + 6 - top0(bottom)), s.label});
-				}
 			}
 		}
 	}

@@ -28,7 +28,7 @@ import xml.etree.ElementTree as ET
 LIB = os.environ.get('VEROVIO_LIB', os.path.expanduser('~/shape/lib/verovio/build/libverovio.so'))
 DATA = os.environ.get('VEROVIO_DATA', os.path.expanduser('~/shape/lib/verovio/data'))
 OPTIONS = {'breaks': 'auto', 'scale': 40, 'pageHeight': 2970, 'pageWidth': 2100, 'adjustPageHeight': True,
-           'transposeToSoundingPitch': True, 'spacingSystem': 14}
+           'transposeToSoundingPitch': True, 'spacingSystem': 16}
 SVG = '{http://www.w3.org/2000/svg}'
 
 

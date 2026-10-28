@@ -76,6 +76,17 @@ class Window(unittest.TestCase):
         self.assertGreater(width, 1000)
         self.assertGreater(height, 500)
 
+    def test_22_the_fingerboards_fill_the_height_of_the_window(self):
+        from PIL import Image
+        self.assertTrue(self.ask('gui_load_abc', path=ABC)['loaded'])
+        shot = os.path.join(STATE, 'test_boards_height.png')
+        self.assertTrue(self.ask('gui_screenshot', path=shot)['ok'])
+        im = Image.open(shot).convert('RGB')
+        rows = [y for y in range(im.height) if im.getpixel((300, y)) in ((0xF3, 0xDE, 0xAC), (255, 255, 255), (0, 0, 0))
+                and any(im.getpixel((x, y)) == (0xF3, 0xDE, 0xAC) for x in range(262, 312))]
+        board = max(rows) - min(rows)
+        self.assertGreater(board, 0.75 * self.ask('gui_state')['height'])   # was a rigid 600 px of a 900 px window
+
     def test_25_a_musicxml_score_is_drawn_by_verovio_and_steps_like_any_other(self):
         caprice = os.path.expanduser('~/libmusic/Paganini/mutopia_caprice01/caprice01_ly2mxml.musicxml')
         loaded = self.ask('gui_load', path=caprice)

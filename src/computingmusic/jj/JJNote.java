@@ -78,6 +78,11 @@ public class JJNote {
 		return pc == 0 || pc == 2 || pc == 4 || pc == 5 || pc == 7 || pc == 9 || pc == 11;
 	}
 
+	/** Is the note marked with a trill (a trill is held by two fingers: the note's and the one above it)? */
+	public boolean trill() {
+		return props.get("trill") != null;
+	}
+
 	public String fingering() {
 		Object f = props.get("fingering");
 		return f == null ? "" : String.valueOf(f);

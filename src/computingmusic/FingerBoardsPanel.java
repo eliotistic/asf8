@@ -15,7 +15,7 @@ import javax.swing.JPopupMenu;
  * @author JeanBenoit
  *
  */
-public class FingerBoardsPanel extends JPanel {
+public class FingerBoardsPanel extends JPanel implements javax.swing.Scrollable {
 
 	private static final long serialVersionUID = 1L;
 	private Instrument instr;
@@ -77,14 +77,17 @@ public class FingerBoardsPanel extends JPanel {
 		c4.gridx = 0;
 		c4.gridy = 1;
 		c4.fill = GridBagConstraints.BOTH;
+		c4.weighty = 1; // the boards take the height the window gives
 		
 		c5.gridx = 1;
 		c5.gridy = 1;
 		c5.fill = GridBagConstraints.BOTH;
+		c5.weighty = 1;
 		
 		c6.gridx = 2;
 		c6.gridy = 1;
 		c6.fill = GridBagConstraints.BOTH;
+		c6.weighty = 1;
 		
 		
 		this.add(above1, c1);
@@ -255,6 +258,7 @@ public class FingerBoardsPanel extends JPanel {
 		c2.gridx = numBoards++;
 		c2.gridy = 1;
 		c2.fill = GridBagConstraints.BOTH;
+		c2.weighty = 1;
 		this.add(newBoard, c2);
 		
 	}
@@ -373,6 +377,17 @@ public class FingerBoardsPanel extends JPanel {
 			index -= 1;
 		}
 		
+	}
+	
+	// Scrollable: sideways the panel scrolls as before; in height it follows the window (the boards fill it),
+	// unless the window is lower than the boards' minimum, when it scrolls.
+	public java.awt.Dimension getPreferredScrollableViewportSize() { return getPreferredSize(); }
+	public int getScrollableUnitIncrement(java.awt.Rectangle r, int o, int d) { return 15; }
+	public int getScrollableBlockIncrement(java.awt.Rectangle r, int o, int d) { return o == javax.swing.SwingConstants.VERTICAL ? r.height : r.width; }
+	public boolean getScrollableTracksViewportWidth() { return false; }
+	public boolean getScrollableTracksViewportHeight() {
+		java.awt.Container p = getParent();
+		return p instanceof javax.swing.JViewport && p.getHeight() >= getMinimumSize().height;
 	}
 	
 }

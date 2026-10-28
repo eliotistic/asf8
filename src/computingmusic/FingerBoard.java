@@ -240,6 +240,22 @@ public class FingerBoard extends JLabel {
     				}
     				k++;
     			}
+    			// a chord (two points or more on the board): every finger, highest note first, one to a line, as printed
+    			if (ps1.length > 1) {
+    				java.util.List<Point> pts = new java.util.ArrayList<Point>(java.util.Arrays.asList(ps1));
+    				pts.sort((p, q) -> Integer.compare(instrument.openStringPitch(q.x) + q.y, instrument.openStringPitch(p.x) + p.y));
+    				s.append("<br>chord");
+    				for (Point p : pts) {
+    					int idx = 0, f = 0;
+    					for (int h : held) {
+    						if (h == p.y) {
+    							f = a.fingers[idx];
+    						}
+    						idx++;
+    					}
+    					s.append("<br>").append(p.y == 0 ? 0 : f);
+    				}
+    			}
     		}
     	} else if (shown) {
     		s.append("<br>down");
@@ -254,12 +270,14 @@ public class FingerBoard extends JLabel {
     }
     
     public Dimension getPreferredSize() {
-    	return new Dimension(70, 600); // This is rigidly setting the dimensions of the FingerBoard
+    	// Only what the board asks for when nothing gives it more: FingerBoardsPanel lets the boards fill the
+    	// height of the window (weighty = 1, and it follows the viewport's height), so this is a floor, not the size.
+    	return new Dimension(70, 600);
     }
     
     public Dimension getMinimumSize()
     {
-    	return new Dimension(70, 500);
+    	return new Dimension(70, 400);
     }
     
     
@@ -400,37 +418,49 @@ public class FingerBoard extends JLabel {
 		}
 		
 		// draw strings + discs
+		int thinnedFrom = -1; // y of the first disc left out (same on every string)
 		int index = 0;
 		for (int stringx : xPositions) {
 			// draw the vertical strings (the "real" strings)
 			g2.setColor(Color.BLACK);
 			g2.drawLine(stringx, Y_BORDER, stringx, panelHeight - Y_BORDER);
 			
-			//Draw the discs
+			//Draw the discs.  The y-scale is the violin's own (semitones close up towards the bridge, as on the
+			//instrument), so high up the discs would overlap into a smear: a disc is drawn only if it clears the
+			//last one drawn (the points of the piece are always drawn, by colorNotes); every disc is still in
+			//noteCoordinates, so the tooltip finds the thinned ones too.
+			int lastY = -1000;
 			for (int interval = 1; interval <= maxInterval; interval++) {
-				//interval: linearly increasing int, up to 25
-				//yborder: vertical starting position
-				//internalHeight: height until vertical ending position.
-				// so int y describes the locations at which the discs will be drawn
 				int y = instrument.noteYPosition(interval, Y_BORDER, internalHeight);
-				
+				noteCoordinates[interval-1][index] = new Point(stringx, y);
+				if (y - lastY < DOT + 1) {
+					if (thinnedFrom < 0 && index == 0) {
+						thinnedFrom = y;
+					}
+					continue;
+				}
+				lastY = y;
 				g2.setColor(Color.WHITE);
 				g2.fillOval(stringx - DOT / 2, y - DOT / 2, DOT, DOT);
 				g2.setColor(Color.BLACK);
 				g2.drawOval(stringx - DOT / 2, y - DOT / 2, DOT, DOT);
-				
-				noteCoordinates[interval-1][index] = new Point(stringx, y);
-				//System.out.println("adding: " + (interval-1) + " " + index);
 			}
 			
 			index++;
 		}
-		for(int i = 0; i<noteCoordinates.length; i++)
-		{
-			for(int j = 0; j<noteCoordinates[0].length; j++)
-			{
-				//System.out.println("NoteCoordinates at " + i + ", " + j + " = " + noteCoordinates[i][j]);
-			}
+		if (thinnedFrom > 0) { // say that the discs below this line are not all drawn
+			Stroke old = g2.getStroke();
+			g2.setColor(Color.GRAY);
+			g2.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, new float[] { 3f, 3f }, 0f));
+			g2.drawLine(X_BORDER, thinnedFrom - DOT / 2 - 1, X_BORDER + internalWidth, thinnedFrom - DOT / 2 - 1);
+			g2.setStroke(old);
+			g2.setFont(g2.getFont().deriveFont(9f));
+			int ty = thinnedFrom - DOT / 2 - 3;
+			int tw = g2.getFontMetrics().stringWidth("thinned");
+			g2.setColor(boardColor);
+			g2.fillRect(X_BORDER + 1, ty - 9, tw + 2, 10); // so the label is not drawn over discs
+			g2.setColor(Color.DARK_GRAY);
+			g2.drawString("thinned", X_BORDER + 2, ty);
 		}
 		
 		//TODO

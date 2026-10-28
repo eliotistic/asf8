@@ -11,6 +11,7 @@ import computingmusic.Instrument;
 import computingmusic.TrailRun;
 import computingmusic.eval.NoteByNote;
 import computingmusic.hand.FrameTest;
+import computingmusic.jj.JJNote;
 
 /**
  * One fingering for a whole piece.
@@ -49,7 +50,8 @@ public final class PieceSolver {
 		public final int onCheapestPath;          // options that lie on some cheapest path
 		public final double within, transition;   // cost inside this stretch, and from the stretch before
 		public final int[] frame;                 // distinct stopped heights of the chosen trail, ascending
-		public int[] fingers;                     // the finger for each height of the frame (null if the hand model gives none)
+		public int[] fingers;                     // the finger for each height of fingerHeights (null if the hand model gives none)
+		public int[] fingerHeights;               // the frame's heights, plus the height a trill's upper finger needs on each trilled note
 		public boolean fingersForced;             // the hand allows no other assignment
 		public List<List<NoteByNote.Spot>> spots; // for each item of the stretch, the spot of each note
 
@@ -73,8 +75,8 @@ public final class PieceSolver {
 				return 0;
 			}
 			if (fingers != null) {
-				for (int i = 0; i < frame.length; i++) {
-					if (frame[i] == height) {
+				for (int i = 0; i < fingerHeights.length; i++) {
+					if (fingerHeights[i] == height) {
 						return fingers[i];
 					}
 				}
@@ -259,12 +261,38 @@ public final class PieceSolver {
 			double tr = (i > 0 && has && !opts.get(i - 1).isEmpty()) ? transition(frames.get(i - 1)[pick[i - 1]], fr) : 0;
 			Choice c = new Choice(s, t, opts.get(i).size(), cheapest, has ? unary.get(i)[pick[i]] : 0, tr, fr);
 			if (has) {
-				FrameTest.Assignment as = absolute == null ? null : absolute.assign(fr);
+				c.spots = NoteByNote.spots(ins, items, s, t);
+				// a trill is held by two fingers, the note's and the one above it: the height of the finger above (a tone
+				// up the same string; JJ does not know whether the trill is a tone or a semitone) is part of the frame
+				java.util.TreeSet<Integer> held = new java.util.TreeSet<Integer>();
+				for (int h : fr) {
+					held.add(h);
+				}
+				int itemNo = s.start;
+				for (List<NoteByNote.Spot> row : c.spots) {
+					List<JJNote> ns = items.notes.get(itemNo);
+					for (int j = 0; j < row.size(); j++) {
+						if (row.get(j) != null && ns.get(j).trill()) {
+							held.add(row.get(j).height + 2);
+						}
+					}
+					itemNo++;
+				}
+				int[] withTrills = new int[held.size()];
+				int ti = 0;
+				for (int h : held) {
+					withTrills[ti++] = h;
+				}
+				FrameTest.Assignment as = absolute == null ? null : absolute.assign(withTrills);
+				c.fingerHeights = withTrills;
+				if (as == null && absolute != null) {                  // the hand cannot also hold the trills' fingers: the frame's own
+					as = absolute.assign(fr);
+					c.fingerHeights = fr;
+				}
 				if (as != null) {
 					c.fingers = as.fingers;
 					c.fingersForced = as.forced();
 				}
-				c.spots = NoteByNote.spots(ins, items, s, t);
 				for (List<NoteByNote.Spot> row : c.spots) {
 					for (NoteByNote.Spot sp : row) {
 						if (sp == null) {
