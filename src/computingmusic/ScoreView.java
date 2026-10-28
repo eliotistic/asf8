@@ -30,6 +30,8 @@ public interface ScoreView {
 		public final java.util.List<int[]> strings = new java.util.ArrayList<int[]>();
 		/** False when the engine has several fingerings for the stretch (its strings are those of the best trail). */
 		public boolean unique = true;
+		/** The solver's chosen trail for the stretch (a FingerTrail), or null; the window shows it first on a click. */
+		public Object chosenTrail;
 
 		public Stretch(int start, int stop, int firstMeasure, int lastMeasure, String label) {
 			this.start = start;

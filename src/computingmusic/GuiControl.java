@@ -202,6 +202,7 @@ public class GuiControl {
 			m.put("loading", gui.loading);
 			m.put("masterIndex", score.masterIndex);
 			m.put("items", score.fingResultList == null ? 0 : score.fingResultList.size());
+			m.putAll(trailShowing(score));
 			if (score.scoreUI instanceof VerovioScoreComponent) {
 				VerovioScoreComponent v = (VerovioScoreComponent) score.scoreUI;
 				m.put("zoom", v.zoom());
@@ -276,6 +277,8 @@ public class GuiControl {
 			java.awt.Point shown = score.showStretchAt(((Number) r.get("item")).intValue());
 			m.put("firstItem", shown.x);
 			m.put("lastItem", shown.y);
+			m.putAll(trailShowing(score));
+			m.put("solverTrailShown", score.trailIsSolvers);
 		} else if (cmd.equals("gui_zoom") || cmd.equals("gui_wheel") || cmd.equals("gui_note_point") || cmd.equals("gui_item_at")) {
 			if (!(score.scoreUI instanceof VerovioScoreComponent)) {
 				throw new IllegalStateException("the score is not shown by Verovio: no zoom");
@@ -319,6 +322,27 @@ public class GuiControl {
 			throw new IllegalArgumentException("unknown window command '" + cmd + "'");
 		}
 		m.put("masterIndex", score.masterIndex);
+		return m;
+	}
+
+	/**
+	 * Which alive trail the fingerboards show: trailIndex (0-based) of trailCount, and the strings of the notes of
+	 * the last anchor step as "G".."E" with heights, e.g. "G1 D3" (trailPoints, sorted).
+	 */
+	private Map<String, Object> trailShowing(BigScore score) {
+		Map<String, Object> m = new LinkedHashMap<String, Object>();
+		java.util.ArrayList<FingerTrail> ts = score.cfinger.activeTrails;
+		int i = score.cfinger.indexViewActiveTrail;
+		m.put("trailCount", ts == null ? 0 : ts.size());
+		m.put("trailIndex", ts == null || i >= ts.size() ? -1 : i);
+		if (ts != null && i >= 0 && i < ts.size()) {
+			String[] sn = { "G", "D", "A", "E" };
+			java.util.TreeSet<String> pts = new java.util.TreeSet<String>();
+			for (FingerTrail.Trailpoint tp : ts.get(i).getTrailPoints()) {
+				pts.add(sn[tp.saite] + tp.interval);
+			}
+			m.put("trailPoints", new ArrayList<Object>(pts));
+		}
 		return m;
 	}
 

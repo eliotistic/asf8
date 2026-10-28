@@ -784,6 +784,7 @@ public class BigScore extends JPanel{
 							(c.forced() ? "one trail \u00b7 " + heights : c.options + " options, chosen by cost \u00b7 " + heights)
 									+ (c.trail.lifts > 0 ? " \u00b7 " + c.trail.lifts + " lifts" : ""));
 					st.unique = c.forced();
+					st.chosenTrail = c.trail;
 					int item = c.stretch.start;
 					for (java.util.List<computingmusic.eval.NoteByNote.Spot> row : c.spots) {
 						java.util.List<computingmusic.jj.JJNote> ns = items.notes.get(item);
@@ -816,13 +817,16 @@ public class BigScore extends JPanel{
 	 */
 	public java.awt.Point showStretchAt(int item) {
 		int first = item, last = item;
+		ScoreView.Stretch hit = null;
 		for (ScoreView.Stretch st : marked) {
 			if (item >= st.start && item <= st.stop) {
 				first = st.start;
 				last = st.stop;
+				hit = st;
 				break;
 			}
 		}
+		trailIsSolvers = false;
 		jumpToMasterIndex(first);
 		setIndexArrows();
 		while (anchSeq.currAnchor != null && anchSeq.currAnchor.stop < last) {
@@ -832,8 +836,15 @@ public class BigScore extends JPanel{
 				break;
 			}
 		}
+		if (hit != null && hit.chosenTrail instanceof FingerTrail) {
+			// the window's trails are the engine's, rebuilt by Extend; show the one that puts every note where the solver did
+			trailIsSolvers = cfinger.selectTrailLike((FingerTrail) hit.chosenTrail);
+		}
 		return new java.awt.Point(first, anchSeq.currAnchor == null ? first : anchSeq.currAnchor.stop);
 	}
+
+	/** True when the last showStretchAt found the solver's chosen trail among the window's alive trails and shows it (false: the first one is shown). */
+	public boolean trailIsSolvers = false;
 
 	/** How the strings of the marked stretches are drawn (Verovio view only): 0 line, 1 dots, 2 cells. */
 	public void setBowStyle(int style) {

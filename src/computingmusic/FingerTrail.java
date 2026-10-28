@@ -25,6 +25,10 @@ public class FingerTrail  {
 	public IntSet[] saitenArray; // array with sets of intervals for each string.
 	public Bowing bowing; // sequence of strings
 	private IntSet heightSet;
+	/** Heights (stopped) that a trill's upper finger needs; no note is played there.  Part of the frame, see frameHeights(). */
+	private IntSet auxHeightSet = new IntSet();
+	/** The (string, height) of each such finger, for the limits of the string. */
+	private java.util.List<Point> auxPoints = new java.util.ArrayList<Point>();
 	public int lifts;
 	/** Each lift: {order, string, height} of the finger that left the string at that step (an earlier, higher finger a lower note makes way for). */
 	public java.util.List<int[]> liftEvents = new java.util.ArrayList<int[]>();
@@ -162,6 +166,8 @@ public class FingerTrail  {
 	    c.stopPoints = stopPoints.copy();
 	    c.trailPoints = trailPoints.copy();
 	    c.heightSet = heightSet.copy();
+	    c.auxHeightSet = auxHeightSet.copy();
+	    c.auxPoints = new java.util.ArrayList<Point>(auxPoints);
 	    c.heightSets = heightSets.copy();
 	    c.heightMap = heightMap.copy();
 	    c.pitchMap = pitchMap.copy();
@@ -285,6 +291,17 @@ public class FingerTrail  {
 	 * trail is invalid.
 	 */
 	public FingerTrail makeCopyWithNewFingering(Fingering f) {
+		return makeCopyWithNewFingering(f, null);
+	}
+
+	/**
+	 * As above, for an item some of whose notes carry a trill.  A trill is held by two fingers, the note's and the
+	 * next one above it, a tone higher on the same string: for each note of f whose pitch is in trilledPitches
+	 * (null: none) the trail's frame must also hold the height h+2 (h = 0, an open string: height 2).  That height
+	 * is kept in the trail (auxHeightSet), counts with the stopped heights for frameFits, the limit of 4 and the
+	 * string's highest height, and no note is added there.  Null if the frame then fails.
+	 */
+	public FingerTrail makeCopyWithNewFingering(Fingering f, java.util.Set<Integer> trilledPitches) {
 	
 		//int bowKey = Bowing.keyOfSequence(ss);
 		
@@ -317,6 +334,18 @@ public class FingerTrail  {
 		trail.bowing.addKey(ss);
 		
 		trail.lastPoints.clear();
+		if (trilledPitches != null) {
+			for (Point p1 : hPts) {
+				if (trilledPitches.contains(instrument.openStringPitch(p1.x) + p1.y)) {
+					int aux = p1.y + 2;
+					if (aux > Constraints.VIOLIN_MAX_HEIGHTS[p1.x]) {
+						return null;
+					}
+					trail.auxHeightSet.add(aux);
+					trail.auxPoints.add(new Point(p1.x, aux));
+				}
+			}
+		}
 		// array of (saite, interval)
 
 		trail.stopInd = f.index;
@@ -369,7 +398,7 @@ public class FingerTrail  {
 		trail.logSpan = trail.rangeLogSpan();
 		
 		
-		if (spanNotSet) { // only thing here is open string
+		if (spanNotSet && trail.auxHeightSet.size() == 0) { // only thing here is open string
 			trail.inSpan = true;
 		} else {
 			//t.inSpan = instrument.inSpan(t.FBLo, t.FBHi);
@@ -456,7 +485,7 @@ public class FingerTrail  {
 	public boolean bad (){
 		// bad ion case too many fingers are required or handspan excessive.
 		
-		return heightSet.size() > 4 || !inSpan;
+		return frameHeights().length > 4 || !inSpan;
 		
 	}
 	
@@ -465,16 +494,47 @@ public class FingerTrail  {
 	 * from the physical distances; without one, the fixed log span of the instrument.
 	 */
 	boolean frameFits() {
-		if (Constraints.HAND == null) {
-			return logHandSpan() <= instrument.maxSpan;
+		int[] hs = frameHeights();
+		if (hs.length > 4) {
+			return false;
 		}
-		int[] hs = new int[heightSet.size()];
-		int i = 0;
+		if (Constraints.HAND == null) {
+			return hs.length < 2 || instrument.getSpan(hs[hs.length - 1], hs[0]) <= instrument.maxSpan;
+		}
+		return Constraints.HAND.feasible(hs);
+	}
+
+	/** The heights the hand holds at once: the stopped heights of the trail and the trills' upper fingers, ascending, distinct. */
+	public int[] frameHeights() {
+		java.util.TreeSet<Integer> all = new java.util.TreeSet<Integer>();
 		for (int h : heightSet) {
+			if (h != 0) {
+				all.add(h);
+			}
+		}
+		for (int h : auxHeightSet) {
+			all.add(h);
+		}
+		int[] hs = new int[all.size()];
+		int i = 0;
+		for (int h : all) {
 			hs[i++] = h;
 		}
-		java.util.Arrays.sort(hs);
-		return Constraints.HAND.feasible(hs);
+		return hs;
+	}
+
+	/** The heights of the trills' upper fingers, ascending.  Complexity: O(k log k). */
+	public int[] auxHeights() {
+		java.util.TreeSet<Integer> all = new java.util.TreeSet<Integer>();
+		for (int h : auxHeightSet) {
+			all.add(h);
+		}
+		int[] hs = new int[all.size()];
+		int i = 0;
+		for (int h : all) {
+			hs[i++] = h;
+		}
+		return hs;
 	}
 
 	public double logHandSpan (){

@@ -226,19 +226,13 @@ public class FingerBoard extends JLabel {
     		if (fingerModel == null) {
     			fingerModel = new computingmusic.hand.FrameTest(g, new computingmusic.hand.HandParams(), true);
     		}
-    		int[] hs = new int[held.size()];
-    		int i = 0;
-    		for (int h : held) {
-    			hs[i++] = h;
-    		}
+    		int[] hs = heightsForFingers(held);
     		computingmusic.hand.FrameTest.Assignment a = fingerModel.assign(hs);
     		if (a != null) {
-    			int k = 0;
-    			for (int h : held) {
-    				if (h == bestH) {
+    			for (int k = 0; k < hs.length; k++) {
+    				if (hs[k] == bestH) {
     					s.append("<br>finger ").append(a.fingers[k]).append(a.forced() ? "" : "?");
     				}
-    				k++;
     			}
     			// a chord (two points or more on the board): every finger, highest note first, one to a line, as printed
     			if (ps1.length > 1) {
@@ -246,12 +240,11 @@ public class FingerBoard extends JLabel {
     				pts.sort((p, q) -> Integer.compare(instrument.openStringPitch(q.x) + q.y, instrument.openStringPitch(p.x) + p.y));
     				s.append("<br>chord");
     				for (Point p : pts) {
-    					int idx = 0, f = 0;
-    					for (int h : held) {
-    						if (h == p.y) {
-    							f = a.fingers[idx];
+    					int f = 0;
+    					for (int k = 0; k < hs.length; k++) {
+    						if (hs[k] == p.y) {
+    							f = a.fingers[k];
     						}
-    						idx++;
     					}
     					s.append("<br>").append(p.y == 0 ? 0 : f);
     				}
@@ -345,6 +338,53 @@ public class FingerBoard extends JLabel {
     }
     
    
+    /**
+     * The finger the hand model gives each stopped (red) disc, as a small bold white digit; open strings get none.
+     * The model sees the stopped heights shown on this board (as the tooltip does).  Complexity: O(points log points).
+     */
+    private void drawFingerNumbers(Graphics2D g2, int h, int[] xPositions) {
+    	if (ps1 == null || instrument == null || instrument.instr != Instrument.Instr.VN) {
+    		return;
+    	}
+    	java.util.TreeSet<Integer> held = new java.util.TreeSet<Integer>();
+    	for (Point p : ps1) {
+    		if (p.y > 0) {
+    			held.add(p.y);
+    		}
+    	}
+    	if (held.isEmpty()) {
+    		return;
+    	}
+    	if (fingerModel == null) {
+    		fingerModel = new computingmusic.hand.FrameTest(computingmusic.hand.Geometry.VIOLIN, new computingmusic.hand.HandParams(), true);
+    	}
+    	int[] hs = heightsForFingers(held);
+    	computingmusic.hand.FrameTest.Assignment a = fingerModel.assign(hs);
+    	if (a == null) {
+    		return;
+    	}
+    	java.awt.Font old = g2.getFont();
+    	g2.setFont(old.deriveFont(java.awt.Font.BOLD, 10f));
+    	java.awt.FontMetrics fm = g2.getFontMetrics();
+    	g2.setColor(Color.WHITE);
+    	for (Point p : ps1) {
+    		if (p.y <= 0) {
+    			continue;
+    		}
+    		int k = 0;
+    		while (k < hs.length && hs[k] != p.y) {
+    			k++;
+    		}
+    		if (k == hs.length) {
+    			continue;
+    		}
+    		String d = String.valueOf(a.fingers[k]);
+    		int cx = xPositions[p.x], cy = instrument.noteYPosition(p.y, Y_BORDER, h - Y_BORDER * 2);
+    		g2.drawString(d, cx - fm.stringWidth(d) / 2, cy + (fm.getAscent() - fm.getDescent()) / 2);
+    	}
+    	g2.setFont(old);
+    }
+
     public void colorNotes(Graphics2D g2, int h, int[] xPositions,
 			Point[] noteCoords, Color openColor, Color stopColor) {
 		// g2.setColor(Color.RED);
@@ -491,6 +531,7 @@ public class FingerBoard extends JLabel {
 
 		drawFingerboard(g, xPositions);
 		colorNotes(g2, height, xPositions, ps1, red, blue);
+		drawFingerNumbers(g2, height, xPositions);
 		colorNotes(g2, height, xPositions, ps2, green, bgreen);
 		colorNotes(g2, height, xPositions, psCom, black, black);
 		colorNotes(g2, height, xPositions, grayNotes, gray, blue);
@@ -621,6 +662,51 @@ public class FingerBoard extends JLabel {
     }
     
     // as of aug 26 2010 this is our current interface. 
+    /**
+     * The heights of the whole stretch's hand frame (stopped heights, plus a trill's upper finger), which the finger numbers
+     * are worked out from: the fingers belong to the stretch, not to one board of it, so every board of an extension
+     * numbers its discs from the same frame, as the score's cells do.  Null: from the discs on this board alone.
+     */
+    private int[] fingerFrame;
+
+    public void setFingerFrame(int[] heights) {
+    	fingerFrame = heights;
+    	repaint();
+    }
+
+    /** The heights the fingers are assigned over: the stretch's frame if known, else this board's own stopped heights. */
+    private int[] heightsForFingers(java.util.TreeSet<Integer> own) {
+    	if (fingerFrame != null && fingerFrame.length > 0) {
+    		return fingerFrame;
+    	}
+    	int[] hs = new int[own.size()];
+    	int i = 0;
+    	for (int x : own) {
+    		hs[i++] = x;
+    	}
+    	return hs;
+    }
+
+    /**
+     * Show the first `steps` steps of a trail: the points it has used by then, as this board of an extension shows its stage
+     * of the whole stretch.  The finger numbers still come from the stretch's frame.  Complexity: O(points).
+     */
+    public void setPrefixOfTrail(FingerTrail ft, int steps) {
+    	java.util.ArrayList<Point> pts = new java.util.ArrayList<Point>();
+    	for (FingerTrail.Trailpoint tp : ft.getTrailPoints()) {
+    		int first = Integer.MAX_VALUE;
+    		for (int o : tp.onOrder) {
+    			first = Math.min(first, o);
+    		}
+    		if (first < steps) {
+    			pts.add(new Point(tp.saite, tp.interval));
+    		}
+    	}
+    	ps1 = pts.toArray(new Point[0]);
+    	ps2 = null;
+    	repaint();
+    }
+
     public void setFingerTrail (FingerTrail ft){
     	ps1 = ft.redPoints.toarray();
     	ps2 = ft.grayPoints.toarray();

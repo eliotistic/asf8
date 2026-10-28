@@ -46,3 +46,19 @@ Candidates not built: string-sequence patterns in the SCORE (strings are ours, n
 4. Is a run of identical pitches the right unit for M4, and what W? Should transposed runs count?
 5. When a stretch has several trails, should a measure report the range over trails (as here), or be restricted to determined notes?
 6. Other fingering sources to bring in (other editions, a player's)? Same measures apply per source.
+
+## 2026-10-28 The trail search requires the finger a trill needs
+A trill is held by two fingers: the trilled note's and the one a tone above it on the same string. Before, only the post-hoc finger assignment (PieceSolver) reserved that height; the search could accept a fingering whose frame could not also hold it. Now `FingerTrail.makeCopyWithNewFingering(f, trilledPitches)` adds, for each note of f whose pitch is trilled (`JJNote.trill()`, carried per item in `TrailRun.Items.trilled`, passed through `NoteByNote.run(ins, chords, trilled)`), an auxiliary stopped height h+2 (open string: 2) to the trail (`auxHeightSet`, copied by `copy()`, no note added). `frameFits`, the 4-distinct-heights rule (`bad()`) and `Constraints.HAND` all see stopped heights plus auxiliary ones (`frameHeights()`); the extension is refused if they fail, or if h+2 is above the string's highest height. The comfort cost in `within` also sees them. `PieceSolver.solve(ins, items)` is unchanged.
+
+Regression check: `computingmusic.eval.TrillCheck` (headless; Caprice 3): (a) item 91 (measure 24, a trilled unison double stop E4 on G and on D) starts 2 trails without the trill's finger and 0 with it, and no trail of the item before extends; (b) measure 2's chord still gets lower finger 1, trilled top finger 3. Both pass.
+
+| Caprice | | stretches | items with no fingering | forced stretches | whole-piece cost | our finger agrees with printed (of single digits) |
+|---|---|---|---|---|---|---|
+| 1 | before | 126 | 0 | 40 | 336.4 | 119 of 249 |
+| 1 | after | 126 | 0 | 40 | 336.4 | 119 of 249 (no trilled note) |
+| 2 | before | 125 | 0 | 12 | 270.7 | 130 of 401 |
+| 2 | after | 125 | 0 | 12 | 274.1 | 137 of 401 |
+| 3 | before | 108 | 0 | 11 | 240.3 | 85 of 195 |
+| 3 | after | 116 | 1 (item 91) | 18 | 254.9 | 90 of 193 (2 notes unplaced) |
+
+Not verified: the unison double trill of Caprice 3 measure 24 is now unplayable in the model (four distinct heights spread over G and D); whether it is played so in the score was not checked. Caprice 3's cost is not comparable before/after (a different number of stretches and one item unfingered). A trill's finger is assumed a tone up (JJ does not say tone or semitone).

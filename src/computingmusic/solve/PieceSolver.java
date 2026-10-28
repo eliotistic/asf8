@@ -121,7 +121,7 @@ public final class PieceSolver {
 
 	double within(FingerTrail t, int[] frame) {
 		double c = costs.lift * t.lifts + costs.bariolation * t.countBariolations();
-		if (comfortable != null && !comfortable.feasible(frame)) {
+		if (comfortable != null && !comfortable.feasible(t.frameHeights())) {   // the trills' upper fingers are held too
 			c += costs.beyondComfort;
 		}
 		return c;
@@ -170,7 +170,7 @@ public final class PieceSolver {
 	}
 
 	public Solution solve(Instrument ins, TrailRun.Items items) throws Exception {
-		List<NoteByNote.Stretch> st = NoteByNote.run(ins, items.chords);
+		List<NoteByNote.Stretch> st = NoteByNote.run(ins, items.chords, items.trilled);
 		int n = st.size();
 		List<List<FingerTrail>> opts = new ArrayList<List<FingerTrail>>();
 		List<int[][]> frames = new ArrayList<int[][]>();

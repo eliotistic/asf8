@@ -22,6 +22,7 @@ ABC = os.path.join(STATE, 'test_gui_control.abc')
 RECENT = os.path.join(STATE, 'recent.txt')
 CAPRICE1 = os.path.expanduser('~/libmusic/Paganini/mutopia_caprice01/caprice01_ly2mxml.musicxml')
 CAPRICE2 = os.path.expanduser('~/libmusic/Paganini/mutopia_caprice02/caprice02_ly2mxml.musicxml')
+CAPRICE3 = os.path.expanduser('~/libmusic/Paganini/mutopia_caprice03/caprice03_ly2mxml.musicxml')
 
 
 class Window(unittest.TestCase):
@@ -91,7 +92,7 @@ class Window(unittest.TestCase):
         caprice = os.path.expanduser('~/libmusic/Paganini/mutopia_caprice01/caprice01_ly2mxml.musicxml')
         loaded = self.ask('gui_load', path=caprice)
         self.assertTrue(loaded['ok'] and loaded['loaded'], loaded)
-        self.assertEqual(loaded['items'], 1086)
+        self.assertEqual(loaded['items'], 1085)
         self.assertIn('caprice01', self.ask('gui_state')['title'])
         for _ in range(3):
             self.assertTrue(self.ask('gui_next')['ok'])
@@ -137,7 +138,7 @@ class Window(unittest.TestCase):
         r = self.ask('gui_drop', path=CAPRICE1, **{'as': 'uri-list'})
         self.assertTrue(r['ok'] and r['accepted'], r)
         st = self.wait_loaded()
-        self.assertEqual(st['items'], 1086)
+        self.assertEqual(st['items'], 1085)
         self.assertIn('caprice01', st['title'])
 
     def test_28_a_bad_drop_is_refused_with_a_reason(self):
@@ -249,6 +250,26 @@ class Window(unittest.TestCase):
         r = self.ask('gui_zoom', reset=True)
         self.assertFalse(r['userZoomed'])
         self.assertAlmostEqual(r['zoomRelative'], 1.0, places=3)
+
+    def test_44_after_solve_all_a_click_shows_the_solvers_chosen_trail_first(self):
+        # Caprice 3, first chord E4+E5: the engine lists D/A (III+II) first, the solver chooses G/D (IV+III)
+        self.assertTrue(self.ask('gui_load', path=CAPRICE3)['loaded'])
+        self.ask('gui_unique', on=False)
+        before = self.ask('gui_click', item=0)
+        self.assertTrue(before['ok'], before)
+        self.assertFalse(before['solverTrailShown'])
+        self.assertEqual(before['trailIndex'], 0)
+        self.assertGreater(before['trailCount'], 1)
+        self.assertTrue(self.ask('gui_unique', on=True)['ok'])
+        after = self.ask('gui_click', item=0)
+        self.assertTrue(after['ok'], after)
+        self.assertTrue(after['solverTrailShown'], after)
+        strings = {p[0] for p in after['trailPoints']}
+        self.assertEqual(strings, {'G', 'D'}, after)                 # IV + III
+        self.assertEqual(after['trailCount'], before['trailCount'])  # the other trails are still there for the arrows
+        shot = os.path.join(STATE, 'test_gui_chosen_trail.png')
+        self.assertTrue(self.ask('gui_screenshot', path=shot)['ok'])
+        self.assertEqual(self.ask('gui_state')['trailIndex'], after['trailIndex'])
 
 
 if __name__ == '__main__':

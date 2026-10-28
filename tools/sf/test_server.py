@@ -78,10 +78,10 @@ class Server(unittest.TestCase):
         loaded = self.c.ask('load', path=CAPRICE)
         self.assertTrue(loaded['ok'], loaded)
         self.assertEqual((loaded['notes'], loaded['items'], loaded['chords'], loaded['printedFingerings']),
-                         (1242, 1086, 134, 252))
+                         (1241, 1085, 134, 252))      # the last bar was corrected at source: one chord, not a note and a chord
         run = self.c.ask('run')
         self.assertTrue(run['ok'], run)
-        self.assertEqual(run['items'], 1086)
+        self.assertEqual(run['items'], 1085)
         self.assertEqual(sum(run['ends'].values()), run['segments'])
         self.assertNotIn('IMPOSSIBLE', run['ends'])           # the whole caprice is playable within the limits
         checked = sum(v for k, v in run['printed'].items() if k != 'TWO_PRINTED')

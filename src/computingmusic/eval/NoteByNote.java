@@ -53,10 +53,19 @@ public class NoteByNote {
 
 	/** Complexity: O(items x extension cost). */
 	public static List<Stretch> run(Instrument ins, List<ChordFingering> input) throws Exception {
+		return run(ins, input, null);
+	}
+
+	/**
+	 * As run, where trilled.get(i) holds the pitches of item i that carry a trill (null: none do): a trail is
+	 * extended by a fingering only if its frame can also hold the finger above each trilled note
+	 * (FingerTrail.makeCopyWithNewFingering).
+	 */
+	public static List<Stretch> run(Instrument ins, List<ChordFingering> input, List<Set<Integer>> trilled) throws Exception {
 		List<Stretch> out = new ArrayList<Stretch>();
 		int i = 0;
 		while (i < input.size()) {
-			List<FingerTrail> alive = start(ins, input.get(i), i);
+			List<FingerTrail> alive = start(ins, input.get(i), i, tr(trilled, i));
 			if (alive.isEmpty()) {
 				out.add(new Stretch(i, i, End.IMPOSSIBLE, alive));
 				i++;
@@ -65,7 +74,7 @@ public class NoteByNote {
 			int stop = i;
 			End end = End.END;
 			while (stop + 1 < input.size()) {
-				List<FingerTrail> next = extend(ins, alive, input.get(stop + 1));
+				List<FingerTrail> next = extend(ins, alive, input.get(stop + 1), tr(trilled, stop + 1));
 				if (next.isEmpty()) {
 					end = End.BREAK;
 					break;
@@ -83,13 +92,17 @@ public class NoteByNote {
 		return out;
 	}
 
+	private static Set<Integer> tr(List<Set<Integer>> trilled, int i) {
+		return trilled == null || trilled.get(i).isEmpty() ? null : trilled.get(i);
+	}
+
 	@SuppressWarnings("unchecked")
-	static List<FingerTrail> start(Instrument ins, ChordFingering cf, int index) throws Exception {
+	public static List<FingerTrail> start(Instrument ins, ChordFingering cf, int index, Set<Integer> trilled) throws Exception {
 		Constructor<FingerTrail> c = FingerTrail.class.getDeclaredConstructor(Instrument.class, int.class, int.class);
 		c.setAccessible(true);
 		List<FingerTrail> out = new ArrayList<FingerTrail>();
 		for (Object f : cf.getFingerings()) {
-			FingerTrail t = c.newInstance(ins, index, index).makeCopyWithNewFingering((ChordFingering.Fingering) f);
+			FingerTrail t = c.newInstance(ins, index, index).makeCopyWithNewFingering((ChordFingering.Fingering) f, trilled);
 			if (t != null) {
 				out.add(t);
 			}
@@ -97,11 +110,11 @@ public class NoteByNote {
 		return out;
 	}
 
-	static List<FingerTrail> extend(Instrument ins, List<FingerTrail> alive, ChordFingering next) {
+	public static List<FingerTrail> extend(Instrument ins, List<FingerTrail> alive, ChordFingering next, Set<Integer> trilled) {
 		List<FingerTrail> kept = new ArrayList<FingerTrail>();
 		for (ChordFingering.Fingering f : next.getFingerings()) {
 			for (FingerTrail t : alive) {
-				FingerTrail x = t.makeCopyWithNewFingering(f);
+				FingerTrail x = t.makeCopyWithNewFingering(f, trilled);
 				if (x != null && x.stoppedHeights() <= 4) {
 					kept.add(x);
 				}

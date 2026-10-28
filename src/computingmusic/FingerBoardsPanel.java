@@ -355,6 +355,40 @@ public class FingerBoardsPanel extends JPanel implements javax.swing.Scrollable 
 	 * the fact that FingerBoards keep their whole ArrayList of FingerTrails in memory. 
 	 * FingerTrail ft: FingerTrail which we want all the boards to connect to. 
 	 */
+	/**
+	 * Give the current board and the boards before it that belong to the same extension the heights of the whole
+	 * stretch's frame, so that all of them number their discs from it (the fingers belong to the stretch).
+	 */
+	public void setFrameForFingers(int[] frame) {
+		getCurrentBoard().setFingerFrame(frame);
+		int n = getCurrentBoard().representsAnExtension() ? getCurrentBoard().getExtensionSize() : 1;
+		for (int k = 1; k < n; k++) {
+			int idx = currentIndex - k;
+			if (idx < 0) {
+				break;
+			}
+			boards.get(idx).setFingerFrame(frame);
+		}
+	}
+
+	/**
+	 * The boards of the extension being viewed, before the current one, show the stages of the trail being viewed: the
+	 * board k places back shows the first (extension size - k) steps.  Boards that belong to earlier stretches are not touched.
+	 */
+	public void showTrailOnChain(FingerTrail ft, int shown, int total) {
+		int n = getCurrentBoard().representsAnExtension() ? getCurrentBoard().getExtensionSize() : 1;
+		for (int k = 1; k < n; k++) {
+			int idx = currentIndex - k;
+			if (idx < 0) {
+				break;
+			}
+			boards.get(idx).setPrefixOfTrail(ft, n - k);
+			if (idx < aboveBoards.size()) {
+				aboveBoards.get(idx).setFraction(shown, total);       // the label over an earlier board says which trail is viewed too
+			}
+		}
+	}
+
 	public void migratePreviousBoardsToAValidExtension(FingerTrail ft) {
 		int index = currentIndex-1;
 		FingerTrail ftModel = ft.copy();

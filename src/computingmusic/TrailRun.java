@@ -65,6 +65,8 @@ public class TrailRun {
 	public static class Items {
 		public final ArrayList<ChordFingering> chords = new ArrayList<ChordFingering>();
 		public final List<List<JJNote>> notes = new ArrayList<List<JJNote>>();
+		/** For each item, the pitches of its notes that carry a trill (each needs a finger above it too); empty when none. */
+		public final List<java.util.Set<Integer>> trilled = new ArrayList<java.util.Set<Integer>>();
 	}
 
 	/**
@@ -88,6 +90,13 @@ public class TrailRun {
 			}
 			items.chords.add(new ChordFingering(items.chords.size(), ins, ks));
 			items.notes.add(group);
+			java.util.Set<Integer> tr = new java.util.TreeSet<Integer>();
+			for (JJNote n : group) {
+				if (n.trill()) {
+					tr.add(n.pitch);
+				}
+			}
+			items.trilled.add(tr);
 			i = j;
 		}
 		return items;

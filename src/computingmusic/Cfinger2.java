@@ -488,8 +488,12 @@ public class Cfinger2 extends JPanel {
 	*/
 	
 	
+	/** Index of the alive trail that is the solver's choice, or -1; labelled in the message while it is shown. */
+	public int solverChoiceIndex = -1;
+
 	public void setActiveTrails(ArrayList<FingerTrail> a) {
 		activeTrails = a;
+		solverChoiceIndex = -1;
 		
 		indexViewActiveTrail = 0; // index of the active trail to look at
 		// note that the difference between a Fingering and a FingerTrail is that the Trail is made from many notes (anchor)
@@ -513,7 +517,7 @@ public class Cfinger2 extends JPanel {
 		indexViewActiveTrail = 0;
 		
 		activeTrails = newActiveTrails;
-		
+		solverChoiceIndex = -1;
 		
 		// note that the difference between a Fingering and a FingerTrail is that the Trail is made from many notes (anchor)
 		viewNextTrail();
@@ -557,6 +561,7 @@ public class Cfinger2 extends JPanel {
 		}
 		
 		activeTrails = newActiveTrails;
+		solverChoiceIndex = -1;
 		
 		int previousExtensionSize = fingPane.getCurrentLength();
 		// note that the difference between a Fingering and a FingerTrail is that the Trail is made from many notes (anchor)
@@ -570,6 +575,36 @@ public class Cfinger2 extends JPanel {
 		}
 	}
 	
+	/**
+	 * Show, on the current board, the alive trail that puts every note on the same string and height as `want`
+	 * (the solver's choice; trail points compared as sets of {string, height}).  The arrows keep stepping through
+	 * the others.  Returns false, changing nothing, when no alive trail matches (the rebuilt stretch differs).
+	 * Complexity: O(trails x points).
+	 */
+	public boolean selectTrailLike(FingerTrail want) {
+		if (activeTrails == null || want == null) {
+			return false;
+		}
+		java.util.Set<Long> w = placements(want);
+		for (int i = 0; i < activeTrails.size(); i++) {
+			if (placements(activeTrails.get(i)).equals(w)) {
+				indexViewActiveTrail = i;
+				solverChoiceIndex = i;
+				viewTrail();
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static java.util.Set<Long> placements(FingerTrail t) {
+		java.util.Set<Long> out = new java.util.HashSet<Long>();
+		for (FingerTrail.Trailpoint tp : t.getTrailPoints()) {
+			out.add(tp.saite * 1000L + tp.interval);
+		}
+		return out;
+	}
+
 	public void viewTrail() {
 		if (activeTrails == null) {
 			//System.out.println("No active trails in CFINGER");
@@ -583,7 +618,7 @@ public class Cfinger2 extends JPanel {
 			//int max = activeTrails.size() - 1;
 			//System.out.println("Showng trail #" + indexViewActiveTrail + "/" + max);
 			
-			String s = "Showing: " + (indexViewActiveTrail+1) + "/" + activeTrails.size();
+			String s = "Showing: " + (indexViewActiveTrail+1) + "/" + activeTrails.size() + (indexViewActiveTrail == solverChoiceIndex ? " (solver's choice)" : "");
 			ctl.msg.say("<html>" + s + "<br>" + (ft.describe()) + "</html>");
 			
 			//System.out.println(ft);
@@ -592,6 +627,10 @@ public class Cfinger2 extends JPanel {
 			
 			fingPane.getCurrentAboveBoard().setFraction(indexViewActiveTrail+1, activeTrails.size());
 			fingPane.getCurrentBoard().setFingerTrail(ft);
+			// the boards before this one belong to the same extension: they show the earlier stages of the trail being
+			// viewed, and every board numbers its fingers from the whole stretch's frame
+			fingPane.showTrailOnChain(ft, indexViewActiveTrail + 1, activeTrails.size());
+			fingPane.setFrameForFingers(ft.frameHeights());
 			
 			
 			
