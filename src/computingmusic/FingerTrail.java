@@ -29,6 +29,27 @@ public class FingerTrail  {
 	private IntSet auxHeightSet = new IntSet();
 	/** The (string, height) of each such finger, for the limits of the string. */
 	private java.util.List<Point> auxPoints = new java.util.ArrayList<Point>();
+	/**
+	 * Where this trail put the notes of each item (guitar, instrument.spec.heldNotesKeepFingers only): item index to rows {string, height, pitch}.
+	 * Used to keep a note that is still sounding on its string and finger.
+	 */
+	private java.util.Map<Integer, int[][]> placed = new java.util.HashMap<Integer, int[][]>();
+	/**
+	 * Fingers beyond the one-per-height of the frame (guitar): at a height where a barre cannot lie flat because a string
+	 * between its strings sounds lower, each part of the barre is a finger of its own.  Height to the most extra fingers
+	 * needed at it at one instant.
+	 */
+	/**
+	 * Set on a trail that begins a new stretch while notes of the stretch before are still held (seededBy): where that trail placed
+	 * its items.  The first step takes over the held notes that are stopped (their fingers stay down, so their heights are in the new
+	 * frame) and remembers where every held note was.  Null otherwise.
+	 */
+	private java.util.Map<Integer, int[][]> carryFrom = null;
+	/** What the trail it was seeded by placed for the held notes (a string of the rows); null when not seeded.  Two stretches fit together only if equal. */
+	public String seedKey = null;
+	/** The stopped heights taken over from the stretch before, with their strings: rows {string, height}. */
+	private java.util.List<int[]> carried = new java.util.ArrayList<int[]>();
+	private java.util.TreeMap<Integer, Integer> extraFingers = new java.util.TreeMap<Integer, Integer>();
 	public int lifts;
 	/** Each lift: {order, string, height} of the finger that left the string at that step (an earlier, higher finger a lower note makes way for). */
 	public java.util.List<int[]> liftEvents = new java.util.ArrayList<int[]>();
@@ -90,7 +111,7 @@ public class FingerTrail  {
 		lastPoints = new PointList();
 		
 		
-		bowing = new Bowing();
+		bowing = new Bowing(instrument.nStrings);
 		saiten = new Saiten();	
 		
 		
@@ -168,6 +189,11 @@ public class FingerTrail  {
 	    c.heightSet = heightSet.copy();
 	    c.auxHeightSet = auxHeightSet.copy();
 	    c.auxPoints = new java.util.ArrayList<Point>(auxPoints);
+	    c.placed = new java.util.HashMap<Integer, int[][]>(placed);
+	    c.carryFrom = carryFrom;
+	    c.seedKey = seedKey;
+	    c.carried = new java.util.ArrayList<int[]>(carried);
+	    c.extraFingers = new java.util.TreeMap<Integer, Integer>(extraFingers);
 	    c.heightSets = heightSets.copy();
 	    c.heightMap = heightMap.copy();
 	    c.pitchMap = pitchMap.copy();
@@ -311,6 +337,11 @@ public class FingerTrail  {
 		FingerTrail trail = copy();
 		Point[] hPts = f.stringHeightPoints(); // x=1 y=1
 		Point[] pPts = f.stringPitchPoints(); // x=1 y=62
+		Point[] notePts = hPts;                // the points of this item's own notes (hPts may also hold carried fingers)
+		if (carryFrom != null && orders == 0) {
+			hPts = trail.takeOverHeldFingers(f, hPts);
+		}
+		trail.carryFrom = null;
 		
 		// TODO cut here if there are open strings and the constraints refuse them.
 		
@@ -338,13 +369,16 @@ public class FingerTrail  {
 			for (Point p1 : hPts) {
 				if (trilledPitches.contains(instrument.openStringPitch(p1.x) + p1.y)) {
 					int aux = p1.y + 2;
-					if (aux > Constraints.VIOLIN_MAX_HEIGHTS[p1.x]) {
+					if (aux > instrument.maxHeights[p1.x]) {
 						return null;
 					}
 					trail.auxHeightSet.add(aux);
 					trail.auxPoints.add(new Point(p1.x, aux));
 				}
 			}
+		}
+		if (instrument.spec.heldNotesKeepFingers && !trail.keepHeldNotes(f, notePts, pPts)) {
+			return null;
 		}
 		// array of (saite, interval)
 
@@ -425,6 +459,154 @@ public class FingerTrail  {
 	}
 	
 	
+	/**
+	 * A trail for a stretch that begins while notes of the stretch before are held: this trail will take over, at its first step, the
+	 * held notes `previous` placed.  Returns this.  Complexity: O(1).
+	 */
+	public FingerTrail seededBy(FingerTrail previous, String key) {
+		carryFrom = previous.placed;
+		seedKey = key;
+		return this;
+	}
+
+	/** The held notes of the item that `previous` placed, as rows {string, height, pitch} (the item's index in `item`'s place is lost: rows only).  Complexity: O(held x notes). */
+	public static int[][] heldRows(FingerTrail t, int[][] held) {
+		java.util.List<int[]> out = new java.util.ArrayList<int[]>();
+		for (int[] h : held) {
+			int[][] rows = t.placed.get(h[0]);
+			if (rows == null) {
+				continue;
+			}
+			for (int[] row : rows) {
+				if (row[2] == h[1]) {
+					out.add(row);
+					break;
+				}
+			}
+		}
+		return out.toArray(new int[0][]);
+	}
+
+	/**
+	 * First step of a seeded trail: make the held notes of the stretch before known (placed) and add the stopped ones to the points of
+	 * this step, so that their heights belong to the new frame (the finger stays down).  Returns the points of the step.
+	 * Complexity: O(held x notes).
+	 */
+	private Point[] takeOverHeldFingers(Fingering f, Point[] hPts) {
+		int[][] held = f.heldBefore();
+		java.util.List<Point> all = new java.util.ArrayList<Point>(java.util.Arrays.asList(hPts));
+		if (held != null) {
+			for (int[] h : held) {
+				int[][] rows = carryFrom.get(h[0]);
+				if (rows == null) {
+					continue;
+				}
+				for (int[] row : rows) {
+					if (row[2] != h[1]) {
+						continue;
+					}
+					int[][] have = placed.get(h[0]);
+					int n = have == null ? 0 : have.length;
+					int[][] grown = have == null ? new int[1][] : java.util.Arrays.copyOf(have, n + 1);
+					grown[n] = row;
+					placed.put(h[0], grown);
+					boolean already = false;
+					for (Point p : hPts) {
+						already |= p.x == row[0] && p.y == row[1];
+					}
+					if (row[1] > 0 && !already) {
+						all.add(new Point(row[0], row[1]));
+						carried.add(new int[] {row[0], row[1]});
+					}
+					break;
+				}
+			}
+		}
+		return all.toArray(new Point[0]);
+	}
+
+	/** The stopped heights this trail took over from the stretch before (a held finger), rows {string, height}.  Complexity: O(1). */
+	public java.util.List<int[]> carriedFingers() {
+		return carried;
+	}
+
+	/**
+	 * The held-note rule (guitar).  A note of an earlier item that still sounds when this item begins (Fingering.heldBefore) stays
+	 * on its string, and a stopped one keeps its finger down: no new note may use that string at another height (that would stop
+	 * it or silence it), and the held finger stays on its height, which the frame keeps for the whole stretch.  An open string that
+	 * rings constrains the string only.  A held note this trail did not place (it belongs to a stretch before the trail began) is not
+	 * known here.  Then the notes of this item are recorded, and the barre fingers of the instant (the new notes and the held ones) counted.
+	 * Complexity: O(held x notes + strings).
+	 */
+	private boolean keepHeldNotes(Fingering f, Point[] hPts, Point[] pPts) {
+		int[] heightOnString = new int[instrument.nStrings];
+		java.util.Arrays.fill(heightOnString, -1);
+		int[][] held = f.heldBefore();
+		if (held != null) {
+			for (int[] h : held) {
+				int[][] rows = placed.get(h[0]);
+				if (rows == null) {
+					continue;
+				}
+				for (int[] row : rows) {
+					if (row[2] != h[1]) {
+						continue;
+					}
+					for (Point p1 : hPts) {
+						if (p1.x == row[0] && p1.y != row[1]) {
+							return false;
+						}
+					}
+					heightOnString[row[0]] = row[1];
+					break;
+				}
+			}
+		}
+		int[][] rows = new int[hPts.length][];
+		for (int i = 0; i < hPts.length; i++) {
+			rows[i] = new int[] {hPts[i].x, hPts[i].y, pPts[i].y};
+			heightOnString[hPts[i].x] = hPts[i].y;
+		}
+		placed.put(f.index, rows);
+		if (instrument.spec.barreCoversStrings) {
+			countBarreFingers(heightOnString);
+		}
+		return true;
+	}
+
+	/**
+	 * Barre fingers of one instant, heightOnString[s] = the height sounding on string s (0 open, -1 none).  Strings stopped at one
+	 * height are one finger when no string between them sounds lower; a lower-sounding string between (an open string, or a lower
+	 * fret) cuts the barre into parts, each its own finger.  Complexity: O(strings^2).
+	 */
+	private void countBarreFingers(int[] heightOnString) {
+		int n = heightOnString.length;
+		for (int h = 1; h <= 64; h++) {
+			int previous = -1, parts = 0;
+			for (int s = 0; s < n; s++) {
+				if (heightOnString[s] != h) {
+					continue;
+				}
+				boolean cut = previous < 0;
+				for (int x = previous + 1; x < s && !cut; x++) {
+					cut = heightOnString[x] >= 0 && heightOnString[x] < h;
+				}
+				if (previous >= 0 && cut) {
+					parts++;
+				}
+				previous = s;
+			}
+			if (parts > 0 && parts > extraFingers.getOrDefault(h, 0)) {
+				extraFingers.put(h, parts);
+			}
+		}
+	}
+
+	/** Where this trail put the notes of an item (rows {string, height, pitch}); null when the item is not in it or the instrument keeps none. */
+	public int[][] placedNotes(int item) {
+		return placed.get(item);
+	}
+
 	public boolean hasPoint(Point p) {
 		for (Trailpoint tp : trailPoints){
 			if (tp.saite == p.x && tp.interval == p.y) {
@@ -515,11 +697,27 @@ public class FingerTrail  {
 		for (int h : auxHeightSet) {
 			all.add(h);
 		}
-		int[] hs = new int[all.size()];
+		int extra = 0;
+		for (int e : extraFingers.values()) {
+			extra += e;
+		}
+		int[] hs = new int[all.size() + extra];
 		int i = 0;
 		for (int h : all) {
 			hs[i++] = h;
+			Integer e = extraFingers.get(h);
+			for (int k = 0; e != null && k < e; k++) {
+				hs[i++] = h;            // a barre in parts: another finger at the same height
+			}
 		}
+		for (java.util.Map.Entry<Integer, Integer> e : extraFingers.entrySet()) {
+			if (!all.contains(e.getKey())) {        // cannot happen (the height is stopped), kept for safety
+				for (int k = 0; k < e.getValue() && i < hs.length; k++) {
+					hs[i++] = e.getKey();
+				}
+			}
+		}
+		java.util.Arrays.sort(hs);
 		return hs;
 	}
 
@@ -572,8 +770,8 @@ public class FingerTrail  {
 		boolean heightCondition = true;
 		for(Trailpoint tp : trailPoints)
 		{
-			if((Constraints.VIOLIN_MIN_HEIGHTS[tp.saite] > tp.interval && tp.interval!=0) ||
-					 tp.interval > Constraints.VIOLIN_MAX_HEIGHTS[tp.saite]  )
+			if((instrument.minHeights[tp.saite] > tp.interval && tp.interval!=0) ||
+					 tp.interval > instrument.maxHeights[tp.saite]  )
 			{
 				heightCondition = false;
 			}
@@ -582,7 +780,7 @@ public class FingerTrail  {
 		boolean playableCondition = saiten.usedOnlyUnderConstraints();
 		boolean validOpenCondition = trailPoints.openPermittedByConstraints();
 		
-		boolean handSpanCondition = Constraints.HAND != null || logHandSpan() <= instrument.getSpan(1, Constraints.VIOLIN_HAND_SPAN);
+		boolean handSpanCondition = Constraints.HAND != null || logHandSpan() <= instrument.getSpan(1, instrument.handSpan);
 		
 		return heightCondition && playableCondition && validOpenCondition && handSpanCondition;
 	}
@@ -639,11 +837,11 @@ public class FingerTrail  {
 		public boolean usedOnlyUnderConstraints() {
 			for(int i = 0; i<len; i++)
 			{
-				if(arr[i]==true && Constraints.VIOLIN_PLAYABLES[i]==false)
+				if(arr[i]==true && instrument.playable[i]==false)
 				{
 					System.out.println("NOT USED UNDER CONSTRAINTS");
 					System.out.println(arr);
-					System.out.println(Constraints.VIOLIN_PLAYABLES);
+					System.out.println(instrument.playable);
 					return false;
 				}
 			}
@@ -718,7 +916,7 @@ public class FingerTrail  {
 			boolean permit = true;
 			for(Trailpoint tp : this)
 			{
-				if(tp.interval == 0 && !Constraints.VIOLIN_OPEN[tp.saite])
+				if(tp.interval == 0 && !instrument.openAllowed[tp.saite])
 				{
 					permit = false;
 				}

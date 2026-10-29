@@ -7,6 +7,9 @@ public class Constraints {
 	public static boolean DIAMOND;
 	public static boolean TRIBAR;
 	
+	// The VIOLIN_* values are the violin's defaults, read from SFProperties.xml.  The engine does not read them directly:
+	// each Instrument takes its own copy of its limits (Instrument.maxHeights etc.), the violin's from here and every
+	// other instrument's from its computingmusic.instrument.InstrumentSpec.
 	public static int [] VIOLIN_STRINGS;
 	public static int [] VIOLIN_MIN_HEIGHTS;
 	public static int [] VIOLIN_MAX_HEIGHTS;

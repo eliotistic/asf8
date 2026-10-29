@@ -24,7 +24,7 @@ public class SlideEvidence {
 		String base = file.getName().replaceAll("\\.[^.]*$", "");
 		File dump = new File(System.getProperty("user.home"), ".string_fingering/cache/" + base + "/dump.json");
 		JJScore score = dump.isFile() ? JJScore.read(dump) : MusicXmlSession.loadNotes(file);
-		Instrument ins = TrailRun.violin();
+		Instrument ins = TrailRun.instrumentNamed(null);
 		TrailRun.Items items = TrailRun.items(score, ins);
 		TreeMap<Integer, Integer> up = new TreeMap<Integer, Integer>(), down = new TreeMap<Integer, Integer>();
 		int pairs = 0, printedPairs = 0, same = 0, samePitch = 0;

@@ -17,6 +17,21 @@ public final class HandParams {
 	public double minSameStringComfortable = 9, minSameStringAbsolute = 6;
 	/** May a higher-numbered finger lie nearer the nut than a lower-numbered one? */
 	public boolean fingersMayCross = false;
+	/** FrameTest.assign prefers the lowest finger numbers within the comfortable limits to the least strain (guitar; InstrumentSpec.lowestFingersFirst). */
+	public boolean lowestFingersFirst = false;
+
+	/** The limits of this instrument's hand (InstrumentSpec: the violin's table for the bowed instruments, the guitar's own).  Complexity: O(1). */
+	public static HandParams forInstrument(computingmusic.instrument.InstrumentSpec spec) {
+		HandParams p = new HandParams();
+		p.comfortable = spec.comfortableReachMillimetres.clone();
+		p.absolute = spec.absoluteReachMillimetres.clone();
+		if ("violin".equals(System.getProperty("sf.handlimits"))) {   // experiment: what do the instrument's own limits change?
+			p.comfortable = computingmusic.instrument.InstrumentSpec.VIOLIN.comfortableReachMillimetres.clone();
+			p.absolute = computingmusic.instrument.InstrumentSpec.VIOLIN.absoluteReachMillimetres.clone();
+		}
+		p.lowestFingersFirst = spec.lowestFingersFirst;
+		return p;
+	}
 
 	public static int pairIndex(int a, int b) {
 		int lo = Math.min(a, b), hi = Math.max(a, b);
@@ -36,6 +51,7 @@ public final class HandParams {
 		c.minSameStringComfortable = minSameStringComfortable;
 		c.minSameStringAbsolute = minSameStringAbsolute;
 		c.fingersMayCross = fingersMayCross;
+		c.lowestFingersFirst = lowestFingersFirst;
 		return c;
 	}
 }

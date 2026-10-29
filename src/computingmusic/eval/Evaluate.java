@@ -55,7 +55,8 @@ public class Evaluate {
 		String base = file.getName().replaceAll("\\.[^.]*$", "");
 		File dump = new File(System.getProperty("user.home"), ".string_fingering/cache/" + base + "/dump.json");
 		JJScore score = dump.isFile() ? JJScore.read(dump) : MusicXmlSession.loadNotes(file);
-		Instrument ins = TrailRun.violin();
+		Instrument ins = TrailRun.instrumentNamed(null);
+		STRING = ins.spec.stringNames;
 		TrailRun.Items items = TrailRun.items(score, ins);
 		System.out.println("piece " + base + ": " + score.notes.size() + " notes, " + items.chords.size() + " items; start rule: each stretch starts at ONE item, extended note by note");
 
@@ -413,7 +414,7 @@ public class Evaluate {
 			if (d == 0 && h > 0) {
 				zeroStopped++;
 				int own = -1;
-				for (int k = 0; k < 4; k++) {
+				for (int k = 0; k < ins.nStrings; k++) {
 					own = ins.openStringPitch(k) == n.pitch ? k : own;
 				}
 				if (own < 0) {

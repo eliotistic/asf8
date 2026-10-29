@@ -22,7 +22,7 @@ public class TrailResult {
 
 	final TrailRun.Items items;
 	final List<TrailRun.Segment> segments;
-	private static final String[] STRING_NAME = { "G", "D", "A", "E" };   // string 0 is the lowest
+	private String[] STRING_NAME = { "G", "D", "A", "E" };   // string 0 is the lowest; set from the instrument by of()
 
 	private final int[] itemOfLink;       // link (note in onset order) -> item
 	private final int[] segmentOfItem;
@@ -41,7 +41,7 @@ public class TrailResult {
 
 	/** Run the trails over a session's notes.  Complexity: see TrailRun. */
 	public static TrailResult of(MusicXmlSession s) {
-		Instrument ins = TrailRun.violin();
+		Instrument ins = TrailRun.instrumentNamed(null);
 		TrailRun.Items items = TrailRun.items(s.score, ins);
 		List<TrailRun.Segment> segments = TrailRun.run(ins, items.chords);
 		int[] segmentOfItem = new int[items.chords.size()];
@@ -63,8 +63,10 @@ public class TrailResult {
 		for (int i = 0; i < noteOfLink.length; i++) {
 			noteOfLink[i] = s.links.get(i).note;
 		}
-		return new TrailResult(items, segments, itemOfLink, segmentOfItem, noteOfLink,
+		TrailResult result = new TrailResult(items, segments, itemOfLink, segmentOfItem, noteOfLink,
 				PrintedCheck.check(ins, items, segments));
+		result.STRING_NAME = ins.spec.stringNames;
+		return result;
 	}
 
 	/** 1 if the printed fingering of this note fits a trail of its segment, 2 if it does not, 0 if nothing was checked. */

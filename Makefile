@@ -3,7 +3,7 @@ BUILD_DIR := build/classes
 MAIN_CLASS := computingmusic.BigGui
 SOURCES := $(shell find src -name '*.java' -print)
 
-.PHONY: build run clean notation run-control server hand
+.PHONY: build run clean notation run-control server hand check-instruments check-guitar
 
 build:
 	@test -f "$(ABCMAINE_JAR)" || { \
@@ -41,3 +41,11 @@ eval: build
 # The hand model: place the fingers on a board to scale and set the freedoms of the hand (doc/HAND_MODEL.md).
 hand: build
 	java -cp "$(BUILD_DIR):$(ABCMAINE_JAR)" computingmusic.hand.HandFrame
+
+# The instrument registry and a scale on each instrument, no window (doc/INSTRUMENTS.md).
+check-instruments: build
+	java -Xmx3g -Djava.awt.headless=true -cp "$(BUILD_DIR):$(ABCMAINE_JAR)" computingmusic.InstrumentCheck
+
+# The guitar's chords, barre and held notes on synthetic items, no window (doc/INSTRUMENTS.md).
+check-guitar: build
+	java -Xmx3g -Djava.awt.headless=true -cp "$(BUILD_DIR):$(ABCMAINE_JAR)" computingmusic.eval.GuitarCheck

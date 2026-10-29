@@ -16,7 +16,7 @@ Pure geometry in millimetres, no tuning to any piece (`src/computingmusic/hand/`
 Every limit is a CHOSEN placeholder. The survey (see the session report, 2026-10-27) found no published measurements
 of violin finger extension in mm; only weak or non-violin figures (finger splay from a patent, pianists' spans,
 enslaving force data). Geometry for the violin comes from luthier/forum sources (stop 325 mm; outer strings 16-16.5 mm
-at the nut, 33-34 mm at the bridge); viola, cello and bass geometry are chosen and unverified.
+at the nut, 33-34 mm at the bridge); viola, cello and bass geometry are chosen and unverified; their reach limits are per instrument since phase 3 (INSTRUMENTS.md).
 
 ## Not done yet
 - Not wired into the trail engine (`FingerTrail` still uses the fixed 6-semitone frame); doing so replaces that frame.

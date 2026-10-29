@@ -64,12 +64,38 @@ public class NoteByNote {
 	public static List<Stretch> run(Instrument ins, List<ChordFingering> input, List<Set<Integer>> trilled) throws Exception {
 		List<Stretch> out = new ArrayList<Stretch>();
 		int i = 0;
+		List<FingerTrail> before = null;       // the trails alive at the end of the stretch before, for notes still held across the break
+		List<List<FingerTrail>> beforeHistory = null;   // the trails alive after each item of that stretch (kept only when notes can be held)
+		boolean keepHistory = ins.spec.heldNotesKeepFingers;
 		while (i < input.size()) {
-			List<FingerTrail> alive = start(ins, input.get(i), i, tr(trilled, i));
+			List<FingerTrail> alive = start(ins, input.get(i), i, tr(trilled, i), before);
+			// The stretch before ended greedily, with trails that may have placed a still-sounding note where this item cannot
+			// follow.  If the item can be played without the held notes, end that stretch one item earlier (its trails then, which
+			// hold the notes differently) and start again from there; stop when a stretch is a single item.
+			while (alive.isEmpty() && before != null && beforeHistory != null && input.get(i).heldBefore != null && !out.isEmpty()) {
+				Stretch p = out.get(out.size() - 1);
+				if (p.start == p.stop || p.end == End.IMPOSSIBLE || start(ins, input.get(i), i, tr(trilled, i), null).isEmpty()) {
+					break;
+				}
+				int newStop = p.stop - 1;
+				List<FingerTrail> keep = beforeHistory.get(newStop - p.start);
+				out.remove(out.size() - 1);
+				out.add(new Stretch(p.start, newStop, End.BREAK, keep));
+				beforeHistory = new ArrayList<List<FingerTrail>>(beforeHistory.subList(0, newStop - p.start + 1));
+				before = keep;
+				i = newStop + 1;
+				alive = start(ins, input.get(i), i, tr(trilled, i), before);
+			}
 			if (alive.isEmpty()) {
 				out.add(new Stretch(i, i, End.IMPOSSIBLE, alive));
+				before = null;
+				beforeHistory = null;
 				i++;
 				continue;
+			}
+			List<List<FingerTrail>> history = keepHistory ? new ArrayList<List<FingerTrail>>() : null;
+			if (history != null) {
+				history.add(alive);
 			}
 			int stop = i;
 			End end = End.END;
@@ -85,8 +111,13 @@ public class NoteByNote {
 				}
 				alive = next;
 				stop++;
+				if (history != null) {
+					history.add(alive);
+				}
 			}
 			out.add(new Stretch(i, stop, end, alive));
+			before = alive;
+			beforeHistory = history;
 			i = stop + 1;
 		}
 		return out;
@@ -96,15 +127,46 @@ public class NoteByNote {
 		return trilled == null || trilled.get(i).isEmpty() ? null : trilled.get(i);
 	}
 
-	@SuppressWarnings("unchecked")
 	public static List<FingerTrail> start(Instrument ins, ChordFingering cf, int index, Set<Integer> trilled) throws Exception {
+		return start(ins, cf, index, trilled, null);
+	}
+
+	/**
+	 * The trails of a new stretch at item `index`.  When notes of the stretch before are still held (cf.heldBefore, an instrument
+	 * whose notes keep their fingers), each distinct way the trails alive at its end placed them seeds the new trails: the held string and
+	 * the held finger's height carry over, so a hand shift under a held stopped note is not available.  Distinct = different rows for the
+	 * held notes.  Complexity: O(distinct held placements x fingerings).
+	 */
+	public static List<FingerTrail> start(Instrument ins, ChordFingering cf, int index, Set<Integer> trilled, List<FingerTrail> before) throws Exception {
 		Constructor<FingerTrail> c = FingerTrail.class.getDeclaredConstructor(Instrument.class, int.class, int.class);
 		c.setAccessible(true);
+		List<FingerTrail> seeds = new ArrayList<FingerTrail>();
+		List<String> keys = new ArrayList<String>();
+		if (before != null && !before.isEmpty() && cf.heldBefore != null) {
+			java.util.Set<String> seen = new java.util.HashSet<String>();
+			for (FingerTrail b : before) {
+				String key = java.util.Arrays.deepToString(FingerTrail.heldRows(b, cf.heldBefore));
+				if (seen.add(key)) {
+					seeds.add(b);
+					keys.add(key);
+				}
+			}
+		} else {
+			seeds.add(null);
+			keys.add(null);
+		}
 		List<FingerTrail> out = new ArrayList<FingerTrail>();
-		for (Object f : cf.getFingerings()) {
-			FingerTrail t = c.newInstance(ins, index, index).makeCopyWithNewFingering((ChordFingering.Fingering) f, trilled);
-			if (t != null) {
-				out.add(t);
+		for (int si = 0; si < seeds.size(); si++) {
+			FingerTrail seed = seeds.get(si);
+			for (Object f : cf.getFingerings()) {
+				FingerTrail fresh = c.newInstance(ins, index, index);
+				if (seed != null) {
+					fresh.seededBy(seed, keys.get(si));
+				}
+				FingerTrail t = fresh.makeCopyWithNewFingering((ChordFingering.Fingering) f, trilled);
+				if (t != null) {
+					out.add(t);
+				}
 			}
 		}
 		return out;

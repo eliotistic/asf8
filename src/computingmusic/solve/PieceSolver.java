@@ -40,6 +40,40 @@ public final class PieceSolver {
 		public double rearrange = 0.6;            // per finger whose place in the frame changes
 		public double shiftAndRearrange = 1.5;    // multiplier on the rearranging when the hand also shifts
 		public double noShare = 1.0;              // shifting while rearranging with no height kept
+		/** Per semitone of the lowest stopped height of a stretch: nearer the nut preferred (guitar: only a tie-break between equal positions). */
+		public double highPosition = 0.0;
+		/**
+		 * A stretch with a stopped height above neckLimit (the cello's and bass's thumb position, not modelled) costs this much, so that a note the
+		 * neck reaches on a higher string is not taken high up a lower one.  0 = off (violin, viola, guitar).  CHOSEN: 3.0, more than a frame beyond comfort.
+		 */
+		public double aboveNeck = 0.0;
+		/**
+		 * Each distinct stopped place (string, height) that sounds the pitch of an open string costs this much: the open string was there to be used (the
+		 * cello's G2 D3 A3 of the Suite 1 prelude).  0 = off (violin, guitar).  CHOSEN: 0.25, about two finger lifts.
+		 */
+		public double stoppedAnOpenPitch = 0.0;
+		public int[] openPitches = null;
+		public int neckLimit = 0;
+
+		/** The costs for an instrument: the guitar and the viola, cello and bass (InstrumentSpec.lowestFingersFirst) prefers low positions a little (CHOSEN 0.02 per fret, a seventh of a finger lift at fret 7). */
+		public static Costs forInstrument(computingmusic.instrument.InstrumentSpec spec) {
+			Costs c = new Costs();
+			if (spec.lowestFingersFirst) {
+				c.highPosition = 0.02;
+			}
+			if (spec != computingmusic.instrument.InstrumentSpec.VIOLIN && spec.chordOnNeighbouringStrings) {
+				c.highPosition = 0.02;     // viola, cello, bass: a tie-break for the low position (CHOSEN, as the guitar's); the violin's results do not change
+			}
+			if (spec != computingmusic.instrument.InstrumentSpec.VIOLIN && spec.chordOnNeighbouringStrings) {
+				c.stoppedAnOpenPitch = 0.25;
+				c.openPitches = spec.openPitches;
+			}
+			if (spec.neckLimitHeight > 0) {
+				c.neckLimit = spec.neckLimitHeight;
+				c.aboveNeck = 3.0;
+			}
+			return c;
+		}
 	}
 
 	/** The option chosen for one stretch. */
@@ -94,10 +128,16 @@ public final class PieceSolver {
 		public final List<Choice> choices = new ArrayList<Choice>();
 		public double total;
 		public int itemsWithoutFingering, notesWithoutSpot, framesRejected;
+		/** Stretches where a held finger could not keep its number from the stretch before (the pinned assignment was not allowed). */
+		public int heldFingersRenumbered;
 	}
 
 	private final Costs costs;
 	private final FrameTest comfortable, absolute;
+	private List<NoteByNote.Stretch> stretchesNow;     // of the solve in progress, for link()
+	private TrailRun.Items itemsNow;
+	/** Cost of putting a stretch after one that placed its held notes differently: never chosen if any other pair exists. */
+	static final double INCOMPATIBLE = 1e6;
 
 	/** comfortable: the model at its comfortable limits (a cost); absolute: at its absolute limits (which fingers are possible). */
 	public PieceSolver(Costs costs, FrameTest comfortable, FrameTest absolute) {
@@ -119,12 +159,53 @@ public final class PieceSolver {
 		return out;
 	}
 
+	/** How many distinct stopped places of the trail sound the pitch of an open string.  Complexity: O(stopped places x strings). */
+	int countStoppedOpenPitches(FingerTrail t) {
+		java.util.HashSet<Long> seen = new java.util.HashSet<Long>();
+		int n = 0;
+		for (Point p : t.getStoppedPoints()) {
+			int pitch = costs.openPitches[p.x] + p.y;
+			if (seen.add(1000L * p.x + p.y)) {
+				for (int open : costs.openPitches) {
+					if (open == pitch) {
+						n++;
+						break;
+					}
+				}
+			}
+		}
+		return n;
+	}
+
 	double within(FingerTrail t, int[] frame) {
-		double c = costs.lift * t.lifts + costs.bariolation * t.countBariolations();
+		double c = costs.lift * t.lifts + costs.bariolation * t.countBariolations() + (frame.length > 0 ? costs.highPosition * frame[0] : 0);
+		if (costs.stoppedAnOpenPitch > 0) {
+			c += costs.stoppedAnOpenPitch * countStoppedOpenPitches(t);
+		}
+		if (costs.neckLimit > 0 && frame.length > 0 && frame[frame.length - 1] > costs.neckLimit) {
+			c += costs.aboveNeck;
+		}
 		if (comfortable != null && !comfortable.feasible(t.frameHeights())) {   // the trills' upper fingers are held too
 			c += costs.beyondComfort;
 		}
 		return c;
+	}
+
+	/**
+	 * Is option a of stretch i (counting from 0) compatible with option b of stretch i-1?  A trail seeded by a held note of the stretch
+	 * before fits only the options that placed it as the seed did.  INCOMPATIBLE when not, else 0.  Complexity: O(held).
+	 */
+	double link(List<List<FingerTrail>> opts, int i, int b, int a) {
+		if (a >= opts.get(i).size() || b >= opts.get(i - 1).size()) {
+			return 0;
+		}
+		FingerTrail next = opts.get(i).get(a);
+		if (next.seedKey == null) {
+			return 0;
+		}
+		int[][] held = itemsNow.chords.get(stretchesNow.get(i).start).heldBefore;
+		String key = held == null ? null : java.util.Arrays.deepToString(FingerTrail.heldRows(opts.get(i - 1).get(b), held));
+		return next.seedKey.equals(key) ? 0 : INCOMPATIBLE;
 	}
 
 	/** The cost of moving the hand from one frame to the next.  Complexity: O(frame size). */
@@ -171,6 +252,8 @@ public final class PieceSolver {
 
 	public Solution solve(Instrument ins, TrailRun.Items items) throws Exception {
 		List<NoteByNote.Stretch> st = NoteByNote.run(ins, items.chords, items.trilled);
+		stretchesNow = st;
+		itemsNow = items;
 		int n = st.size();
 		List<List<FingerTrail>> opts = new ArrayList<List<FingerTrail>>();
 		List<int[][]> frames = new ArrayList<int[][]>();
@@ -205,7 +288,7 @@ public final class PieceSolver {
 				int arg = 0;
 				for (int b = 0; b < pm; b++) {
 					double t = (a < opts.get(i).size() && b < opts.get(i - 1).size()) ? transition(frames.get(i - 1)[b], frames.get(i)[a]) : 0;
-					double v = f[i - 1][b] + t;
+					double v = f[i - 1][b] + t + link(opts, i, b, a);
 					if (v < best - 1e-12) {
 						best = v;
 						arg = b;
@@ -229,7 +312,7 @@ public final class PieceSolver {
 				for (int b = 0; b < nm; b++) {
 					double t = (a < opts.get(i).size() && b < opts.get(i + 1).size()) ? transition(frames.get(i)[a], frames.get(i + 1)[b]) : 0;
 					double ub = b < opts.get(i + 1).size() ? unary.get(i + 1)[b] : 0;
-					best = Math.min(best, t + ub + g[i + 1][b]);
+					best = Math.min(best, t + ub + g[i + 1][b] + link(opts, i + 1, a, b));
 				}
 				g[i][a] = best;
 			}
@@ -283,7 +366,28 @@ public final class PieceSolver {
 				for (int h : held) {
 					withTrills[ti++] = h;
 				}
-				FrameTest.Assignment as = absolute == null ? null : absolute.assign(withTrills);
+				int[] pinH = null, pinF = null;           // a finger held from the stretch before keeps its number
+				if (i > 0 && !t.carriedFingers().isEmpty() && sol.choices.get(i - 1).trail != null) {
+					java.util.List<Integer> ph = new ArrayList<Integer>(), pf = new ArrayList<Integer>();
+					for (int[] cf : t.carriedFingers()) {
+						int fg = sol.choices.get(i - 1).fingerOf(cf[1]);
+						if (fg > 0) {
+							ph.add(cf[1]);
+							pf.add(fg);
+						}
+					}
+					pinH = new int[ph.size()];
+					pinF = new int[ph.size()];
+					for (int q = 0; q < pinH.length; q++) {
+						pinH[q] = ph.get(q);
+						pinF[q] = pf.get(q);
+					}
+				}
+				FrameTest.Assignment as = absolute == null ? null : absolute.assign(withTrills, pinH, pinF);
+				if (as == null && absolute != null && pinH != null && pinH.length > 0) {
+					sol.heldFingersRenumbered++;
+					as = absolute.assign(withTrills);
+				}
 				c.fingerHeights = withTrills;
 				if (as == null && absolute != null) {                  // the hand cannot also hold the trills' fingers: the frame's own
 					as = absolute.assign(fr);

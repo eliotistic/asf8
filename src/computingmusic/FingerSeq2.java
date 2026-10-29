@@ -462,9 +462,14 @@ public class FingerSeq2 implements Cloneable {
 			int[] bNums = f1.kNums();
 			ArrayList<Point> bag = Points.combineMultisets(aNums, bNums);
 
-			// can have max 4 items, corresponding to 4 strings.
+			// can have max as many items as the instrument has chord notes (4 strings on the bowed instruments).
 			int sum = Points.multisetSum(bag);
-			if (sum > 4) {
+			if (!instrument.spec.chordOnNeighbouringStrings) {
+				// The guitar's notes are never merged into one chord: they have their own durations, a held note stays
+				// under the notes that follow (ChordFingering.heldBefore, FingerTrail), so each item is its own step of a trail.
+				return;
+			}
+			if (sum > instrument.spec.maxChordSize) {
 				// too many, bow out here
 				// System.out.println("expand: too many notes");
 				return;
@@ -583,9 +588,9 @@ public class FingerSeq2 implements Cloneable {
 
 		ArrayList<Point> bag = Points.combineMultisets(aNums, bNums);
 
-		// can have max 4 items, corresponding to 4 strings.
+		// can have max as many items as the instrument has chord notes.
 		int sum = Points.multisetSum(bag);
-		if (sum>4){ // more than 4 chord tones
+		if (sum>instrument.spec.maxChordSize){ // more chord tones than the instrument plays
 			return null;
 		} else {
 			int[] flatNums = Points.flattenMultiset(bag);

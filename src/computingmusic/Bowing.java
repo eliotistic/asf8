@@ -13,15 +13,20 @@ public class Bowing {
 	private IntList sequence; // jb: seems not implemented
 	int skips; // how many strings we skip over, which in general we want to avoid.
 	int lastSaite;
+	int nStrings;
 	Bv lastSaitenBv;
 	BvList bvSequence;
 	
 	Bowing(){
+		this(4);
+	}
+	Bowing(int nStrings){
 		sequence = new IntList();
 		bvSequence = new BvList();
 		skips = 0;
 		lastSaite = -1;
-		lastSaitenBv = new Bv(4);
+		lastSaitenBv = new Bv(nStrings);
+		this.nStrings = nStrings;
 		
 	}
 	 /**
@@ -34,7 +39,7 @@ public class Bowing {
 	}
 	
 	public Bv bvOfSequence (IntList saiten) {
-		Bv b = new Bv (4);
+		Bv b = new Bv (nStrings);
 		for (int i : saiten) {
 			b.set(i);
 		}
@@ -99,7 +104,7 @@ public class Bowing {
 	}
 	
 	public Bowing copy() {
-		Bowing b = new Bowing();
+		Bowing b = new Bowing(nStrings);
 		b.sequence = sequence.copy();
 		b.bvSequence = bvSequence.copy();
 		b.skips = skips;

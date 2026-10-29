@@ -201,6 +201,7 @@ public class GuiControl {
 			m.put("visible", gui.isVisible());
 			m.put("loading", gui.loading);
 			m.put("masterIndex", score.masterIndex);
+			m.put("instrument", score.instrument.getInstName());
 			m.put("items", score.fingResultList == null ? 0 : score.fingResultList.size());
 			m.putAll(trailShowing(score));
 			if (score.scoreUI instanceof VerovioScoreComponent) {
@@ -336,7 +337,7 @@ public class GuiControl {
 		m.put("trailCount", ts == null ? 0 : ts.size());
 		m.put("trailIndex", ts == null || i >= ts.size() ? -1 : i);
 		if (ts != null && i >= 0 && i < ts.size()) {
-			String[] sn = { "G", "D", "A", "E" };
+			String[] sn = score.instrument.spec.stringNames;
 			java.util.TreeSet<String> pts = new java.util.TreeSet<String>();
 			for (FingerTrail.Trailpoint tp : ts.get(i).getTrailPoints()) {
 				pts.add(sn[tp.saite] + tp.interval);
@@ -400,7 +401,7 @@ public class GuiControl {
 		}
 		FingerTrail trail = anchor.activeHead();
 		Instrument ins = score.instrument;
-		String[] stringName = { "G", "D", "A", "E" };
+		String[] stringName = ins.spec.stringNames;
 		int groupStop = anchor.fs2.stop();               // the first step of a trail is the whole first group
 		List<Object> rows = new ArrayList<Object>();
 		java.util.TreeSet<Integer> heights = new java.util.TreeSet<Integer>();

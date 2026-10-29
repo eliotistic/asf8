@@ -3,6 +3,7 @@ package computingmusic;
 
 import java.awt.Point;
 
+import computingmusic.instrument.InstrumentSpec;
 import computingmusic.utils.IntList;
 import computingmusic.utils.StringFingeringConstants;
 
@@ -14,7 +15,14 @@ import abc.notation.Clef;
 public class Instrument {
 	BigScore big;
 	Instr instr;
+	/** What this instrument is: strings, tuning, limits, geometry, chord rules (computingmusic.instrument.InstrumentSpec). */
+	public InstrumentSpec spec;
 	private int[] openStrings;
+	/** Per string (lowest first): the highest and lowest stopped height, whether the open string may sound, whether the string may be used at all. */
+	public int[] maxHeights, minHeights;
+	public boolean[] openAllowed, playable;
+	/** The fixed span of the hand in semitones, used only when no hand model (Constraints.HAND) is set. */
+	public int handSpan;
 	public int[][][] caseArr;
 	double[] spanVect;
 	double[] r12Vect;
@@ -27,7 +35,7 @@ public class Instrument {
 							 // arbitrary measure
 	@SuppressWarnings("unused")
 	private boolean topologyFilter;
-	public int nStrings = 4;
+	public int nStrings = 4;   // set from the spec
 	
 	public int stringRange = StringFingeringConstants.STRING_RANGE; // semitones on string (25 on May 9 2011)
 	
@@ -43,34 +51,57 @@ public class Instrument {
 	}
 	
 	Instrument(Instr ins) {
+		this(Instr.specOf(ins));
+	}
+	public Instrument(InstrumentSpec spec) {
 		makeSpanVect();
-		instr = ins;
-		//setCaseArr();
 		topologyFilter = true;
-		openStrings = makeOpenStrings(instr);
-		//FBhandspan = initHandSpan();
-
+		configure(spec);
+	}
+	public Instrument(BigScore b, InstrumentSpec spec) {
+		this(spec);
+		big = b;
 	}
 	Instrument (BigScore b, String instrumentName) { // s is name of instr
-		makeSpanVect();
-		big = b;
-		instr = getInstr(instrumentName);
-		//setCaseArr();
-		openStrings = makeOpenStrings(instr);
-		//FBhandspan = initHandSpan();
-		
+		this(b, Instr.specOf(getInstr(instrumentName)));
 	}
 	
 	// used ony in Feedback
 	Instrument (String s) {
+		this(Instr.specOf(getInstr(s)));
 		System.out.println("Warning, deprecated call to Instrument(String)");
-		makeSpanVect();
-		instr = getInstr(s);
-		//setCaseArr();
-		openStrings = makeOpenStrings(instr);
-		//FBhandspan = violinHandSpan();
 	}
-	
+
+	/**
+	 * Take the strings, tuning and limits from the spec.  The violin's come from Constraints (SFProperties.xml, read here
+	 * if it has not been), which are its defaults; every other instrument's come from its spec.
+	 */
+	private void configure(InstrumentSpec s) {
+		spec = s;
+		instr = Instr.of(s);
+		nStrings = s.stringCount();
+		if (Constraints.VIOLIN_STRINGS == null) {
+			computingmusic.utils.XMLPropertiesReader.main(null);
+		}
+		if (s == InstrumentSpec.VIOLIN) {
+			openStrings = Constraints.VIOLIN_STRINGS;
+			maxHeights = Constraints.VIOLIN_MAX_HEIGHTS;
+			minHeights = Constraints.VIOLIN_MIN_HEIGHTS;
+			openAllowed = Constraints.VIOLIN_OPEN;
+			playable = Constraints.VIOLIN_PLAYABLES;
+			handSpan = Constraints.VIOLIN_HAND_SPAN;
+		} else {
+			openStrings = s.openPitches.clone();
+			maxHeights = s.maxHeights.clone();
+			minHeights = s.minHeights.clone();
+			openAllowed = new boolean[nStrings];
+			playable = new boolean[nStrings];
+			java.util.Arrays.fill(openAllowed, true);
+			java.util.Arrays.fill(playable, true);
+			handSpan = Constraints.VIOLIN_HAND_SPAN;      // CHOSEN: only the fallback without a hand model
+		}
+	}
+
 	public int openPitch (int saite){
 		return openStrings[saite];
 	}
@@ -207,7 +238,17 @@ public class Instrument {
 		
 	public enum Instr {
 
-        VN, VA, VC
+        VN, VA, VC, DB, GT, GD;
+
+        /** The enum entry of a spec. */
+        public static Instr of(InstrumentSpec s) {
+            return valueOf(s.shortName);
+        }
+
+        /** The spec of an enum entry. */
+        public static InstrumentSpec specOf(Instr i) {
+            return InstrumentSpec.byName(i.name());
+        }
     };
     public Clef getClef() {
 
@@ -221,6 +262,13 @@ public class Instrument {
 			break;
 		case VC:
 			c = Clef.F;
+			break;
+		case DB:
+			c = Clef.F;
+			break;
+		case GT:
+		case GD:
+			c = Clef.G;
 			break;
 		}
 		;
@@ -241,6 +289,13 @@ public class Instrument {
 		case VC:
 			if (range.x > 60 & range.y > 71) c = Clef.G; 
 			else c = Clef.F;
+			break;
+		case DB:
+			c = Clef.F;
+			break;
+		case GT:
+		case GD:
+			c = Clef.G;
 			break;
 		}
 		;
@@ -279,92 +334,43 @@ public class Instrument {
     	return new Point (getBot(), getTop());
     }
     
+    private static String abcName(int pitch) {
+    	return TrailRun.whiteKey(pitch) ? AbcPitch.name(pitch, 0) : AbcPitch.name(pitch, 1);
+    }
+
+    /** The label of the instrument panel: its name and its lowest and highest pitch in ABC (C = middle C, c = an octave above). */
     public String rangeString(){
-    	String lo = Keynum.ofIntMidi(getBot());
-    	String hi = Keynum.ofIntMidi(getTop());
+    	// the instrument's own highest stopped pitch (its spec), spelled in ABC; "C3/36"-style names had an octave off and showed the violin's range for every instrument
+    	int top = spec.highestPitch();
+    	String lo = abcName(getBot());
+    	String hi = abcName(top);
     	String v = getInstName();
     	return "*" + v + ": " + lo + " - " + hi;
     }
     
     public  String getInstName() {
-        switch (instr) {
-            case VN:
-                return "Violin";
-            case VA:
-                return "Viola";
-            case VC:
-                return "Cello";
-        }
-        throw new AssertionError("Unknown instrument: " + instr);
+        return spec.name;
     }
 
-    ;
-    
-    public Instr getInstr(String a) {
+    /** The enum entry for a name or short name; an unknown or null name gives the violin (as before). */
+    public static Instr getInstr(String a) {
 		if (a == null) {
 			return Instr.VN;
-		} else {
-			a = a.toUpperCase();
-			if (a.equals("VN") || a.equals("VIOLIN")) {
-				return Instr.VN;
-			} else if (a.equals("VA") || a.equals("VIOLA")) {
-				return Instr.VA;
-			} else if (a.equals("VC") || a.equals("CELLO")
-					|| a.equals("VIOLINCELLO")) {
-				return Instr.VC;
-			} else {
-				// default to violin
-				return Instr.VN;
-			}
-
+		}
+		try {
+			return Instr.of(InstrumentSpec.byName(a));
+		} catch (IllegalArgumentException e) {
+			// default to violin
+			return Instr.VN;
 		}
 	}
-    
-    
-    
-    
-    //public  final String[] vnStringNames = {"E", "A", "D", "G"};
-    //public  final String[] vcStringNames = {"A", "D", "G", "C"};
-    
-    public final String[] vnStringNames = {"G", "D", "A", "E"};
-    public final String[] vcStringNames = {"C", "G", "D", "A"};
-    
+
     public final String string_name(int n) {
-        if (instr == Instr.VN) {
-            return vnStringNames[n];
-        } else {
-            return vcStringNames[n];
-        }
+        return spec.stringNames[n];
     }
     public  String getInstShortName() {
-        switch (instr) {
-            case VN:
-                return "VN";
-            case VA:
-                return "VA";
-            case VC:
-                return "VC";
-        }
-        throw new AssertionError("Unknown instrument: " + instr);
+        return spec.shortName;
     }
-    ;
-    // revised so that strings are lo -> hi
-    public  int[] makeOpenStrings(Instr instr){
-    	// 0 = high string.
-    	switch (instr) {
-        case VN:
-            int[] a = Constraints.VIOLIN_STRINGS; // TODO
-            return a;
-        case VA:
-            int[] b = {48, 55, 62, 69};
-            return b;
-        case VC:
-            int[] c = {36, 43, 50, 57};
-            return c;
-    }
-    throw new AssertionError("Unknown instrument: " + instr);
-
-}
   
     public int[] openStrings(){
     	return openStrings;

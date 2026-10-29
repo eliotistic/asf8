@@ -23,43 +23,6 @@ public class ChordSolver {
 		fingerings = new ArrayList<Fingering>();
 	}
 	 
-	public static final int[][] perm1 = {{0}};
-	
-    public static final int[][] perm2 = {{0, 1},
-        {1, 0}
-    };
-    public static final int[][] perm3 = {{0, 1, 2},
-        {0, 2, 1},
-        {1, 0, 2},
-        {1, 2, 0},
-        {2, 0, 1},
-        {2, 1, 0}
-    };
-    public static final int[][] perm4 = {{0, 1, 2, 3},
-        {0, 1, 3, 2},
-        {0, 2, 1, 3},
-        {0, 2, 3, 1},
-        {0, 3, 1, 2},
-        {0, 3, 2, 1},
-        {1, 0, 2, 3},
-        {1, 0, 3, 2},
-        {1, 2, 0, 3},
-        {1, 2, 3, 0},
-        {1, 3, 0, 2},
-        {1, 3, 2, 0},
-        {2, 0, 1, 3},
-        {2, 0, 3, 1},
-        {2, 1, 0, 3},
-        {2, 1, 3, 0},
-        {2, 3, 0, 1},
-        {2, 3, 1, 0},
-        {3, 0, 1, 2},
-        {3, 0, 2, 1},
-        {3, 1, 0, 2},
-        {3, 1, 2, 0},
-        {3, 2, 0, 1},
-        {3, 2, 1, 0}
-    };
     /*
    
     private boolean pointArrEqual (Point[] x, Point[] y){
@@ -92,87 +55,90 @@ public class ChordSolver {
     }
     */
     
-    private int[][] permsofN(int n){
-    	if (n==1) return perm1;
-    	if (n==2) return perm2;
-    	if (n==3) return perm3;
-    	if (n==4) return perm4;
-    	System.out.println("Error in perms of N -- N too big:" + n);
-    	return null;
-    }
-
-    private XCase[] xcasesOfPerm(int[] perm, StringCases[] stc){
-    	int len = perm.length;
+    /**
+     * The XCases of one finished assignment (note k of the chord went to the k-th used string, strings ascending), or null when it is
+     * refused: a note that cannot be stopped on its string (height out of range), or, for an instrument whose chord is a bow's
+     * window, a stopped span the fixed hand cannot hold.  For an instrument whose hand is the model's (guitar) the span is the
+     * trail's business (FingerTrail.frameFits), so only the strings' ranges are checked here.
+     * Complexity: O(n).
+     */
+    private XCase[] acceptable(XCase[] x) {
+    	if (!instrument.spec.chordOnNeighbouringStrings) {
+    		return x;
+    	}
     	int lo = Integer.MAX_VALUE;
     	int hi = -1;
-    	XCase [] x = new XCase[len];
-    	for (int i = 0; i<len;i++){
-    		x[i] = stc[i].xcasearr[perm[i]];
-    		// if this is bad reject whole.
-    		if (!x[i].htOk) {
-    			return null;
-    		};
-    		int ht = x[i].height;
-    		
-    		//System.out.println("xcasesOfPerm -- height:" + ht);
+    	for (XCase c : x) {
+    		int ht = c.height;
     		if (ht != 0) {
     			lo = Math.min(lo, ht);
     			hi = Math.max(hi, ht);
-    		};
+    		}
     	}
     	// must be within correct span exclusive of open strings
-    	if (lo==Integer.MAX_VALUE && hi ==-1){ // single open string
+    	if (lo == Integer.MAX_VALUE && hi == -1) { // single open string
     		return x;
-    	} else if (instrument.inSpan(lo, hi)){
-    		//System.out.println("      --> in span:" + lo + " " + hi);
-    		return x;
-    	} else{
-    		//System.out.println("Not in span: " + lo + " " + hi);
-    		return null;
     	}
-    
+    	return instrument.inSpan(lo, hi) ? x : null;
     }
-    	
-  
-    private void solver(StringCases[] stc) {
-    	int nStrings = stc.length;
-    	int perms[][] = permsofN(nStrings);
-    	
-        for (int[] perm : perms) {
-        	XCase [] xcasearr = xcasesOfPerm(perm, stc);
-        	if (xcasearr != null) {
-        		//System.out.println(sayXcases(xcasearr));
-        		//Position p = new Position(0, 0);
-                Fingering f = cf.new Fingering(xcasearr);
-                //String a = f.answerString();
-                //System.out.println("CS -- adding fingering:\n" + f);
-                fingerings.add (f);
-                    	//csaddNewFingering(f);
-        	}
-        }
-    }
-     
-    public void solve(StringMatrix stm, int nNotes) {
-       
-    	for (int i = 0; i <= (4-nNotes); i++){
-    		StringCases [] stc = new StringCases[nNotes];
-    		
-    		// make subarr
-    		
-    		for (int k = 0; k<nNotes; k++) {
-    			stc[k] = stm.arr[i+k];
-    		}
-    		solver (stc);
-    		// it seems our fingerings are orderd from hi-> lo, reverse that.
-    		// 
-    	
-    		//Arrays.sort(fingerings);
-    		
-    	
-    	}
-    }
-    	
-    	
-    	
- };
 
+    /**
+     * Give each of the n notes a distinct string, strings taken in ascending order from `from`, a note for a string in ascending
+     * order of the note's number: depth-first, a branch is cut as soon as a note cannot be stopped on its string (htOk).  With
+     * `contiguous` every string from `from` on takes a note (a window of n neighbouring strings: this produces the permutations of
+     * the old tables in the same lexicographic order); without, a string may be skipped (guitar), and of two notes of one pitch the
+     * lower-numbered takes the lower string, so identical assignments are not repeated.
+     * Complexity: O(number of partial assignments reached x n); at most S!/(S-n)! for S strings, but each note is playable on
+     * only a few strings (at most 6 notes on 6 strings: well under a thousand).
+     */
+    private void search(StringMatrix stm, int from, boolean[] used, XCase[] chosen, int placed, boolean contiguous) {
+    	int n = chosen.length;
+    	if (placed == n) {
+    		XCase[] ok = acceptable(chosen.clone());
+    		if (ok != null) {
+    			fingerings.add(cf.new Fingering(ok));
+    		}
+    		return;
+    	}
+    	int nStrings = instrument.nStrings;
+    	if (nStrings - from < n - placed) {
+    		return;
+    	}
+    	for (int s = from; s < nStrings; s++) {
+    		StringCases sc = stm.arr[s];
+    		for (int k = 0; k < n; k++) {
+    			if (used[k] || !sc.xcasearr[k].htOk) {
+    				continue;
+    			}
+    			if (!contiguous && k > 0 && !used[k - 1] && sc.xcasearr[k].pitch == sc.xcasearr[k - 1].pitch) {
+    				continue;                      // the same pitch, lower number first
+    			}
+    			used[k] = true;
+    			chosen[placed] = sc.xcasearr[k];
+    			search(stm, s + 1, used, chosen, placed + 1, contiguous);
+    			used[k] = false;
+    		}
+    		if (contiguous) {
+    			return;                            // a window has no gaps: the next string is the only one to take
+    		}
+    	}
+    }
+
+    /**
+     * Every way to put the chord's notes on distinct strings, each note on a string it can be stopped on.
+     * Bowed instruments (chordOnNeighbouringStrings): the window of nNotes neighbouring strings slides over the strings and each
+     * window is tried with every assignment of notes to its strings, as before.  Guitar: any strings, no window, no bow limit.
+     * Complexity: bowed O(strings x nNotes! x nNotes); guitar O(S!/(S-n)! x n) at worst, see search.
+     */
+    public void solve(StringMatrix stm, int nNotes) {
+    	boolean[] used = new boolean[nNotes];
+    	XCase[] chosen = new XCase[nNotes];
+    	if (instrument.spec.chordOnNeighbouringStrings) {
+    		for (int i = 0; i <= (instrument.nStrings - nNotes); i++) {
+    			search(stm, i, used, chosen, 0, true);
+    		}
+    	} else {
+    		search(stm, 0, used, chosen, 0, false);
+    	}
+    }
+}

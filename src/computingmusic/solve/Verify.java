@@ -34,15 +34,15 @@ public class Verify {
 		String base = file.getName().replaceAll("\\.[^.]*$", "");
 		File dump = new File(System.getProperty("user.home"), ".string_fingering/cache/" + base + "/dump.json");
 		JJScore score = dump.isFile() ? JJScore.read(dump) : MusicXmlSession.loadNotes(file);
-		Instrument ins = TrailRun.violin();
+		Instrument ins = TrailRun.instrumentNamed(args.length > 2 ? args[2] : null);
 		TrailRun.Items items = TrailRun.items(score, ins);
-		File sf = new File(System.getProperty("user.home"), ".string_fingering/solutions/" + base + ".solution.json");
+		File sf = new File(System.getProperty("user.home"), ".string_fingering/solutions/" + base + ins.spec.solutionFileSuffix() + ".solution.json");
 		List<Object> stretches = (List<Object>) Json.parse(new String(Files.readAllBytes(sf.toPath()), StandardCharsets.UTF_8));
-		HandParams hp = new HandParams();
+		HandParams hp = HandParams.forInstrument(ins.spec);
 		hp.size = size;
-		FrameTest hand = new FrameTest(Geometry.VIOLIN, hp, true);
-		int[] open = {55, 62, 69, 76};
-		String names = "GDAE";
+		FrameTest hand = new FrameTest(ins.spec.geometry(), hp, true);
+		int[] open = ins.openStrings();
+		java.util.List<String> names = java.util.Arrays.asList(ins.spec.stringNames);
 		int[][] confusion = new int[5][5];
 		int[][] uConfusion = new int[5][5];
 		int uPrinted = 0, uOpenStop = 0, uAgree = 0;
@@ -73,7 +73,7 @@ public class Verify {
 				if (open[st] + h != pitch) {
 					wrongPitch++;
 				}
-				if (h > Constraints.VIOLIN_MAX_HEIGHTS[st]) {
+				if (h > ins.maxHeights[st]) {
 					overHeight++;
 				}
 				if (h > 0) {

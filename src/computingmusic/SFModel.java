@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import computingmusic.Keynum.K;
+import computingmusic.instrument.InstrumentSpec;
 import computingmusic.jj.JJNote;
 import computingmusic.jj.JJScore;
 import computingmusic.jj.MusicXmlSession;
@@ -21,11 +22,15 @@ import computingmusic.utils.StringFingeringConstants;
  * take turns.
  */
 public class SFModel {
-	private static final String[] STRING_NAME = { "G", "D", "A", "E" };   // string 0 is the lowest
 
 	private File file;
 	private JJScore score;
 	private int stringRange = StringFingeringConstants.STRING_RANGE;
+	/** The instrument (default violin); changed by load's "instrument" or by setInstrument. */
+	private InstrumentSpec spec = InstrumentSpec.VIOLIN;
+	/** Constraint changes for an instrument other than the violin (the violin's are kept in Constraints, as before). */
+	private int[] maxHeightsChanged, minHeightsChanged;
+	private Integer handSpanChanged;
 	private TrailRun.Items items;
 	private List<TrailRun.Segment> segments;
 	private Map<JJNote, PrintedCheck.Result> checks;
@@ -38,17 +43,52 @@ public class SFModel {
 		return m;
 	}
 
-	/** A violin with the current constraints.  Built afresh so a constraint change is always seen. */
+	/** The instrument with the current constraints.  Built afresh so a constraint change is always seen. */
 	Instrument instrument() {
-		Instrument ins = TrailRun.violin();
+		Instrument ins = TrailRun.instrument(spec);
 		ins.stringRange = stringRange;
+		if (spec != InstrumentSpec.VIOLIN) {
+			ins.maxHeights = maxHeightsChanged != null ? maxHeightsChanged : ins.maxHeights;
+			ins.minHeights = minHeightsChanged != null ? minHeightsChanged : ins.minHeights;
+			ins.handSpan = handSpanChanged != null ? handSpanChanged : ins.handSpan;
+		}
 		return ins;
+	}
+
+	private String stringName(int string) {
+		return spec.stringNames[string];
+	}
+
+	/** Choose the instrument (by name); a loaded piece is read again for it and any earlier run is dropped. */
+	public Map<String, Object> setInstrument(String name) {
+		InstrumentSpec chosen = InstrumentSpec.byName(name);
+		if (chosen != spec) {
+			spec = chosen;
+			maxHeightsChanged = minHeightsChanged = null;
+			handSpanChanged = null;
+			if (score != null) {
+				items = TrailRun.items(score, instrument());
+			}
+			segments = null;
+			checks = null;
+		}
+		return map("instrument", spec.name, "strings", java.util.Arrays.asList(spec.stringNames));
 	}
 
 	// ---- piece ----------------------------------------------------------------------------------
 
 	/** Load a score through JJ (MusicXML, MEI, kern, ...).  Clears any earlier run. */
 	public Map<String, Object> load(String path) throws Exception {
+		return load(path, null);
+	}
+
+	/** As load(path), for the instrument named (null keeps the current one). */
+	public Map<String, Object> load(String path, String instrumentName) throws Exception {
+		if (instrumentName != null) {
+			spec = InstrumentSpec.byName(instrumentName);
+			maxHeightsChanged = minHeightsChanged = null;
+			handSpanChanged = null;
+		}
 		file = new File(path);
 		score = MusicXmlSession.loadNotes(file);
 		items = TrailRun.items(score, instrument());
@@ -61,7 +101,7 @@ public class SFModel {
 		for (JJNote n : score.notes) {
 			fingered += n.fingering().isEmpty() ? 0 : 1;
 		}
-		return map("file", file.getName(), "notes", score.notes.size(), "items", items.chords.size(),
+		return map("file", file.getName(), "instrument", spec.name, "notes", score.notes.size(), "items", items.chords.size(),
 				"chords", chords, "printedFingerings", fingered);
 	}
 
@@ -74,9 +114,9 @@ public class SFModel {
 	// ---- constraints ----------------------------------------------------------------------------
 
 	public Map<String, Object> constraints() {
-		instrument();
-		return map("openStrings", Constraints.VIOLIN_STRINGS, "minHeights", Constraints.VIOLIN_MIN_HEIGHTS,
-				"maxHeights", Constraints.VIOLIN_MAX_HEIGHTS, "handSpan", Constraints.VIOLIN_HAND_SPAN,
+		Instrument ins = instrument();
+		return map("instrument", spec.name, "openStrings", ins.openStrings(), "minHeights", ins.minHeights,
+				"maxHeights", ins.maxHeights, "handSpan", ins.handSpan,
 				"stringRange", stringRange);
 	}
 
@@ -86,14 +126,30 @@ public class SFModel {
 	 */
 	public Map<String, Object> setConstraints(Map<String, Object> m) {
 		instrument();
+		boolean violin = spec == InstrumentSpec.VIOLIN;
 		if (m.containsKey("maxHeights")) {
-			Constraints.VIOLIN_MAX_HEIGHTS = ints(m.get("maxHeights"), 4, "maxHeights");
+			int[] v = ints(m.get("maxHeights"), spec.stringCount(), "maxHeights");
+			if (violin) {
+				Constraints.VIOLIN_MAX_HEIGHTS = v;
+			} else {
+				maxHeightsChanged = v;
+			}
 		}
 		if (m.containsKey("minHeights")) {
-			Constraints.VIOLIN_MIN_HEIGHTS = ints(m.get("minHeights"), 4, "minHeights");
+			int[] v = ints(m.get("minHeights"), spec.stringCount(), "minHeights");
+			if (violin) {
+				Constraints.VIOLIN_MIN_HEIGHTS = v;
+			} else {
+				minHeightsChanged = v;
+			}
 		}
 		if (m.containsKey("handSpan")) {
-			Constraints.VIOLIN_HAND_SPAN = ((Number) m.get("handSpan")).intValue();
+			int v = ((Number) m.get("handSpan")).intValue();
+			if (violin) {
+				Constraints.VIOLIN_HAND_SPAN = v;
+			} else {
+				handSpanChanged = v;
+			}
 		}
 		if (m.containsKey("stringRange")) {
 			int r = ((Number) m.get("stringRange")).intValue();
@@ -155,17 +211,17 @@ public class SFModel {
 			List<Map<String, Object>> notes = new ArrayList<Map<String, Object>>();
 			for (ChordFingering.XCase x : f.fingering) {
 				AbcPitch p = nearest(pitches, x.pitch);
-				notes.add(map("abc", AbcPitch.name(x.pitch, p == null ? 0 : p.alter), "string", STRING_NAME[x.saite], "height", x.height));
+				notes.add(map("abc", AbcPitch.name(x.pitch, p == null ? 0 : p.alter), "string", stringName(x.saite), "height", x.height));
 			}
 			fingerings.add(map("notes", notes));
 		}
 		List<Map<String, Object>> options = new ArrayList<Map<String, Object>>();
 		for (AbcPitch p : pitches) {
 			List<Map<String, Object>> where = new ArrayList<Map<String, Object>>();
-			for (int s = 0; s < 4; s++) {
+			for (int s = 0; s < ins.nStrings; s++) {
 				int h = p.midi - ins.openStringPitch(s);
-				if (h >= 0 && h <= stringRange && h <= Constraints.VIOLIN_MAX_HEIGHTS[s] && h >= Constraints.VIOLIN_MIN_HEIGHTS[s]) {
-					where.add(map("string", STRING_NAME[s], "height", h));
+				if (h >= 0 && h <= stringRange && h <= ins.maxHeights[s] && h >= ins.minHeights[s]) {
+					where.add(map("string", stringName(s), "height", h));
 				}
 			}
 			options.add(map("abc", AbcPitch.name(p.midi, p.alter), "places", where));
@@ -265,7 +321,7 @@ public class SFModel {
 			PrintedCheck.Result r = checks.get(n);
 			Map<String, Object> m = map("abc", n.abcName(), "measure", n.measure(), "printedFingering", n.fingering());
 			if (r != null && r.string >= 0) {
-				m.put("string", STRING_NAME[r.string]);
+				m.put("string", stringName(r.string));
 				m.put("height", r.height);
 			}
 			if (r != null && r.verdict != PrintedCheck.Verdict.NONE) {

@@ -9,8 +9,10 @@ writes OUTDIR/page-N.png and OUTDIR/notation.json:
      "notes": [{"id": "...", "page": 1, "x": px, "y": px, "w": px, "h": px,
                 "pitch": 64, "on": 0.125, "grace": false}, ...]}
 
-"on" is Verovio's own onset for the note in quarter notes (its timemap's qstamp) and "pitch" its MIDI
-pitch.  The notes are written sorted by (on, pitch), so a consumer can pair them with another sorted list
+A note that continues a tie is left out: JJ's data joins it to the note before.
+
+"on" is the note's onset in quarter notes in written time, worked out from the MEI Verovio makes (not its
+timemap, which is a performance), and "pitch" its MIDI pitch.  The notes are written sorted by (on, pitch), so a consumer can pair them with another sorted list
 of the same score and check the pitches agree, without relying on Verovio's random xml:ids.
 
 The box is the notehead's position in the page image: the glyph's origin plus one staff space of height.
@@ -120,9 +122,21 @@ def grace_note_ids(lib, tk):
     return ids
 
 
-def main(score, outdir, width=1400):
-    lib, tk = toolkit()
-    load_score(lib, tk, score)
+def tied_continuation_ids(lib, tk):
+    """ids of the notes that continue a tie: the end of an MEI <tie startid endid>.  JJ's data joins tied notes
+    into one note (the first's onset, the sum of the lengths), so the continuation is drawn but is not a note of
+    the data.  A chain a~b~c makes b and c continuations.  Complexity: O(elements)."""
+    root = ET.fromstring(lib.vrvToolkit_getMEI(tk, b'{}').decode('utf-8'))
+    ends = set()
+    for node in root.iter():
+        if node.tag.split('}')[-1] == 'tie' and node.attrib.get('endid'):
+            ends.add(node.attrib['endid'].lstrip('#'))
+    return ends
+
+
+def timemap_onsets(lib, tk):
+    """note id -> onset in quarters from Verovio's timemap (a performance's time: see written_onsets), with
+    the replays of repeats taken out.  Used for input that has no @dur.ppq.  Complexity: O(notes)."""
     # the timemap lists, for every instant, the ids of the notes that begin there (qstamp = quarters)
     # The timemap plays the repeats out: the replayed notes carry ids ending -rendN, and everything after a replay
     # is later than where it is written.  The data JJ reads is in written time, so skip the replays and take the
@@ -142,7 +156,76 @@ def main(score, outdir, width=1400):
             replay_from = None
         for note_id in ons:
             onset[note_id] = entry['qstamp'] - offset
+    return onset
+
+
+def written_onsets(lib, tk):
+    """note id -> onset in quarter notes, computed from Verovio's MEI in written order.
+
+    Every layer of a measure starts with the measure; a note, rest or space moves its layer on by its @dur.ppq (a
+    chord by its own, its members begin together; a grace note takes no time); the next measure begins where the
+    longest layer of this one ends.  This is the time JJ's data has.  Verovio's timemap is the time of a
+    performance: it plays an arpeggio one note after another, puts time into grace notes and delays the notes
+    near them (0.117 quarter in Reger's Sonata 3, more than a 32nd for the pairing to bear), and it unfolds the
+    repeats.  Complexity: O(elements)."""
+    root = ET.fromstring(lib.vrvToolkit_getMEI(tk, b'{}').decode('utf-8'))
+    xml_id = '{http://www.w3.org/XML/1998/namespace}id'
+    ppq = None
+    for node in root.iter():
+        if node.tag.split('}')[-1] == 'staffDef' and node.attrib.get('ppq'):
+            ppq = int(node.attrib['ppq'])
+            break
+    if ppq is None:
+        return None                       # MEI and kern input carry no @dur.ppq: the caller falls back to the timemap
+    onset = {}
+
+    def length(node):
+        if 'dur.ppq' not in node.attrib:
+            raise SystemExit('%s %s has no dur.ppq' % (node.tag.split('}')[-1], node.attrib.get(xml_id)))
+        return int(node.attrib['dur.ppq'])
+
+    def layer_length(container, t):
+        for child in container:
+            name = child.tag.split('}')[-1]
+            if name in ('beam', 'tuplet', 'graceGrp', 'bTrem', 'fTrem', 'ligature'):
+                t = layer_length(child, t)
+            elif name == 'chord':
+                grace = 'grace' in child.attrib
+                for member in child:
+                    if member.tag.split('}')[-1] == 'note':
+                        onset[member.attrib[xml_id]] = t / ppq
+                if not grace:
+                    t += length(child)
+            elif name == 'note':
+                onset[child.attrib[xml_id]] = t / ppq
+                if 'grace' not in child.attrib:
+                    t += length(child)
+            elif name in ('rest', 'space', 'mRest', 'mSpace'):
+                t += length(child)
+        return t
+
+    start = 0
+    for measure in root.iter():
+        if measure.tag.split('}')[-1] != 'measure':
+            continue
+        longest = 0
+        for staff in measure:
+            if staff.tag.split('}')[-1] == 'staff':
+                for layer in staff:
+                    if layer.tag.split('}')[-1] == 'layer':
+                        end = layer_length(layer, start)
+                        longest = max(longest, end - start)
+        start += longest
+    return onset
+
+
+def main(score, outdir, width=1400):
+    lib, tk = toolkit()
+    load_score(lib, tk, score)
+    onset = written_onsets(lib, tk) or timemap_onsets(lib, tk)
+    lib.vrvToolkit_renderToTimemap(tk, b'{"includeRests": false}')      # makes Verovio compute the MIDI values read below
     graces = grace_note_ids(lib, tk)
+    continuations = tied_continuation_ids(lib, tk)
     os.makedirs(outdir, exist_ok=True)
     pages, notes = [], []
     for page in range(1, lib.vrvToolkit_getPageCount(tk) + 1):
@@ -163,6 +246,8 @@ def main(score, outdir, width=1400):
             midi = json.loads(lib.vrvToolkit_getMIDIValuesForElement(tk, note_id.encode()))
             # a grace note has no duration in the data JJ reads (it is not a note of the piece's rhythm)
             grace = note_id in graces
+            if note_id in continuations:
+                continue                  # joined to the note it is tied from in JJ's data: not a note of its own there
             notes.append({'id': note_id, 'page': page, 'grace': grace,
                           'x': round(x * scale, 1), 'y': round((y - 0.6 * space) * scale, 1),
                           'w': round(1.4 * space * scale, 1), 'h': round(1.2 * space * scale, 1),

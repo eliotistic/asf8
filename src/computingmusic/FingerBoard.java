@@ -191,9 +191,8 @@ public class FingerBoard extends JLabel {
     		return null;
     	}
     	int pitch = instrument.openStringPitch(bestS) + bestH;
-    	String[] names = { "G", "D", "A", "E" };
-    	String stringName = (instrument.nStrings == 4 && instrument.instr == Instrument.Instr.VN ? names[bestS] : "string " + bestS) + " string";
-    	computingmusic.hand.Geometry g = computingmusic.hand.Geometry.VIOLIN;
+    	String stringName = instrument.string_name(bestS) + " string";
+    	computingmusic.hand.Geometry g = instrument.spec.geometry();
     	// a red circle is a note of the score: its pitch is spelled as the score spells it.  A disc with no note on it
     	// has no spelling of its own, so a black key is given both.
     	java.util.List<String> spelled = scoreSpellings(pitch);
@@ -206,10 +205,8 @@ public class FingerBoard extends JLabel {
     		pitchText = AbcPitch.name(pitch, 1) + " or " + AbcPitch.name(pitch, -1);
     	}
     	StringBuilder s = new StringBuilder("<html>");
-    	s.append("<b>").append(pitchText).append("</b><br>").append(stringName).append(instrument.instr == Instrument.Instr.VN ? "" : "").append("<br>height ").append(bestH);
-    	if (instrument.instr == Instrument.Instr.VN) {
-    		s.append(String.format("<br>%.0fmm", g.distance(bestH)));
-    	}
+    	s.append("<b>").append(pitchText).append("</b><br>").append(stringName).append("<br>height ").append(bestH);
+    	s.append(String.format("<br>%.0fmm", g.distance(bestH)));
     	boolean shown = false;
     	java.util.TreeSet<Integer> held = new java.util.TreeSet<Integer>();
     	if (ps1 != null) {
@@ -222,9 +219,9 @@ public class FingerBoard extends JLabel {
     			}
     		}
     	}
-    	if (shown && instrument.instr == Instrument.Instr.VN) {
-    		if (fingerModel == null) {
-    			fingerModel = new computingmusic.hand.FrameTest(g, new computingmusic.hand.HandParams(), true);
+    	if (shown) {
+    		if (fingerModel == null || fingerModel.geometry != g) {
+    			fingerModel = new computingmusic.hand.FrameTest(g, computingmusic.hand.HandParams.forInstrument(instrument.spec), true);
     		}
     		int[] hs = heightsForFingers(held);
     		computingmusic.hand.FrameTest.Assignment a = fingerModel.assign(hs);
@@ -343,7 +340,7 @@ public class FingerBoard extends JLabel {
      * The model sees the stopped heights shown on this board (as the tooltip does).  Complexity: O(points log points).
      */
     private void drawFingerNumbers(Graphics2D g2, int h, int[] xPositions) {
-    	if (ps1 == null || instrument == null || instrument.instr != Instrument.Instr.VN) {
+    	if (ps1 == null || instrument == null) {
     		return;
     	}
     	java.util.TreeSet<Integer> held = new java.util.TreeSet<Integer>();
@@ -355,8 +352,8 @@ public class FingerBoard extends JLabel {
     	if (held.isEmpty()) {
     		return;
     	}
-    	if (fingerModel == null) {
-    		fingerModel = new computingmusic.hand.FrameTest(computingmusic.hand.Geometry.VIOLIN, new computingmusic.hand.HandParams(), true);
+    	if (fingerModel == null || fingerModel.geometry != instrument.spec.geometry()) {
+    		fingerModel = new computingmusic.hand.FrameTest(instrument.spec.geometry(), computingmusic.hand.HandParams.forInstrument(instrument.spec), true);
     	}
     	int[] hs = heightsForFingers(held);
     	computingmusic.hand.FrameTest.Assignment a = fingerModel.assign(hs);
@@ -523,11 +520,13 @@ public class FingerBoard extends JLabel {
 		int width = getWidth(); // Get height and width
 		int height = getHeight();
 		int internalWidth = width - X_BORDER * 2;
-		int I = X_BORDER;
-		int II = X_BORDER + (internalWidth / 3);
-		int III = X_BORDER + ((2 * internalWidth) / 3);
-		int IV = width - X_BORDER;
-		int[] xPositions = { I, II, III, IV };
+		// the strings are evenly spread across the board, the first at the left border and the last at the right one
+		int n = instrument.nStrings;
+		int[] xPositions = new int[n];
+		for (int k = 0; k < n - 1; k++) {
+			xPositions[k] = X_BORDER + (k * internalWidth) / (n - 1);
+		}
+		xPositions[n - 1] = width - X_BORDER;
 
 		drawFingerboard(g, xPositions);
 		colorNotes(g2, height, xPositions, ps1, red, blue);

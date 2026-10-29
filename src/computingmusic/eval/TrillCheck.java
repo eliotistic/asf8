@@ -43,9 +43,9 @@ public class TrillCheck {
 		String base = file.getName().replaceAll("\\.[^.]*$", "");
 		File dump = new File(System.getProperty("user.home"), ".string_fingering/cache/" + base + "/dump.json");
 		JJScore score = dump.isFile() ? JJScore.read(dump) : MusicXmlSession.loadNotes(file);
-		Instrument ins = TrailRun.violin();
-		HandParams hp = new HandParams();
-		Constraints.HAND = new FrameTest(Geometry.VIOLIN, hp, true);
+		Instrument ins = TrailRun.instrumentNamed(null);
+		HandParams hp = HandParams.forInstrument(ins.spec);
+		Constraints.HAND = new FrameTest(ins.spec.geometry(), hp, true);
 		TrailRun.Items items = TrailRun.items(score, ins);
 
 		// (a) an item every one of whose fingerings is refused once the trill's finger is required
@@ -79,8 +79,8 @@ public class TrillCheck {
 		}
 
 		// (b) measure 2's trilled chord
-		FrameTest comfortable = new FrameTest(Geometry.VIOLIN, hp, false);
-		PieceSolver.Solution sol = new PieceSolver(new PieceSolver.Costs(), comfortable, Constraints.HAND).solve(ins, items);
+		FrameTest comfortable = new FrameTest(ins.spec.geometry(), hp, false);
+		PieceSolver.Solution sol = new PieceSolver(PieceSolver.Costs.forInstrument(ins.spec), comfortable, Constraints.HAND).solve(ins, items);
 		boolean seen = false, good = false;
 		for (PieceSolver.Choice c : sol.choices) {
 			for (int item = c.stretch.start; item <= c.stretch.stop; item++) {

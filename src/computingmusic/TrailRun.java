@@ -7,6 +7,7 @@ import java.util.List;
 import computingmusic.Keynum.K;
 import computingmusic.jj.JJNote;
 import computingmusic.jj.JJScore;
+import computingmusic.instrument.InstrumentSpec;
 import computingmusic.jj.MusicXmlSession;
 
 /**
@@ -67,6 +68,40 @@ public class TrailRun {
 		public final List<List<JJNote>> notes = new ArrayList<List<JJNote>>();
 		/** For each item, the pitches of its notes that carry a trill (each needs a finger above it too); empty when none. */
 		public final List<java.util.Set<Integer>> trilled = new ArrayList<java.util.Set<Integer>>();
+		/**
+		 * For each item, the notes of earlier items still sounding when it begins, as rows {earlier item, pitch}; empty unless the
+		 * instrument keeps held notes (InstrumentSpec.heldNotesKeepFingers).  The same rows are in chords.get(i).heldBefore.
+		 */
+		public final List<int[][]> sustained = new ArrayList<int[][]>();
+	}
+
+	/**
+	 * Fill Items.sustained: a note sounds from its onset to onset + duration (whole notes; an end within 1e-9 of the next onset is
+	 * not sounding).  Complexity: O(items x notes still sounding), the active list being pruned at each onset.
+	 */
+	static void markSustained(Items items) {
+		List<double[]> active = new ArrayList<double[]>();     // {item, pitch, end}
+		for (int i = 0; i < items.notes.size(); i++) {
+			List<JJNote> group = items.notes.get(i);
+			double onset = (double) group.get(0).romNum / group.get(0).romDen;
+			for (int k = active.size() - 1; k >= 0; k--) {
+				if (active.get(k)[2] <= onset + 1e-9) {
+					active.remove(k);
+				}
+			}
+			int[][] rows = new int[active.size()][];
+			for (int k = 0; k < rows.length; k++) {
+				rows[k] = new int[] {(int) active.get(k)[0], (int) active.get(k)[1]};
+			}
+			items.sustained.add(rows);
+			items.chords.get(i).heldBefore = rows.length == 0 ? null : rows;
+			for (JJNote n : group) {
+				double on = (double) n.romNum / n.romDen, len = (double) n.rdurNum / n.rdurDen;
+				if (on + len > onset + 1e-9) {
+					active.add(new double[] {i, n.pitch, on + len});
+				}
+			}
+		}
 	}
 
 	/**
@@ -84,6 +119,9 @@ public class TrailRun {
 				j++;
 			}
 			List<JJNote> group = new ArrayList<JJNote>(sorted.subList(i, j));
+			if (ins.spec.heldNotesKeepFingers) {
+				group = mergeUnisons(group);
+			}
 			K[] ks = new K[group.size()];
 			for (int k = 0; k < ks.length; k++) {
 				ks[k] = keyOf(group.get(k));
@@ -99,7 +137,29 @@ public class TrailRun {
 			items.trilled.add(tr);
 			i = j;
 		}
+		if (ins.spec.heldNotesKeepFingers) {
+			markSustained(items);
+		}
 		return items;
+	}
+
+	/**
+	 * Notes of one onset that have the same pitch (two voices on one unison) are one note for a guitar, which sounds the pitch once:
+	 * the longest of them stays.  The group is sorted by pitch.  Complexity: O(n).
+	 */
+	static List<JJNote> mergeUnisons(List<JJNote> group) {
+		List<JJNote> out = new ArrayList<JJNote>();
+		for (JJNote n : group) {
+			JJNote last = out.isEmpty() ? null : out.get(out.size() - 1);
+			if (last != null && last.pitch == n.pitch) {
+				if ((double) n.rdurNum / n.rdurDen > (double) last.rdurNum / last.rdurDen) {
+					out.set(out.size() - 1, n);
+				}
+			} else {
+				out.add(n);
+			}
+		}
+		return out;
 	}
 
 	/** The engine's name for a note: letter, accidental, and octave = (pitch - alteration) / 12. */
@@ -116,7 +176,7 @@ public class TrailRun {
 	}
 
 	/** The engine's key for a MIDI pitch written with an alteration (+1 sharp, -1 flat). */
-	static K keyOf(int midi, int alter) {
+	public static K keyOf(int midi, int alter) {
 		if (!whiteKey(midi - alter)) {
 			// JJ keeps one accidental sign, so a double sharp or double flat arrives as a single one and
 			// names the wrong letter: spell the pitch itself (only the pitch matters to the fingering)
@@ -139,10 +199,20 @@ public class TrailRun {
 
 	/** A violin with the constraints of SFProperties.xml, read from the working directory as the app does. */
 	public static Instrument violin() {
+		return instrument(InstrumentSpec.VIOLIN);
+	}
+
+	/** An instrument made from its spec; the violin's limits are those of SFProperties.xml, the others' come from the spec. */
+	public static Instrument instrument(InstrumentSpec spec) {
 		if (Constraints.VIOLIN_STRINGS == null) {
 			computingmusic.utils.XMLPropertiesReader.main(null);
 		}
-		return new Instrument(Instrument.Instr.VN);
+		return new Instrument(spec);
+	}
+
+	/** The instrument called `name` (see InstrumentSpec.byName); when it is null, the one named by -Dsf.instrument, else the violin. */
+	public static Instrument instrumentNamed(String name) {
+		return instrument(name != null ? InstrumentSpec.byName(name) : InstrumentSpec.fromProperty());
 	}
 
 	/** Run the trails over the whole input.  Complexity: see the class comment. */
@@ -233,7 +303,7 @@ public class TrailRun {
 	/** Load a score and print its segments.  Usage: TrailRun FILE */
 	public static void main(String[] args) throws Exception {
 		MusicXmlSession session = MusicXmlSession.open(new File(args[0]));
-		Instrument ins = violin();
+		Instrument ins = instrumentNamed(null);
 		Items items = items(session.score, ins);
 		int impossible = 0;
 		for (ChordFingering c : items.chords) {

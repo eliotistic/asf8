@@ -214,6 +214,25 @@ public class BigScore extends JPanel{
 		instrument = in;
 		cfinger.setInstrument(in);
 	}
+
+	/** The score shown by showNotation, kept so a change of instrument can read it again. */
+	private MusicXmlSession notationSession;
+
+	/**
+	 * The user chose another instrument in the menu: the boards take its string count, and an open score is read into
+	 * the engine again for it (its chords and trails depend on the instrument).  Swing thread only.
+	 */
+	public void changeInstrument(Instrument in) {
+		if (notationSession != null && notationScore != null) {
+			setInstrument(in);
+			showNotation(notationSession);
+			if (scoreUI != null) {
+				solveAll(false);      // the stretches Solve all marked belong to the other instrument
+			}
+		} else {
+			setInstrument(in);
+		}
+	}
 	
 	public void arpMenuState (){}
 	
@@ -586,6 +605,7 @@ public class BigScore extends JPanel{
 			//scoreUI.noteList = abcReader.noteList;
 			//scoreUI.setTune(tune);
 			notationScore = null;
+			notationSession = null;
 			useView(abcView);
 			abcView.setABCTune(abcReader);
 			
@@ -726,7 +746,8 @@ public class BigScore extends JPanel{
 		notationScore = session.score;
 		marked = new ArrayList<ScoreView.Stretch>();
 		useView(verovioView);
-		setInstrument(new Instrument(this, "VN"));
+		notationSession = session;
+		setInstrument(new Instrument(this, instrument.spec));      // the instrument chosen in the menu
 		TrailRun.Items items = TrailRun.items(session.score, instrument);
 		java.util.IdentityHashMap<computingmusic.jj.JJNote, computingmusic.jj.NotationData.Drawn> drawn =
 				new java.util.IdentityHashMap<computingmusic.jj.JJNote, computingmusic.jj.NotationData.Drawn>();
@@ -763,15 +784,15 @@ public class BigScore extends JPanel{
 				appFrame.reportError("Solve the piece", "Open a MusicXML, MEI or kern score first (File \u2192 Open score).");
 				return marked;
 			}
-			Instrument ins = new Instrument(this, "VN");
+			Instrument ins = new Instrument(this, instrument.spec);
 			computingmusic.hand.FrameTest before = Constraints.HAND;
 			try {
-				computingmusic.hand.HandParams hp = new computingmusic.hand.HandParams();
-				Constraints.HAND = new computingmusic.hand.FrameTest(computingmusic.hand.Geometry.VIOLIN, hp, true);
+				computingmusic.hand.HandParams hp = computingmusic.hand.HandParams.forInstrument(ins.spec);
+				Constraints.HAND = new computingmusic.hand.FrameTest(ins.spec.geometry(), hp, true);
 				TrailRun.Items items = TrailRun.items(notationScore, ins);      // with the model set: the chord fingerings use it
 				computingmusic.solve.PieceSolver.Solution sol = new computingmusic.solve.PieceSolver(
-						new computingmusic.solve.PieceSolver.Costs(),
-						new computingmusic.hand.FrameTest(computingmusic.hand.Geometry.VIOLIN, hp, false), Constraints.HAND).solve(ins, items);
+						computingmusic.solve.PieceSolver.Costs.forInstrument(ins.spec),
+						new computingmusic.hand.FrameTest(ins.spec.geometry(), hp, false), Constraints.HAND).solve(ins, items);
 				marked = new ArrayList<ScoreView.Stretch>();
 				for (computingmusic.solve.PieceSolver.Choice c : sol.choices) {
 					if (c.trail == null) {

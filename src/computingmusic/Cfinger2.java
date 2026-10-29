@@ -854,9 +854,9 @@ public class Cfinger2 extends JPanel {
 			ctl.msg.say("<html>Bad input: " + "<font color = red>"
 					+ r.badParseString() + "</font></html>");
 			return false;
-		} else if (r.wrongNumberofNotes()) {
+		} else if (r.ks.length > instrument.spec.maxChordSize) {
 			ctl.msg.say("<html><font color=red>"
-					+ "Can only take up to 4 notes" + "</font></html>");
+					+ "Can only take up to " + instrument.spec.maxChordSize + " notes" + "</font></html>");
 			return false;
 		} else return true;
 		

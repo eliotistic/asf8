@@ -517,6 +517,9 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 	}
 
 	private static final Color FINGER_FORCED = new Color(20, 40, 110), FINGER_CHOSEN = new Color(80, 95, 135), DISAGREE = new Color(200, 60, 50);
+	// the static hand positions that are not forced: two pale tints in turn, so where one ends and the next begins can be seen
+	private static final Color POSITION_BAND_A = new Color(255, 236, 179, 120), POSITION_BAND_B = new Color(204, 214, 255, 120);
+	private static final Color POSITION_EDGE_A = new Color(200, 170, 80), POSITION_EDGE_B = new Color(120, 135, 200);
 	private static final Color FORCED_BAND = new Color(168, 228, 160, 110);     // Crayola granny smith apple, see-through
 	private static final Color FORCED_EDGE = new Color(60, 150, 70);
 
@@ -671,14 +674,16 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 						g.drawLine(left, top + k * LEVEL, right, top + k * LEVEL);
 					}
 				}
-				for (ScoreView.Stretch s : stretches) {                                     // where there is no choice: a green band behind the cells
-					double[] span = s.unique ? cellSpan(row, s) : null;
+				int ordinal = 0;
+				for (ScoreView.Stretch s : stretches) {      // every static hand position: a band behind its cells; green where there is no choice
+					double[] span = cellSpan(row, s);
+					ordinal++;
 					if (span != null) {
 						int l = (int) span[0] - 3, w = (int) (span[1] - span[0]) + 6;
-						g.setColor(FORCED_BAND);
+						g.setColor(s.unique ? FORCED_BAND : ordinal % 2 == 0 ? POSITION_BAND_A : POSITION_BAND_B);
 						g.fillRect(l, top - LEVEL / 2 - 3, w, 4 * LEVEL + 6);
-						g.setColor(FORCED_EDGE);
-						g.setStroke(new BasicStroke(1.3f));
+						g.setColor(s.unique ? FORCED_EDGE : ordinal % 2 == 0 ? POSITION_EDGE_A : POSITION_EDGE_B);
+						g.setStroke(new BasicStroke(s.unique ? 1.3f : 1.0f));
 						g.drawRect(l, top - LEVEL / 2 - 3, w, 4 * LEVEL + 6);
 						bracketTips.add(new Object[] {new Rectangle(l, top - LEVEL / 2 - 3, w, 4 * LEVEL + 6), s.label});
 					}

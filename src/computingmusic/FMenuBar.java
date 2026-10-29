@@ -1,5 +1,6 @@
 package computingmusic;
 
+import computingmusic.instrument.InstrumentSpec;
 import  java.awt.event.* ;
 import  javax.swing.* ;
 
@@ -30,9 +31,8 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 	
 	//JMenu instMenu;
 	
-	JRadioButtonMenuItem vnCB;
-	JRadioButtonMenuItem vaCB;
-	JRadioButtonMenuItem vcCB;
+	/** One radio item for each instrument of the registry (InstrumentSpec.ALL), in its order; the violin is first. */
+	JRadioButtonMenuItem[] instrumentItems;
 	ButtonGroup instBG;
 	
 	JMenu helpMenu;
@@ -145,26 +145,15 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		//menuBar.add(aboutMenu);
 	
 		instBG = new ButtonGroup();
-		vnCB = new JRadioButtonMenuItem("Violin");
-		vaCB = new JRadioButtonMenuItem("Viola");
-		vcCB = new JRadioButtonMenuItem("Cello");
-		
-		//cbMenuItem.setMnemonic(KeyEvent.VK_C);
-		instBG.add(vnCB);
-		instBG.add(vaCB);
-		instBG.add(vcCB);
-		
-		vnCB.addActionListener(this);
-		vaCB.addActionListener(this);
-		vcCB.addActionListener(this);
-		vnCB.setToolTipText("Analyze fingerings using violin tuning and range.");
-		vaCB.setToolTipText("Analyze fingerings using viola tuning and range.");
-		vcCB.setToolTipText("Analyze fingerings using cello tuning and range.");
-		
-		
-		instMenu.add(vnCB);
-		instMenu.add(vaCB);
-		instMenu.add(vcCB);
+		instrumentItems = new JRadioButtonMenuItem[InstrumentSpec.ALL.size()];
+		for (int k = 0; k < instrumentItems.length; k++) {
+			InstrumentSpec spec = InstrumentSpec.ALL.get(k);
+			instrumentItems[k] = new JRadioButtonMenuItem(spec.name);
+			instBG.add(instrumentItems[k]);
+			instrumentItems[k].addActionListener(this);
+			instrumentItems[k].setToolTipText("Analyze fingerings using " + spec.name.toLowerCase() + " tuning and range.");
+			instMenu.add(instrumentItems[k]);
+		}
 		
 		add(instMenu);
 		instMenu.setMnemonic(KeyEvent.VK_I);
@@ -359,7 +348,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		resetBtn.addActionListener(this);
 		helpMenu.setMnemonic(KeyEvent.VK_H);
 		// start with violin
-		vnCB.setSelected(true);
+		instrumentItems[0].setSelected(true);
 		// start with 2 random chords
 		rand1.setSelected(true);
 		
@@ -372,7 +361,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		Instrument it = new Instrument(big, s);
 		appPanel.clearAll();
 		//Fing.localInstrument = it;
-		big.setInstrument(it);
+		big.changeInstrument(it);
 		//ctl.inst.rangeLabel.setText(it.rangeString());
 	}
 	
@@ -464,17 +453,11 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 			appPanel.randomChords = 2;
 		}
 
-		if ( e.getSource() == vnCB ){
-			setInstrument("VN");
-		};
-
-		if ( e.getSource() == vaCB ){
-			setInstrument("VA");
-		};
-
-		if ( e.getSource() == vcCB ){
-			setInstrument("VC");
-		};
+		for (int k = 0; k < instrumentItems.length; k++) {
+			if ( e.getSource() == instrumentItems[k] ){
+				setInstrument(InstrumentSpec.ALL.get(k).shortName);
+			}
+		}
 		
 		if ( e.getSource() == help){
 		AboutDialog.doDialog(appFrame);

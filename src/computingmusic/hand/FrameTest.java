@@ -84,6 +84,16 @@ public final class FrameTest {
 	 * Complexity: O(1).
 	 */
 	public Assignment assign(int[] heights) {
+		return assign(heights, null, null);
+	}
+
+	/**
+	 * As assign, with some fingers fixed: only assignments in which the finger at pinnedHeights[i] is pinnedFingers[i] count (a held
+	 * finger keeps its number from one stretch to the next).  Null when no assignment allowed has them.  With the params' lowestFingersFirst
+	 * (guitar) the choice among the allowed is: within the comfortable limits first, then the lowest finger numbers, then the least strain;
+	 * heights may repeat (a barre in parts needs a finger each).  Complexity: O(1).
+	 */
+	public Assignment assign(int[] heights, int[] pinnedHeights, int[] pinnedFingers) {
 		int k = heights.length;
 		if (k == 0 || k > 4) {
 			return k == 0 ? new Assignment(new int[0], 1, 0) : null;
@@ -117,9 +127,26 @@ public final class FrameTest {
 					strain = Math.max(strain, d / (params.comfortable[pair] * params.size));
 				}
 			}
+			for (int q = 0; ok && pinnedHeights != null && q < pinnedHeights.length; q++) {
+				for (int a = 0; a < k; a++) {
+					if (heights[a] == pinnedHeights[q] && finger[a] != pinnedFingers[q]) {
+						ok = false;
+					}
+				}
+			}
 			if (ok) {
 				count++;
-				if (strain < bestStrain - 1e-9) {
+				boolean better = strain < bestStrain - 1e-9;
+				if (params.lowestFingersFirst && best != null) {
+					boolean thisComfy = strain <= 1 + 1e-9, bestComfy = bestStrain <= 1 + 1e-9;
+					int sumThis = 0, sumBest = 0;
+					for (int a = 0; a < k; a++) {
+						sumThis += finger[a];
+						sumBest += best[a];
+					}
+					better = thisComfy != bestComfy ? thisComfy : sumThis != sumBest ? sumThis < sumBest : better;
+				}
+				if (best == null || better) {
 					bestStrain = strain;
 					best = finger;
 				}

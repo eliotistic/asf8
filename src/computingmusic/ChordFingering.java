@@ -29,6 +29,12 @@ public class ChordFingering {
 	
 	
 	public K[] ks;
+	/**
+	 * Notes of earlier items still sounding when this item begins (only for an instrument whose spec says heldNotesKeepFingers):
+	 * each row is {index of the earlier item, pitch}.  A trail that placed that note keeps its string and finger (FingerTrail).
+	 * Null: nothing is held.
+	 */
+	public int[][] heldBefore;
 	public int[] inputPitchSequence;
 	//public  ArrayList<Fingering> ans = new ArrayList<Fingering>();
 	private  ArrayList<Fingering> fingerings;
@@ -108,6 +114,7 @@ public class ChordFingering {
 		c.subindex = index;
 		c.glueindex = glueindex;
 		c.ks = ks;
+		c.heldBefore = heldBefore;
 		c.instrument = instrument;
 		//c.caseArr = caseArr;
 		c.fingerings = fingerings;
@@ -1475,6 +1482,11 @@ public class ChordFingering {
          * 
          * @return array of points of (saite, pitch)
          */
+        /** The held notes of the item this fingering is for (ChordFingering.heldBefore); null when none. */
+        public int[][] heldBefore() {
+        	return ChordFingering.this.heldBefore;
+        }
+
         public Point[] stringPitchPoints(){
         	int len = fingering.length;
         	Point[] p = new Point[len];
@@ -1568,8 +1580,8 @@ public class ChordFingering {
 
         StringMatrix(Keynum.K[] ks) {
             nNotes = ks.length;
-            arr = new StringCases[4];
-            for (int str = 0; str < 4; str++) {
+            arr = new StringCases[instrument.nStrings];
+            for (int str = 0; str < instrument.nStrings; str++) {
                 arr[str] = new StringCases(str, ks);
             }
         }

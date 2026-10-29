@@ -22,10 +22,10 @@ public class Calibrate {
 		String base = file.getName().replaceAll("\\.[^.]*$", "");
 		File dump = new File(System.getProperty("user.home"), ".string_fingering/cache/" + base + "/dump.json");
 		JJScore score = dump.isFile() ? JJScore.read(dump) : MusicXmlSession.loadNotes(file);
-		Instrument ins = TrailRun.violin();
+		Instrument ins = TrailRun.instrumentNamed(null);
 		TrailRun.Items items = TrailRun.items(score, ins);
 		System.out.println("piece " + base + ": " + items.chords.size() + " items");
-		report("baseline: fixed span (Constraints.VIOLIN_HAND_SPAN)", ins, items);
+		report("baseline: fixed span (Instrument.handSpan)", ins, items);
 		items = null;
 		double[] sizes = {1.0};
 		if (args.length > 1) {
@@ -36,9 +36,9 @@ public class Calibrate {
 		}
 		for (double size : sizes) {
 			for (boolean absolute : new boolean[] {false, true}) {
-				HandParams p = new HandParams();
+				HandParams p = HandParams.forInstrument(ins.spec);
 				p.size = size;
-				Constraints.HAND = new FrameTest(Geometry.VIOLIN, p, absolute);
+				Constraints.HAND = new FrameTest(ins.spec.geometry(), p, absolute);
 				report(Constraints.HAND.toString(), ins, TrailRun.items(score, ins));   // items made with the model set
 			}
 		}

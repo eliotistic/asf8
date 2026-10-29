@@ -15,7 +15,9 @@ import computingmusic.jj.Json;
  *
  *   {"id": 1, "cmd": "load", "path": "/path/score.musicxml"}   ->  {"id": 1, "ok": true, ...}
  *
- * Commands: ping, load, constraints, set_constraints, chord, run, segments, item, check, quit.
+ * "load" takes an optional "instrument" (violin, viola, cello, double bass, guitar; default violin); the command
+ * "instrument" with a "name" changes it for the loaded piece.
+ * Commands: ping, load, instrument, constraints, set_constraints, chord, run, segments, item, check, quit.
  * Pitches are in ABC notation.  An error is {"ok": false, "error": "..."}; the server keeps running.
  * Start it from the project folder (the constraints file is read from the working directory):
  *
@@ -56,7 +58,9 @@ public class SFServer {
 		if (cmd.equals("ping")) {
 			return new LinkedHashMap<String, Object>();
 		} else if (cmd.equals("load")) {
-			return model.load(String.valueOf(r.get("path")));
+			return model.load(String.valueOf(r.get("path")), r.get("instrument") == null ? null : String.valueOf(r.get("instrument")));
+		} else if (cmd.equals("instrument")) {
+			return model.setInstrument(String.valueOf(r.get("name")));
 		} else if (cmd.equals("constraints")) {
 			return model.constraints();
 		} else if (cmd.equals("set_constraints")) {
