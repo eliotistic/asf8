@@ -227,7 +227,34 @@ public class SFModel {
 			options.add(map("abc", AbcPitch.name(p.midi, p.alter), "places", where));
 		}
 		return map("playable", valid > 0, "onDifferentStrings", cf.nFingerings(), "passingTheConstraints", valid,
-				"shown", fingerings.size(), "list", fingerings, "eachNoteCouldBe", options);
+				"shown", fingerings.size(), "list", fingerings, "eachNoteCouldBe", options, "ranked", ranked(pitches, limit));
+	}
+
+	/**
+	 * The ways to play the chord with the fingers each way allows, cheapest first (chord.ChordBoard, the phone app's solver): each is
+	 * {notes: [{abc, string, height, finger}] in the order the pitches were given, cost, strain, allowed}.  Finger 0 is an open string.
+	 * Empty for an instrument whose chords are not on neighbouring strings (the guitar).  Complexity: that of ChordBoard.solve.
+	 */
+	private List<Map<String, Object>> ranked(List<AbcPitch> pitches, int limit) {
+		List<Map<String, Object>> out = new ArrayList<Map<String, Object>>();
+		if (!spec.chordOnNeighbouringStrings) {
+			return out;
+		}
+		int[] midi = new int[pitches.size()];
+		for (int i = 0; i < midi.length; i++) {
+			midi[i] = pitches.get(i).midi;
+		}
+		for (computingmusic.chord.ChordBoard.Option o : new computingmusic.chord.ChordBoard(spec).solve(midi)) {
+			if (out.size() >= limit) {
+				break;
+			}
+			List<Map<String, Object>> notes = new ArrayList<Map<String, Object>>();
+			for (int k = 0; k < midi.length; k++) {
+				notes.add(map("abc", AbcPitch.name(midi[k], pitches.get(k).alter), "string", stringName(o.places[k].string), "height", o.places[k].height, "finger", o.fingers[k]));
+			}
+			out.add(map("notes", notes, "cost", o.cost, "strain", o.strain, "allowed", o.allowed));
+		}
+		return out;
 	}
 
 	private static AbcPitch nearest(List<AbcPitch> pitches, int midi) {

@@ -19,6 +19,14 @@ public final class HandParams {
 	public boolean fingersMayCross = false;
 	/** FrameTest.assign prefers the lowest finger numbers within the comfortable limits to the least strain (guitar; InstrumentSpec.lowestFingersFirst). */
 	public boolean lowestFingersFirst = false;
+	/**
+	 * A soft cost, in units of strain (the largest pair distance over its comfortable limit), for each fourth finger a chord uses
+	 * (Yampolsky p.88: avoid it in chords, for tone and for the hand).  CHOSEN placeholder: it is a preference to be weighed
+	 * against the hand's transitions, never a rule.  0 turns it off.
+	 */
+	public double fourthFingerChordCost = 0.15;
+	/** A smaller soft cost for each finger skipped between neighbouring ones (1-2-4 against 1-2-3); it only separates near-ties. */
+	public double skippedFingerCost = 0.01;
 
 	/** The limits of this instrument's hand (InstrumentSpec: the violin's table for the bowed instruments, the guitar's own).  Complexity: O(1). */
 	public static HandParams forInstrument(computingmusic.instrument.InstrumentSpec spec) {
@@ -52,6 +60,8 @@ public final class HandParams {
 		c.minSameStringAbsolute = minSameStringAbsolute;
 		c.fingersMayCross = fingersMayCross;
 		c.lowestFingersFirst = lowestFingersFirst;
+		c.fourthFingerChordCost = fourthFingerChordCost;
+		c.skippedFingerCost = skippedFingerCost;
 		return c;
 	}
 }

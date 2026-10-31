@@ -528,6 +528,19 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 	 * edge of its first cell to the position of the next note after its last, so the band covers the time the notes
 	 * last, not only the points where they begin.  Null if the stretch has no note here.  Complexity: O(row).
 	 */
+	/**
+	 * The left edge of the leftmost notehead of each item (each chord) of the row.  A chord with a second has one note
+	 * drawn beside the others, so its notes lie at two x positions a notehead apart: a cell must end at the next CHORD, not at the next
+	 * x position.  Complexity: O(row).
+	 */
+	private static java.util.TreeMap<Integer, Double> leftOfItems(ArrayList<double[]> row) {
+		java.util.TreeMap<Integer, Double> left = new java.util.TreeMap<Integer, Double>();
+		for (double[] n : row) {
+			left.merge((int) n[4], n[0] - n[9] / 2, Math::min);
+		}
+		return left;
+	}
+
 	private double[] cellSpan(ArrayList<double[]> row, ScoreView.Stretch s) {
 		double lo = Double.MAX_VALUE, last = -1;
 		for (double[] n : row) {
@@ -539,13 +552,9 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 		if (last < 0) {
 			return null;
 		}
-		double next = last + 12;
-		for (double[] n : row) {
-			if (Math.round(n[0]) > Math.round(last)) {
-				next = n[0] - n[9] / 2;
-				break;
-			}
-		}
+		java.util.TreeMap<Integer, Double> left = leftOfItems(row);
+		Integer nextItem = left.higherKey(s.stop);
+		double next = nextItem == null ? last + 12 : left.get(nextItem);
 		return new double[] {lo, next - 1};
 	}
 
@@ -688,6 +697,7 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 						bracketTips.add(new Object[] {new Rectangle(l, top - LEVEL / 2 - 3, w, 4 * LEVEL + 6), s.label});
 					}
 				}
+				final java.util.TreeMap<Integer, Double> leftOfItem = leftOfItems(row);
 				if (bowStyle == 0) {
 					ArrayList<double[]> stroke = bowPath(row);
 					g.setStroke(new BasicStroke(2.6f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
@@ -707,12 +717,9 @@ public class VerovioScoreComponent extends JComponent implements ScoreView {
 							// a cell starts at the left edge of its notehead and runs to the left edge of the next note's head;
 							// the digit is centred under the notehead itself, so it lines up with its note
 							int half = (int) Math.round(n[9] / 2);
-							int j = k + 1;                                  // the next note at a LATER position: the notes of a chord share one
-							while (j < row.size() && Math.round(row.get(j)[0]) <= x) {
-								j++;
-							}
-							int cl = x - half;
-							int next = j < row.size() ? (int) Math.round(row.get(j)[0]) - (int) Math.round(row.get(j)[9] / 2) : cl + 2 * half + 12;
+							int cl = x - half;                              // a cell ends at the left edge of the NEXT CHORD (item), not the next x position
+							Integer nextItem = leftOfItem.higherKey((int) n[4]);
+							int next = nextItem != null ? (int) Math.round(leftOfItem.get(nextItem)) : cl + 2 * half + 12;
 							int cw = Math.max(3, next - cl - 2);
 							g.fillRect(cl, y - LEVEL / 2 + 1, cw, LEVEL - 2);
 							int ours = (int) n[5], printed = (int) n[7];

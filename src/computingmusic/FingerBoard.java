@@ -224,7 +224,7 @@ public class FingerBoard extends JLabel {
     			fingerModel = new computingmusic.hand.FrameTest(g, computingmusic.hand.HandParams.forInstrument(instrument.spec), true);
     		}
     		int[] hs = heightsForFingers(held);
-    		computingmusic.hand.FrameTest.Assignment a = fingerModel.assign(hs);
+    		Fingers a = fingersFor(hs, ps1.length > 1 ? held : null);
     		if (a != null) {
     			for (int k = 0; k < hs.length; k++) {
     				if (hs[k] == bestH) {
@@ -356,7 +356,7 @@ public class FingerBoard extends JLabel {
     		fingerModel = new computingmusic.hand.FrameTest(instrument.spec.geometry(), computingmusic.hand.HandParams.forInstrument(instrument.spec), true);
     	}
     	int[] hs = heightsForFingers(held);
-    	computingmusic.hand.FrameTest.Assignment a = fingerModel.assign(hs);
+    	Fingers a = fingersFor(hs, ps1.length > 1 ? held : null);
     	if (a == null) {
     		return;
     	}
@@ -671,6 +671,41 @@ public class FingerBoard extends JLabel {
     public void setFingerFrame(int[] heights) {
     	fingerFrame = heights;
     	repaint();
+    }
+
+    /** The fingers the solver gave the stretch (over `heights`), shown as they are when this board's fingers are numbered over the same heights. */
+    private int[] givenHeights, givenFingers;
+    private boolean givenForced;
+
+    public void setGivenFingers(int[] heights, int[] fingers, boolean forced) {
+    	givenHeights = heights;
+    	givenFingers = fingers;
+    	givenForced = forced;
+    	fingerFrame = heights;
+    	repaint();
+    }
+
+    private static final class Fingers {
+    	final int[] fingers;
+    	final boolean forced;
+
+    	Fingers(int[] fingers, boolean forced) {
+    		this.fingers = fingers;
+    		this.forced = forced;
+    	}
+
+    	boolean forced() {
+    		return forced;
+    	}
+    }
+
+    /** The fingers for these heights: the solver's own when it numbered the same heights, else the hand model's cheapest (chord heights cost the fourth finger). */
+    private Fingers fingersFor(int[] hs, java.util.Set<Integer> chordHeights) {
+    	if (givenHeights != null && givenFingers != null && java.util.Arrays.equals(givenHeights, hs)) {
+    		return new Fingers(givenFingers, givenForced);
+    	}
+    	computingmusic.hand.FrameTest.Assignment a = fingerModel.assign(hs, null, null, chordHeights);
+    	return a == null ? null : new Fingers(a.fingers, a.forced());
     }
 
     /** The heights the fingers are assigned over: the stretch's frame if known, else this board's own stopped heights. */

@@ -582,12 +582,17 @@ public class Cfinger2 extends JPanel {
 	 * Complexity: O(trails x points).
 	 */
 	public boolean selectTrailLike(FingerTrail want) {
+		return selectTrailLike(want, false);
+	}
+
+	/** As above; with prefix, the alive trail that `want` extends (the solver's trail as far as the window has gone), by FingerTrail.isExtensionOf. */
+	public boolean selectTrailLike(FingerTrail want, boolean prefix) {
 		if (activeTrails == null || want == null) {
 			return false;
 		}
 		java.util.Set<Long> w = placements(want);
 		for (int i = 0; i < activeTrails.size(); i++) {
-			if (placements(activeTrails.get(i)).equals(w)) {
+			if (prefix ? want.isExtensionOf(activeTrails.get(i)) : placements(activeTrails.get(i)).equals(w)) {
 				indexViewActiveTrail = i;
 				solverChoiceIndex = i;
 				viewTrail();

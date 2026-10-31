@@ -359,6 +359,18 @@ public class FingerBoardsPanel extends JPanel implements javax.swing.Scrollable 
 	 * Give the current board and the boards before it that belong to the same extension the heights of the whole
 	 * stretch's frame, so that all of them number their discs from it (the fingers belong to the stretch).
 	 */
+	public void setGivenFingers(int[] heights, int[] fingers, boolean forced) {
+		getCurrentBoard().setGivenFingers(heights, fingers, forced);
+		int n = getCurrentBoard().representsAnExtension() ? getCurrentBoard().getExtensionSize() : 1;
+		for (int k = 1; k < n; k++) {
+			int idx = currentIndex - k;
+			if (idx < 0) {
+				break;
+			}
+			boards.get(idx).setGivenFingers(heights, fingers, forced);
+		}
+	}
+
 	public void setFrameForFingers(int[] frame) {
 		getCurrentBoard().setFingerFrame(frame);
 		int n = getCurrentBoard().representsAnExtension() ? getCurrentBoard().getExtensionSize() : 1;

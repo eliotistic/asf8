@@ -806,6 +806,9 @@ public class BigScore extends JPanel{
 									+ (c.trail.lifts > 0 ? " \u00b7 " + c.trail.lifts + " lifts" : ""));
 					st.unique = c.forced();
 					st.chosenTrail = c.trail;
+					st.fingerHeights = c.fingerHeights;
+					st.fingers = c.fingers;
+					st.fingersForced = c.fingersForced;
 					int item = c.stretch.start;
 					for (java.util.List<computingmusic.eval.NoteByNote.Spot> row : c.spots) {
 						java.util.List<computingmusic.jj.JJNote> ns = items.notes.get(item);
@@ -850,7 +853,8 @@ public class BigScore extends JPanel{
 		trailIsSolvers = false;
 		jumpToMasterIndex(first);
 		setIndexArrows();
-		while (anchSeq.currAnchor != null && anchSeq.currAnchor.stop < last) {
+		// open on the chord clicked: extend only as far as that item (the boards before it show the earlier chords)
+		while (anchSeq.currAnchor != null && anchSeq.currAnchor.stop < item) {
 			int before = anchSeq.currAnchor.stop;
 			extend();
 			if (anchSeq.currAnchor.stop == before) {
@@ -859,8 +863,12 @@ public class BigScore extends JPanel{
 		}
 		if (hit != null && hit.chosenTrail instanceof FingerTrail) {
 			// the window's trails are the engine's, rebuilt by Extend; show the one that puts every note where the solver did
-			trailIsSolvers = cfinger.selectTrailLike((FingerTrail) hit.chosenTrail);
+			trailIsSolvers = cfinger.selectTrailLike((FingerTrail) hit.chosenTrail, item < last);
+			if (trailIsSolvers && hit.fingers != null) {
+				cfinger.fingPane.setGivenFingers(hit.fingerHeights, hit.fingers, hit.fingersForced);   // the boards number from the solver's fingers for the whole stretch
+			}
 		}
+		scoreUI.setBoxedNotes(item, item);      // the red box marks the chord clicked; the boards before it show the stretch so far
 		return new java.awt.Point(first, anchSeq.currAnchor == null ? first : anchSeq.currAnchor.stop);
 	}
 

@@ -33,7 +33,7 @@ public class NoteByNote {
 		public final End end;
 		public final List<FingerTrail> alive;
 
-		Stretch(int start, int stop, End end, List<FingerTrail> alive) {
+		public Stretch(int start, int stop, End end, List<FingerTrail> alive) {
 			this.start = start;
 			this.stop = stop;
 			this.end = end;
@@ -121,6 +121,11 @@ public class NoteByNote {
 			i = stop + 1;
 		}
 		return out;
+	}
+
+	/** The pitches of item i that carry a trill, or null when none do. */
+	public static Set<Integer> trilledAt(List<Set<Integer>> trilled, int i) {
+		return tr(trilled, i);
 	}
 
 	private static Set<Integer> tr(List<Set<Integer>> trilled, int i) {

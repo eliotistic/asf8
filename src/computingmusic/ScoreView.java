@@ -32,6 +32,9 @@ public interface ScoreView {
 		public boolean unique = true;
 		/** The solver's chosen trail for the stretch (a FingerTrail), or null; the window shows it first on a click. */
 		public Object chosenTrail;
+		/** The heights the solver numbered fingers over, and the fingers it gave them (null when none): the boards show these numbers. */
+		public int[] fingerHeights, fingers;
+		public boolean fingersForced;
 
 		public Stretch(int start, int stop, int firstMeasure, int lastMeasure, String label) {
 			this.start = start;
