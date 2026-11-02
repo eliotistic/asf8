@@ -126,7 +126,18 @@ public class TrailRun {
 			for (int k = 0; k < ks.length; k++) {
 				ks[k] = keyOf(group.get(k));
 			}
-			items.chords.add(new ChordFingering(items.chords.size(), ins, ks));
+			ChordFingering cf = new ChordFingering(items.chords.size(), ins, ks);
+			java.util.Map<Integer, Integer> given = new java.util.HashMap<Integer, Integer>();
+			for (JJNote n : group) {
+				if (n.givenFinger().matches("[0-4]")) {
+					given.put(n.pitch, Integer.parseInt(n.givenFinger()));
+				}
+			}
+			if (!given.isEmpty()) {          // fing: in ABCD: arrangements in which the hand cannot give those fingers are not offered
+				cf.applyFingerConstraints(given, new computingmusic.hand.FrameTest(ins.spec.geometry(),
+						computingmusic.hand.HandParams.forInstrument(ins.spec), true));
+			}
+			items.chords.add(cf);
 			items.notes.add(group);
 			java.util.Set<Integer> tr = new java.util.TreeSet<Integer>();
 			for (JJNote n : group) {

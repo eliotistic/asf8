@@ -248,6 +248,13 @@ public class SFModel {
 			if (out.size() >= limit) {
 				break;
 			}
+			java.awt.Point[] where = new java.awt.Point[midi.length];
+			for (int k = 0; k < midi.length; k++) {
+				where[k] = new java.awt.Point(o.places[k].string, o.places[k].height);
+			}
+			if (new Topology(where).bad()) {      // a BAD_ topology is impossible: eliminated, as in the chord's own fingerings
+				continue;
+			}
 			List<Map<String, Object>> notes = new ArrayList<Map<String, Object>>();
 			for (int k = 0; k < midi.length; k++) {
 				notes.add(map("abc", AbcPitch.name(midi[k], pitches.get(k).alter), "string", stringName(o.places[k].string), "height", o.places[k].height, "finger", o.fingers[k]));

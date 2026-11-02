@@ -158,6 +158,12 @@ public class FingerBoard extends JLabel {
 
     /** The hand model used to say which finger a stopped point of this board would be: violin, default limits. */
     private static computingmusic.hand.FrameTest fingerModel;
+    /** The fingers the score fixes for the chord on show, by sounding pitch; null when none (set from the chord, Cfinger2). */
+    private java.util.Map<Integer, Integer> fingerConstraints;
+
+    public void setFingerConstraints(java.util.Map<Integer, Integer> byPitch) {
+    	fingerConstraints = byPitch;
+    }
 
     /**
      * What is under the mouse: the disc nearest to it, as its pitch in ABC notation, its string and height (semitones
@@ -703,6 +709,21 @@ public class FingerBoard extends JLabel {
     private Fingers fingersFor(int[] hs, java.util.Set<Integer> chordHeights) {
     	if (givenHeights != null && givenFingers != null && java.util.Arrays.equals(givenHeights, hs)) {
     		return new Fingers(givenFingers, givenForced);
+    	}
+    	if (fingerConstraints != null && ps1 != null) {      // the fingers the score fixes (fing: in ABCD) for the notes shown
+    		java.util.List<int[]> cons = new java.util.ArrayList<int[]>();
+    		for (Point p : ps1) {
+    			Integer want = fingerConstraints.get(instrument.openStringPitch(p.x) + p.y);
+    			if (want != null) {
+    				cons.add(new int[] { p.y, want });
+    			}
+    		}
+    		if (!cons.isEmpty()) {
+    			java.util.List<computingmusic.hand.FrameTest.Assignment> held = fingerModel.rankHolding(hs, cons, chordHeights);
+    			if (!held.isEmpty()) {
+    				return new Fingers(held.get(0).fingers, held.get(0).forced());
+    			}
+    		}
     	}
     	computingmusic.hand.FrameTest.Assignment a = fingerModel.assign(hs, null, null, chordHeights);
     	return a == null ? null : new Fingers(a.fingers, a.forced());

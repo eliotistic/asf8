@@ -77,7 +77,7 @@ public class Solve {
 				}
 			}
 		}
-		for (int it : sol.pinsUnsatisfied) {   // only when the score pins a finger (fing: in ABCD) that no fingering gives
+		for (int it : sol.constraintsUnsatisfied) {   // only when the score constraints a finger (fing: in ABCD) that no fingering gives
 			StringBuilder nm = new StringBuilder(), fg = new StringBuilder();
 			for (JJNote jn : items.notes.get(it)) {
 				nm.append(jn.abcName()).append(' ');

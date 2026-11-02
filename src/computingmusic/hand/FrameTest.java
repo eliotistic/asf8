@@ -160,6 +160,26 @@ public final class FrameTest {
 	}
 
 	/**
+	 * As rank, keeping only the assignments that give the fingers the score fixes: constraints are {height, finger} for the notes
+	 * whose finger is given (fing: in ABCD).  An open string (height 0) is finger 0 and only an open string is, so a constraint
+	 * that disagrees about that holds nowhere.  Empty when none holds.  Complexity: O(1).
+	 */
+	public java.util.List<Assignment> rankHolding(int[] heights, java.util.List<int[]> constraints, java.util.Set<Integer> chordHeights) {
+		int[] fixedHeights = new int[constraints.size()], fixedFingers = new int[constraints.size()];
+		int n = 0;
+		for (int[] c : constraints) {
+			if ((c[0] == 0) != (c[1] == 0)) {
+				return new java.util.ArrayList<Assignment>();
+			}
+			if (c[0] > 0) {
+				fixedHeights[n] = c[0];
+				fixedFingers[n++] = c[1];
+			}
+		}
+		return rank(heights, java.util.Arrays.copyOf(fixedHeights, n), java.util.Arrays.copyOf(fixedFingers, n), chordHeights);
+	}
+
+	/**
 	 * Every assignment of fingers the limits allow for these stopped heights, cheapest first.  The cost of one is its strain, plus
 	 * params.fourthFingerChordCost for each height in chordHeights that it gives the fourth finger, plus params.skippedFingerCost
 	 * for each finger it skips between neighbouring heights.  Soft: nothing is excluded for using the fourth finger, so a caller that

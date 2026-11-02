@@ -65,7 +65,7 @@ public class NoteByNote {
 		return run(ins, input, trilled, null);
 	}
 
-	/** An extra test on a trail over items first..last: false kills it, as any impossible fingering does (fingers the score pins, for one). */
+	/** An extra test on a trail over items first..last: false kills it, as any impossible fingering does (fingers the score constraints, for one). */
 	public interface Keep {
 		boolean ok(FingerTrail t, int first, int last);
 	}

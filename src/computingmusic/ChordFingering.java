@@ -88,6 +88,8 @@ public class ChordFingering {
 		csolver.solve(a, ks.length);
 		
 		fingerings = csolver.fingerings;
+		// a BAD_ topology is a hand arrangement that is impossible: the fingering is eliminated, not merely marked (EH 2026-11-02)
+		fingerings.removeIf(f -> f.badToplogy());
 		Collections.sort(fingerings);
 
 		for (Fingering f : fingerings) {
@@ -105,6 +107,40 @@ public class ChordFingering {
 		
 	}
 	
+	/** The fingers the score fixes, by sounding pitch (fing: in ABCD); null when it fixes none. */
+	public java.util.Map<Integer, Integer> fingerConstraints;
+
+	/**
+	 * Keep only the arrangements in which the hand can give every note of the chord the finger the score fixes for it.  This is
+	 * the chord alone; a stretch of several chords must also agree (PieceSolver).  Complexity: O(arrangements x 15).
+	 */
+	public void applyFingerConstraints(java.util.Map<Integer, Integer> byPitch, computingmusic.hand.FrameTest model) {
+		fingerConstraints = byPitch;
+		java.util.Iterator<Fingering> it = fingerings.iterator();
+		while (it.hasNext()) {
+			Fingering f = it.next();
+			java.util.TreeSet<Integer> hs = new java.util.TreeSet<Integer>();
+			java.util.List<int[]> cons = new java.util.ArrayList<int[]>();
+			for (java.awt.Point p : f.getCoords()) {
+				if (p.y > 0) {
+					hs.add(p.y);
+				}
+				Integer want = byPitch.get(instrument.openStringPitch(p.x) + p.y);
+				if (want != null) {
+					cons.add(new int[] { p.y, want });
+				}
+			}
+			int[] h = new int[hs.size()];
+			int i = 0;
+			for (int x : hs) {
+				h[i++] = x;
+			}
+			if (model.rankHolding(h, cons, null).isEmpty()) {
+				it.remove();
+			}
+		}
+	}
+
 	public ChordFingering copy () {
 		ChordFingering c = new ChordFingering();
 		c.msg = "this is a copy!" ;
@@ -118,6 +154,7 @@ public class ChordFingering {
 		c.instrument = instrument;
 		//c.caseArr = caseArr;
 		c.fingerings = fingerings;
+		c.fingerConstraints = fingerConstraints;
 		return c;
 	}
 	

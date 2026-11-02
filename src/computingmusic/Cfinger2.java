@@ -632,6 +632,7 @@ public class Cfinger2 extends JPanel {
 			
 			fingPane.getCurrentAboveBoard().setFraction(indexViewActiveTrail+1, activeTrails.size());
 			fingPane.getCurrentBoard().setFingerTrail(ft);
+			sayTopologyOf(ft.redPoints.toarray());          // the label follows the trail on show
 			// the boards before this one belong to the same extension: they show the earlier stages of the trail being
 			// viewed, and every board numbers its fingers from the whole stretch's frame
 			fingPane.showTrailOnChain(ft, indexViewActiveTrail + 1, activeTrails.size());
@@ -773,6 +774,17 @@ public class Cfinger2 extends JPanel {
 	// + " [C_EGc] [C2G2] [CE][DF]|[D2F2][EG][FA] [A4d4]|]"
 			+ " [G,_EGc] ";
 	
+	/** The topology of the points a board shows (a trail's newest chord), named by the same classification as a single fingering. */
+	public void sayTopologyOf(Point[] points) {
+		Topology t = new Topology(points);
+		String s = t.topos.toString();
+		if (t.bad()) {
+			ctl.topo.say("<html>Toplogy: <font color=red>" + s + "</font></html>");
+		} else {
+			ctl.topo.say("Topology: " + s);
+		}
+	}
+
 	public void sayTopology(ChordFingering.Fingering f) {
 		String s = f.getTopology().toString();
 		if (f.badToplogy()){
@@ -885,6 +897,7 @@ public class Cfinger2 extends JPanel {
 	 * Using only the field CurrentCF1, do (display) the fingering. 
 	 */
 	public void doCurrentFingering() {
+		fingPane.getCurrentBoard().setFingerConstraints(CurrentCF1.fingerConstraints);   // the fingers the score fixes (fing: in ABCD)
 		int nSol = CurrentCF1.nFingerings();
 		if (nSol == 0) {
 			sayImpossible(CurrentCF1);

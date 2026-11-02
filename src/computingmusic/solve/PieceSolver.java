@@ -132,9 +132,9 @@ public final class PieceSolver {
 		public final List<Choice> choices = new ArrayList<Choice>();
 		public double total;
 		public int itemsWithoutFingering, notesWithoutSpot, framesRejected;
-		/** Items (indexes) of stretches where no trail and finger assignment gives a finger the score pins (fing: in ABCD, a printed finger). */
-		public final List<Integer> pinsUnsatisfied = new ArrayList<Integer>();
-		/** Stretches where a held finger could not keep its number from the stretch before (the pinned assignment was not allowed). */
+		/** Items (indexes) of stretches where no trail and finger assignment gives a finger the score constraints (fing: in ABCD, a printed finger). */
+		public final List<Integer> constraintsUnsatisfied = new ArrayList<Integer>();
+		/** Stretches where a held finger could not keep its number from the stretch before (the constrained assignment was not allowed). */
 		public int heldFingersRenumbered;
 	}
 
@@ -290,7 +290,7 @@ public final class PieceSolver {
 		}
 	}
 
-	private static boolean hasPin(TrailRun.Items items, int item) {
+	private static boolean hasFingerConstraint(TrailRun.Items items, int item) {
 		for (JJNote jn : items.notes.get(item)) {
 			if (jn.givenFinger().matches("[0-4]")) {
 				return true;
@@ -300,13 +300,13 @@ public final class PieceSolver {
 	}
 
 	/**
-	 * Can some finger assignment the hand allows to the trail's frame over items first..last give every pinned note its finger?
-	 * True when the stretch pins nothing.  O(items x notes + 15).
+	 * Can some finger assignment the hand allows to the trail's frame over items first..last give every constrained note its finger?
+	 * True when the stretch constraints nothing.  O(items x notes + 15).
 	 */
-	private boolean pinsCanHold(Instrument ins, TrailRun.Items items, FingerTrail t, int first, int last) {
+	private boolean constraintsCanHold(Instrument ins, TrailRun.Items items, FingerTrail t, int first, int last) {
 		boolean any = false;
 		for (int it = first; it <= last && !any; it++) {
-			any = hasPin(items, it);
+			any = hasFingerConstraint(items, it);
 		}
 		if (!any) {
 			return true;
@@ -314,17 +314,17 @@ public final class PieceSolver {
 		try {
 			NoteByNote.Stretch tmp = new NoteByNote.Stretch(first, last, NoteByNote.End.BREAK, java.util.Collections.singletonList(t));
 			List<List<NoteByNote.Spot>> spots = NoteByNote.spots(ins, items, tmp, t);
-			List<int[]> pins = pinnedFingers(items, tmp, spots);
+			List<int[]> constraints = fingerConstraints(items, tmp, spots);
 			int[] frame = frameOf(t);
 			if (absolute == null) {
-				return pinsHold(pins, frame, null);
+				return constraintsHold(constraints, frame, null);
 			}
 			List<FrameTest.Assignment> ranked = absolute.rank(frame, null, null, new TreeSet<Integer>());
 			if (ranked.isEmpty()) {
-				return pinsHold(pins, frame, null);
+				return constraintsHold(constraints, frame, null);
 			}
 			for (FrameTest.Assignment as : ranked) {
-				if (pinsHold(pins, frame, as)) {
+				if (constraintsHold(constraints, frame, as)) {
 					return true;
 				}
 			}
@@ -334,35 +334,35 @@ public final class PieceSolver {
 		}
 	}
 
-	/** Stretches (first item) where the pinned fingers left no state; copied into the Solution. */
-	private final List<Integer> pinsFailedAt = new ArrayList<Integer>();
+	/** Stretches (first item) where the finger constraints left no state; copied into the Solution. */
+	private final List<Integer> constraintsFailedAt = new ArrayList<Integer>();
 
 	/**
 	 * The fingers the score's author fixes (the property "fingering_given", one number 0-4: fing: in ABCD; a printed finger is not one) for the notes this
-	 * trail places: {height, finger}.  0 means an open string.  A note with no finger, or several, gives no pin.  O(notes).
+	 * trail places: {height, finger}.  0 means an open string.  A note with no finger, or several, gives no constraint.  O(notes).
 	 */
-	private static List<int[]> pinnedFingers(TrailRun.Items items, NoteByNote.Stretch s, List<List<NoteByNote.Spot>> spots) {
-		List<int[]> pins = new ArrayList<int[]>();
+	private static List<int[]> fingerConstraints(TrailRun.Items items, NoteByNote.Stretch s, List<List<NoteByNote.Spot>> spots) {
+		List<int[]> constraints = new ArrayList<int[]>();
 		int itemNo = s.start;
 		for (List<NoteByNote.Spot> row : spots) {
 			List<JJNote> ns = items.notes.get(itemNo);
 			for (int j = 0; j < row.size() && j < ns.size(); j++) {
 				String f = ns.get(j).givenFinger();
 				if (row.get(j) != null && f.matches("[0-4]")) {
-					pins.add(new int[] { row.get(j).height, Integer.parseInt(f) });
+					constraints.add(new int[] { row.get(j).height, Integer.parseInt(f) });
 				}
 			}
 			itemNo++;
 		}
-		return pins;
+		return constraints;
 	}
 
 	/**
-	 * Does the assignment give every pinned note its finger?  An open string is finger 0, and only an open string is.  With no
-	 * assignment (the hand gives none) only pins that an open string settles can hold.  O(pins x heights).
+	 * Does the assignment give every constrained note its finger?  An open string is finger 0, and only an open string is.  With no
+	 * assignment (the hand gives none) only constraints that an open string settles can hold.  O(constraints x heights).
 	 */
-	private static boolean pinsHold(List<int[]> pins, int[] heights, FrameTest.Assignment as) {
-		for (int[] p : pins) {
+	private static boolean constraintsHold(List<int[]> constraints, int[] heights, FrameTest.Assignment as) {
+		for (int[] p : constraints) {
 			int h = p[0], want = p[1];
 			if (h == 0 || want == 0) {
 				if ((h == 0) != (want == 0)) {
@@ -395,11 +395,11 @@ public final class PieceSolver {
 		for (int a = 0; a < alive.size(); a++) {
 			out.addAll(trailStates(ins, items, s, a, alive.get(a), frames[a], unary[a]));
 		}
-		if (out.isEmpty()) {      // every trail and assignment contradicts a pinned finger: the stretch has no fingering to offer
-			for (int it = s.start; it <= s.stop; it++) {      // name the items that carry a pin
+		if (out.isEmpty()) {      // every trail and assignment contradicts a finger constraint: the stretch has no fingering to offer
+			for (int it = s.start; it <= s.stop; it++) {      // name the items that carry a constraint
 				for (JJNote jn : items.notes.get(it)) {
 					if (jn.givenFinger().matches("[0-4]")) {
-						pinsFailedAt.add(it);
+						constraintsFailedAt.add(it);
 						break;
 					}
 				}
@@ -453,12 +453,12 @@ public final class PieceSolver {
 			heights = frame;
 			ranked = absolute.rank(heights, null, null, chordHeights);
 		}
-		List<int[]> pins = pinnedFingers(items, s, spots);      // {height, finger} for each note the score gives a finger
-		if (ranked.isEmpty() && pinsHold(pins, heights, null)) {
+		List<int[]> constraints = fingerConstraints(items, s, spots);      // {height, finger} for each note the score gives a finger
+		if (ranked.isEmpty() && constraintsHold(constraints, heights, null)) {
 			out.add(new State(a, null, heights, within, spots));
 		}
 		for (FrameTest.Assignment as : ranked) {
-			if (pinsHold(pins, heights, as)) {
+			if (constraintsHold(constraints, heights, as)) {
 				out.add(new State(a, as, heights, within + as.soft, spots));
 			}
 		}
@@ -503,18 +503,18 @@ public final class PieceSolver {
 	}
 
 	public Solution solveGreedy(Instrument ins, TrailRun.Items items) throws Exception {
-		pinsFailedAt.clear();
-		// a trail that no finger assignment of the hand can give the fingers the score pins is dead, as any impossible fingering is
+		constraintsFailedAt.clear();
+		// a trail that no finger assignment of the hand can give the fingers the score constraints is dead, as any impossible fingering is
 		NoteByNote.Keep keep = new NoteByNote.Keep() {
 			public boolean ok(FingerTrail t, int first, int last) {
-				return pinsCanHold(ins, items, t, first, last);
+				return constraintsCanHold(ins, items, t, first, last);
 			}
 		};
 		List<NoteByNote.Stretch> st = NoteByNote.run(ins, items.chords, items.trilled, keep);
-		for (NoteByNote.Stretch s0 : st) {          // an item no trail survives, though one would without the pin: say so
-			if (s0.alive.isEmpty() && s0.start == s0.stop && hasPin(items, s0.start)
+		for (NoteByNote.Stretch s0 : st) {          // an item no trail survives, though one would without the constraint: say so
+			if (s0.alive.isEmpty() && s0.start == s0.stop && hasFingerConstraint(items, s0.start)
 					&& !NoteByNote.start(ins, items.chords.get(s0.start), s0.start, NoteByNote.trilledAt(items.trilled, s0.start), null).isEmpty()) {
-				pinsFailedAt.add(s0.start);
+				constraintsFailedAt.add(s0.start);
 			}
 		}
 		stretchesNow = st;
@@ -579,7 +579,7 @@ public final class PieceSolver {
 			}
 		}
 		Solution sol = new Solution();
-		sol.pinsUnsatisfied.addAll(pinsFailedAt);
+		sol.constraintsUnsatisfied.addAll(constraintsFailedAt);
 		int[] pick = new int[n];
 		double best = Double.MAX_VALUE;
 		for (int a = 0; a < f[n - 1].length; a++) {
