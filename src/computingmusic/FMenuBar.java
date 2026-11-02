@@ -25,6 +25,7 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 	JMenuItem restartItem;
 	JMenu openRecent;
 	javax.swing.JCheckBoxMenuItem markUnique;
+	JMenuItem handPositions;
 	
 	JMenu instMenu;
 	
@@ -331,6 +332,10 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 		markUnique.setToolTipText("Finger the whole piece. Stretches with only one possible trail are marked; the rest are chosen by cost. Needs a score opened with File > Open score.");
 		markUnique.addActionListener(this);
 		trailsMenu.add(markUnique);
+		handPositions = new JMenuItem("Hand positions...");
+		handPositions.setToolTipText("Step through the hand positions (finger frames) of a passage of the opened score: Left/Right the runs, Up/Down the frames of a run.");
+		handPositions.addActionListener(this);
+		trailsMenu.add(handPositions);
 		add(trailsMenu);
 
 		helpMenu = new JMenu("Help");
@@ -400,6 +405,15 @@ public class FMenuBar extends JMenuBar implements ActionListener {
 	public void  actionPerformed( ActionEvent e )
 	
 	{
+		if (e.getSource() == handPositions) {
+			java.io.File f = big.openedScoreFile();
+			if (f == null) {
+				appFrame.reportError("Hand positions", "Open a MusicXML score first (File > Open score).");
+			} else {
+				new HandPositionsWindow(f).setVisible(true);
+			}
+			return;
+		}
 		if (e.getSource() == markUnique){
 			big.solveAll(markUnique.isSelected());
 			if (markUnique.isSelected() && big.marked.isEmpty()) {

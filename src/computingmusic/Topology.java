@@ -23,6 +23,12 @@ public class Topology {
 		BAD_TRIANGLEBAR,
 		BAD_DIAMOND,
 		BAD_TRAPEZOID, // 4 stops, lower are on outer strings.
+		FLAPLO, // one flat level of two or more neighbouring strings, at the lowest height
+		FLAPMID, // ... between other heights
+		FLAPHI, // ... at the highest height
+		TWINFLAP, // two flat levels
+		BAD_FLAPSKIP, // one height on strings that are not neighbours: no finger can do it
+		TRIANGLEHI, // a single hill: a stopped string higher than its stopped neighbours
 		UNKNOWN
 	}
 	public class ToposOption {
@@ -39,94 +45,96 @@ public class Topology {
 	
 	Topology(Instrument it, ChordFingering.Fingering f){
 		instrument = it;
+		classify(f.getCoords());
+	}
+
+	/** The topology of points (string, height), open strings (height 0) included or not; the same classification the app shows. */
+	Topology(Point[] ps){
+		classify(ps);
+	}
+
+	/**
+	 * One classification for the app and for the tools (TopologyBridge).  The engine's names first; an arrangement they leave
+	 * UNKNOWN gets the outline names (EH's FLAP names, TRIANGLEHI, BAD_FLAPSKIP) by outlineCheck.  Complexity: O(1), at most four stops.
+	 */
+	private void classify(Point[] ps) {
 		topos = Topos.UNKNOWN;
-		Point[] ps = f.getCoords(); // 
-		//System.out.println("New fingering" + ps.toString());
 		Point[] stops = Points.filterOpenStrings(ps);
-		stoppedPointOrder = Points.pointSortYOrder(stops); 
+		stoppedPointOrder = Points.pointSortYOrder(stops);
 		stoppedStringOrder = Points.PointXs(stoppedPointOrder);
-		
-		//System.out.println("Number of stops:" + stops.length);
-		@SuppressWarnings("unused")
-		boolean easy = stops.length < 3;
 		if (stops.length == 0) {
-			//System.out.println("All open");
-				topos = Topos.OPEN;
-		} else if (stops.length == 1){
-			    topos = Topos.EASY;
-	
-		} else if (checkBar(stops)){
-				topos = Topos.BAR;
-		} else if (checkLineUp(stops)){
-				topos = Topos.LINEUP;
-		} else if (checkLineDn(stops)){
-				topos = Topos.LINEDN;
-				
-		} 
-		/*
-		else if (badTriangleLo(stops)){ // killer triangle
-				topos = Topos.BAD_TRIANGLELO;
-				
-		} else if (isLoTriangle(stops)){
-				topos = Topos.TRIANGLELO;
-		}
-		*/
-		else {
+			topos = Topos.OPEN;
+		} else if (stops.length == 1) {
+			topos = Topos.EASY;
+		} else if (checkBar(stops)) {
+			topos = Topos.BAR;
+		} else if (checkLineUp(stops)) {
+			topos = Topos.LINEUP;
+		} else if (checkLineDn(stops)) {
+			topos = Topos.LINEDN;
+		} else {
 			diamondCheck(stops);
 			if (unknown()) {
 				triangleLoCheck(stops);
 				if (unknown()) {
 					triangleBarCheck(stops);
+					if (unknown()) {
+						outlineCheck(stops);
+					}
 				}
 			}
-		};
-			
-		//topos = Topos.UNKNOWN;		
-	}	
-	
-	Topology(Point[] ps){
-		topos = Topos.UNKNOWN;
-		
-		Point[] stops = Points.filterOpenStrings(ps);
-		stoppedPointOrder = Points.pointSortYOrder(stops); 
-		stoppedStringOrder = Points.PointXs(stoppedPointOrder);
-		System.out.println("Number of stops:" + stops.length);
-		@SuppressWarnings("unused")
-		boolean easy = stops.length < 3;
-		if (stops.length == 0) {
-			//System.out.println("All open");
-				topos = Topos.OPEN;
-		} else if (stops.length == 1){
-			    topos = Topos.EASY;
-	
-		} else if (checkBar(stops)){
-				topos = Topos.BAR;
-		} else if (checkLineUp(stops)){
-				topos = Topos.LINEUP;
-		} else if (checkLineDn(stops)){
-				topos = Topos.LINEDN;
-				
-		} 
-		/*
-		else if (badTriangleLo(stops)){ // killer triangle
-				topos = Topos.BAD_TRIANGLELO;
-				
-		} else if (isLoTriangle(stops)){
-				topos = Topos.TRIANGLELO;
 		}
-		*/
-		else {
-			triangleBarCheck(stops);
-			triangleLoCheck(stops);
-			diamondCheck(stops);
-			/*if (unknown()) {
-				
-				if (unknown()) {
-					
+	}
+
+	/**
+	 * The arrangements the engine's rules leave UNKNOWN, named by the outline the fingers make.  A LEVEL is neighbouring stopped
+	 * strings at one height; a string that is open or not played breaks it.
+	 *   BAD_FLAPSKIP   one height on two strings that are not neighbours (an open, unplayed or differently stopped string between): no finger can do it
+	 *   TWINFLAP       two levels of two or more strings
+	 *   FLAPLO / FLAPMID / FLAPHI   one level of two or more strings: at the lowest height, between others, at the highest
+	 *   TRIANGLEHI     no level, and a hill: a stopped string higher than its stopped neighbours
+	 */
+	private void outlineCheck(Point[] stops) {
+		Point[] byString = stops.clone();
+		java.util.Arrays.sort(byString, new java.util.Comparator<Point>() {
+			public int compare(Point a, Point b) {
+				return a.x - b.x;
+			}
+		});
+		java.util.TreeSet<Integer> heights = new java.util.TreeSet<Integer>();
+		for (Point p : byString) {
+			heights.add(p.y);
+		}
+		java.util.List<Integer> ranked = new java.util.ArrayList<Integer>(heights);
+		java.util.List<int[]> levels = new java.util.ArrayList<int[]>();      // {height, width}
+		java.util.Set<Integer> seen = new java.util.HashSet<Integer>();
+		for (int i = 0; i < byString.length; i++) {
+			boolean continues = i > 0 && byString[i - 1].x == byString[i].x - 1 && byString[i - 1].y == byString[i].y;
+			if (continues) {
+				levels.get(levels.size() - 1)[1]++;
+			} else {
+				if (!seen.add(byString[i].y)) {
+					topos = Topos.BAD_FLAPSKIP;
+					return;
 				}
-			}*/ // removed by jb
+				levels.add(new int[] {byString[i].y, 1});
+			}
 		}
-	}	
+		int wide = 0, widest = -1;
+		for (int[] l : levels) {
+			if (l[1] > 1) {
+				wide++;
+				widest = l[0];
+			}
+		}
+		if (wide >= 2) {
+			topos = Topos.TWINFLAP;
+		} else if (wide == 1) {
+			topos = widest == ranked.get(0) ? Topos.FLAPLO : widest == ranked.get(ranked.size() - 1) ? Topos.FLAPHI : Topos.FLAPMID;
+		} else {
+			topos = Topos.TRIANGLEHI;
+		}
+	}
 	
 	
 	public void print(){

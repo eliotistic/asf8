@@ -218,6 +218,11 @@ public class BigScore extends JPanel{
 	/** The score shown by showNotation, kept so a change of instrument can read it again. */
 	private MusicXmlSession notationSession;
 
+	/** The score file opened with File > Open score, or null. */
+	public File openedScoreFile() {
+		return notationSession == null ? null : notationSession.file;
+	}
+
 	/**
 	 * The user chose another instrument in the menu: the boards take its string count, and an open score is read into
 	 * the engine again for it (its chords and trails depend on the instrument).  Swing thread only.

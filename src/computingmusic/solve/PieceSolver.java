@@ -41,8 +41,6 @@ public final class PieceSolver {
 		public double shiftAndRearrange = 1.5;    // multiplier on the rearranging when the hand also shifts
 		public double noShare = 1.0;              // shifting while rearranging with no height kept
 		/** Each stopped height both of two neighbouring stretches hold, which one gives a different finger than the other.  CHOSEN: 0.3, half a rearranged finger. */
-		/** Each stretch after the first when the solver chooses where the stretches end: a cut costs a little, so a cut that changes nothing is not made.  CHOSEN: 0.1. */
-		public double cut = 0.1;
 		public double fingerRenumber = 0.3;
 		/** A note held across the stretches whose finger changes number (the hand cannot move a finger that is down).  CHOSEN: 3.0, above a shift. */
 		public double heldFingerRenumbered = 3.0;
@@ -219,9 +217,6 @@ public final class PieceSolver {
 		if (a.length == 0 || b.length == 0) {
 			return 0;                              // open strings only: no hand position
 		}
-		if (ALIGNED) {
-			return transitionAligned(a, b);
-		}
 		int shift = b[0] - a[0];
 		int rearranged = 0, shared = 0;
 		int[] na = normalise(a), nb = normalise(b);
@@ -249,36 +244,6 @@ public final class PieceSolver {
 			return costs.rearrange * rearranged;   // fingers move, the hand stays
 		}
 		return move + costs.rearrange * rearranged * costs.shiftAndRearrange + (shared == 0 ? costs.noShare : 0);
-	}
-
-	/** EXPERIMENT (-Dsf.transition=aligned): the hand may stay where it is or move by any amount that lines a finger of the old frame up with one of the new; the cheapest. */
-	static final boolean ALIGNED = "aligned".equals(System.getProperty("sf.transition"));
-
-	double transitionAligned(int[] a, int[] b) {
-		java.util.TreeSet<Integer> shifts = new java.util.TreeSet<Integer>();
-		shifts.add(0);
-		for (int x : a) {
-			for (int y : b) {
-				shifts.add(y - x);
-			}
-		}
-		double best = Double.MAX_VALUE;
-		for (int d : shifts) {
-			int onlyA = 0, shared = 0;
-			for (int h : a) {
-				if (Arrays.binarySearch(b, h + d) >= 0) {
-					shared++;
-				} else {
-					onlyA++;
-				}
-			}
-			int onlyB = b.length - shared;
-			int rearranged = (onlyA + onlyB + 1) / 2;
-			double move = costs.shiftEasy * Math.log(1 + Math.abs(d));
-			double c = rearranged == 0 ? move : d == 0 ? costs.rearrange * rearranged : move + costs.rearrange * rearranged * costs.shiftAndRearrange + (shared == 0 ? costs.noShare : 0);
-			best = Math.min(best, c);
-		}
-		return best;
 	}
 
 	private static int[] normalise(int[] f) {
@@ -421,15 +386,9 @@ public final class PieceSolver {
 		return c;
 	}
 
-	/**
-	 * One fingering for the piece.  The stretches end where the solver chooses (solveWithCuts) unless the instrument keeps held notes on their fingers
-	 * (the guitar) or -Dsf.cuts=greedy: then each stretch is extended as far as a trail survives (solveGreedy).
-	 */
+	/** One fingering for the piece: each stretch is extended as far as a trail survives.  Complexity: see solveGreedy. */
 	public Solution solve(Instrument ins, TrailRun.Items items) throws Exception {
-		if (ins.spec.heldNotesKeepFingers || "greedy".equals(System.getProperty("sf.cuts"))) {
-			return solveGreedy(ins, items);
-		}
-		return solveWithCuts(ins, items);
+		return solveGreedy(ins, items);
 	}
 
 	public Solution solveGreedy(Instrument ins, TrailRun.Items items) throws Exception {
@@ -556,168 +515,5 @@ public final class PieceSolver {
 			sol.choices.add(c);
 		}
 		return sol;
-	}
-
-	/** The best way to reach the end of one stretch in a given state: the cost so far, and the way it was reached. */
-	static final class Node {
-		final double cost;
-		final State state;
-		final NoteByNote.Stretch window;
-		final Node prev;
-
-		Node(double cost, State state, NoteByNote.Stretch window, Node prev) {
-			this.cost = cost;
-			this.state = state;
-			this.window = window;
-			this.prev = prev;
-		}
-	}
-
-	private static String keyOf(State s) {
-		return Arrays.toString(s.frame == null ? new int[0] : s.frame) + Arrays.toString(s.heights) + (s.asg == null ? "none" : Arrays.toString(s.asg.fingers));
-	}
-
-	/** Like step, between two states of consecutive stretches that need no link (no note is held across a cut).  Complexity: O(frame size). */
-	double stepCut(State p, State q) {
-		if (p.trail < 0 || q.trail < 0) {
-			return 0;
-		}
-		double c = transition(p.frame, q.frame);
-		if (p.asg != null && q.asg != null) {
-			for (int h : q.heights) {
-				int before = p.fingerAt(h), now = q.fingerAt(h);
-				if (before > 0 && now > 0 && before != now) {
-					c += costs.fingerRenumber;
-				}
-			}
-		}
-		return c;
-	}
-
-	/**
-	 * Where each stretch ends is chosen too.  For every item s a stretch may START there and be extended as far as a trail survives; every length is a
-	 * candidate (a hand position can be left before it has to be).  A candidate stretch has one state for each frame the trails give it (the cheapest
-	 * trail of the frame stands for it) and each finger assignment of that frame.  best[e] keeps, for each state a candidate ending at item e can end in,
-	 * the cheapest cost of the piece up to e and how it was reached; a candidate starting at s is reached from any state at s-1.  A cut costs Costs.cut.
-	 * Not counted: how many options lie on a cheapest path (onCheapestPath is 1).
-	 * Complexity: O(sum over candidates of (states x states at the item before)).
-	 */
-	public Solution solveWithCuts(Instrument ins, TrailRun.Items items) throws Exception {
-		int n = items.chords.size();
-		itemsNow = items;
-		stretchesNow = null;
-		List<java.util.Map<String, Node>> best = new ArrayList<java.util.Map<String, Node>>();
-		for (int e = 0; e < n; e++) {
-			best.add(new java.util.HashMap<String, Node>());
-		}
-		for (int s = 0; s < n; s++) {
-			List<Node> preds = s == 0 ? null : new ArrayList<Node>(best.get(s - 1).values());
-			List<FingerTrail> alive = NoteByNote.start(ins, items.chords.get(s), s, NoteByNote.trilledAt(items.trilled, s));
-			if (alive.isEmpty()) {
-				relax(best, preds, new NoteByNote.Stretch(s, s, NoteByNote.End.IMPOSSIBLE, alive), ins, items);
-				continue;
-			}
-			int stop = s;
-			while (true) {
-				relax(best, preds, new NoteByNote.Stretch(s, stop, NoteByNote.End.END, alive), ins, items);
-				if (stop + 1 >= n) {
-					break;
-				}
-				List<FingerTrail> next = NoteByNote.extend(ins, alive, items.chords.get(stop + 1), NoteByNote.trilledAt(items.trilled, stop + 1));
-				if (next.isEmpty() || next.size() > NoteByNote.CAP) {
-					break;
-				}
-				alive = next;
-				stop++;
-			}
-		}
-		Node last = null;
-		for (Node nd : best.get(n - 1).values()) {
-			if (last == null || nd.cost < last.cost - 1e-12) {
-				last = nd;
-			}
-		}
-		List<Node> path = new ArrayList<Node>();
-		for (Node nd = last; nd != null; nd = nd.prev) {
-			path.add(0, nd);
-		}
-		Solution sol = new Solution();
-		sol.total = last.cost;
-		State before = null;
-		for (Node nd : path) {
-			State chosen = nd.state;
-			NoteByNote.Stretch s = nd.window;
-			boolean has = chosen.trail >= 0;
-			int[] fr = has ? chosen.frame : new int[0];
-			double tr = before != null && before.trail >= 0 && has ? transition(before.frame, fr) : 0;
-			Choice c = new Choice(s, has ? chosen.ft : null, s.alive.size(), 1, has ? chosen.unary - (chosen.asg == null ? 0 : chosen.asg.soft) : 0, tr, fr);
-			if (has) {
-				c.spots = chosen.spots;
-				c.fingerHeights = chosen.heights;
-				if (chosen.asg != null) {
-					c.fingers = chosen.asg.fingers;
-					c.fingersForced = chosen.asg.feasible == 1;
-				}
-				for (List<NoteByNote.Spot> row : c.spots) {
-					for (NoteByNote.Spot sp : row) {
-						if (sp == null) {
-							sol.notesWithoutSpot++;
-						}
-					}
-				}
-			} else {
-				sol.itemsWithoutFingering += s.stop - s.start + 1;
-			}
-			sol.choices.add(c);
-			before = chosen;
-		}
-		return sol;
-	}
-
-	/** The candidate stretch w, reached from every state in preds (null at the start of the piece): record the best way of ending in each of its states. */
-	private void relax(List<java.util.Map<String, Node>> best, List<Node> preds, NoteByNote.Stretch w, Instrument ins, TrailRun.Items items) throws Exception {
-		List<State> states = new ArrayList<State>();
-		if (w.alive.isEmpty()) {
-			states.add(new State(-1, null, new int[0], 0, null));
-		} else {
-			java.util.Map<String, Integer> group = new java.util.LinkedHashMap<String, Integer>();
-			java.util.Map<String, Double> groupCost = new java.util.HashMap<String, Double>();
-			int[][] frames = new int[w.alive.size()][];
-			for (int a = 0; a < w.alive.size(); a++) {
-				frames[a] = frameOf(w.alive.get(a));
-				String k = Arrays.toString(frames[a]);
-				double u = within(w.alive.get(a), frames[a]);
-				if (!groupCost.containsKey(k) || u < groupCost.get(k) - 1e-12) {   // the cheapest trail of a frame stands for the frame
-					groupCost.put(k, u);
-					group.put(k, a);
-				}
-			}
-			for (java.util.Map.Entry<String, Integer> g : group.entrySet()) {
-				int a = g.getValue();
-				states.addAll(trailStates(ins, items, w, a, w.alive.get(a), frames[a], groupCost.get(g.getKey())));
-			}
-		}
-		java.util.Map<String, Node> into = best.get(w.stop);
-		for (State st : states) {
-			double bestCost = Double.MAX_VALUE;
-			Node from = null;
-			if (preds == null) {
-				bestCost = 0;
-			} else {
-				for (Node p : preds) {
-					double v = p.cost + stepCut(p.state, st) + costs.cut;
-					if (v < bestCost - 1e-12) {
-						bestCost = v;
-						from = p;
-					}
-				}
-			}
-			bestCost += st.unary;
-			String key = keyOf(st);
-			Node old = into.get(key);
-			if (old == null || bestCost < old.cost - 1e-12) {
-				into.put(key, new Node(bestCost, st, w, from));
-			}
-		}
 	}
 }
