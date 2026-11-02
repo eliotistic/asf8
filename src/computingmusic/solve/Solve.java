@@ -77,6 +77,14 @@ public class Solve {
 				}
 			}
 		}
+		for (int it : sol.pinsUnsatisfied) {   // only when the score pins a finger (fing: in ABCD) that no fingering gives
+			StringBuilder nm = new StringBuilder(), fg = new StringBuilder();
+			for (JJNote jn : items.notes.get(it)) {
+				nm.append(jn.abcName()).append(' ');
+				fg.append(jn.givenFinger().isEmpty() ? "*" : jn.givenFinger()).append(' ');
+			}
+			out.printf("  NO FINGERING GIVES THE FINGERS WRITTEN for item %d (measure %d): %s with fingers %s%n", it, items.notes.get(it).get(0).measure(), nm, fg);
+		}
 		out.printf("%s, hand size x%.2f%n", base, size);
 		out.printf("  %d items in %d stretches; items with no fingering: %d; notes with no spot: %d%n", items.chords.size(), sol.choices.size(), sol.itemsWithoutFingering, sol.notesWithoutSpot);
 		out.printf("  forced stretches (one trail): %d, covering %d items; stretches chosen by cost: %d%n", forced, forcedItems, sol.choices.size() - forced);

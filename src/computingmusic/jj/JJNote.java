@@ -88,6 +88,12 @@ public class JJNote {
 		return f == null ? "" : String.valueOf(f);
 	}
 
+	/** The finger the score's author fixed for this note (fing: in ABCD): "0" to "4", or "" when none.  The solver keeps to it. */
+	public String givenFinger() {
+		Object f = props.get("fingering_given");
+		return f == null ? "" : String.valueOf(f);
+	}
+
 	/** The chord this note belongs to, as numbered by the reader, or -1 for a note on its own. */
 	public int chordSerial() {
 		Object c = props.get("chord_serial");

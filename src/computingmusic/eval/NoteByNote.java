@@ -62,13 +62,36 @@ public class NoteByNote {
 	 * (FingerTrail.makeCopyWithNewFingering).
 	 */
 	public static List<Stretch> run(Instrument ins, List<ChordFingering> input, List<Set<Integer>> trilled) throws Exception {
+		return run(ins, input, trilled, null);
+	}
+
+	/** An extra test on a trail over items first..last: false kills it, as any impossible fingering does (fingers the score pins, for one). */
+	public interface Keep {
+		boolean ok(FingerTrail t, int first, int last);
+	}
+
+	private static List<FingerTrail> kept(List<FingerTrail> trails, Keep test, int first, int last) {
+		if (test == null) {
+			return trails;
+		}
+		List<FingerTrail> out = new ArrayList<FingerTrail>();
+		for (FingerTrail t : trails) {
+			if (test.ok(t, first, last)) {
+				out.add(t);
+			}
+		}
+		return out;
+	}
+
+	/** As run, and a trail is also dropped when extra says no to it over the stretch so far (extra null: no extra test).  Complexity: run's, times the test's. */
+	public static List<Stretch> run(Instrument ins, List<ChordFingering> input, List<Set<Integer>> trilled, Keep extra) throws Exception {
 		List<Stretch> out = new ArrayList<Stretch>();
 		int i = 0;
 		List<FingerTrail> before = null;       // the trails alive at the end of the stretch before, for notes still held across the break
 		List<List<FingerTrail>> beforeHistory = null;   // the trails alive after each item of that stretch (kept only when notes can be held)
 		boolean keepHistory = ins.spec.heldNotesKeepFingers;
 		while (i < input.size()) {
-			List<FingerTrail> alive = start(ins, input.get(i), i, tr(trilled, i), before);
+			List<FingerTrail> alive = kept(start(ins, input.get(i), i, tr(trilled, i), before), extra, i, i);
 			// The stretch before ended greedily, with trails that may have placed a still-sounding note where this item cannot
 			// follow.  If the item can be played without the held notes, end that stretch one item earlier (its trails then, which
 			// hold the notes differently) and start again from there; stop when a stretch is a single item.
@@ -84,7 +107,7 @@ public class NoteByNote {
 				beforeHistory = new ArrayList<List<FingerTrail>>(beforeHistory.subList(0, newStop - p.start + 1));
 				before = keep;
 				i = newStop + 1;
-				alive = start(ins, input.get(i), i, tr(trilled, i), before);
+				alive = kept(start(ins, input.get(i), i, tr(trilled, i), before), extra, i, i);
 			}
 			if (alive.isEmpty()) {
 				out.add(new Stretch(i, i, End.IMPOSSIBLE, alive));
@@ -100,7 +123,7 @@ public class NoteByNote {
 			int stop = i;
 			End end = End.END;
 			while (stop + 1 < input.size()) {
-				List<FingerTrail> next = extend(ins, alive, input.get(stop + 1), tr(trilled, stop + 1));
+				List<FingerTrail> next = kept(extend(ins, alive, input.get(stop + 1), tr(trilled, stop + 1)), extra, i, stop + 1);
 				if (next.isEmpty()) {
 					end = End.BREAK;
 					break;
